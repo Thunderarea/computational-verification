@@ -1,4 +1,4 @@
-package gr.iti.mkab.readability;
+package gr.iti.mklab.readability;
 
 /**
  * This code has been integrated from:

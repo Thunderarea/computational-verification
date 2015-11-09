@@ -1,4 +1,4 @@
-package gr.iti.mkab.readability;
+package gr.iti.mklab.readability;
 
 import java.net.URL;
 import java.util.ArrayList;

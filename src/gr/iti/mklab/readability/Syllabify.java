@@ -1,4 +1,4 @@
-package gr.iti.mkab.readability;
+package gr.iti.mklab.readability;
 /*
  * Created on Jun 5, 2007
  *
