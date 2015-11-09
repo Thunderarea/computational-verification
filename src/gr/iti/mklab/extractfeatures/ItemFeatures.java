@@ -1,144 +1,163 @@
-
 package gr.iti.mklab.extractfeatures;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import eu.socialsensor.framework.common.domain.Item;
-import eu.socialsensor.framework.common.domain.JSONable;
-import eu.socialsensor.framework.common.factories.ItemFactory;
 
-public class ItemFeatures implements JSONable {
+public class ItemFeatures {
 	
 	@Expose
     @SerializedName(value = "id")
-	protected String id;
+	private String id;
 	
 	@Expose
     @SerializedName(value = "itemLength")
-	protected Integer itemLength;
+	private Integer itemLength;
 	
 	@Expose
     @SerializedName(value = "numWords")
-	protected Integer numWords;
+	private Integer numWords;
 	
 	@Expose
     @SerializedName(value = "containsQuestionMark")
-	protected Boolean containsQuestionMark;
+	private Boolean containsQuestionMark;
 	
 	@Expose
     @SerializedName(value = "containsExclamationMark")
-	protected Boolean containsExclamationMark;
+	private Boolean containsExclamationMark;
 	
 	@Expose
     @SerializedName(value = "numQuestionMark")
-	protected Integer numQuestionMark;
+	private Integer numQuestionMark;
 	
 	@Expose
     @SerializedName(value = "numExclamationMark")
-	protected Integer numExclamationMark;
+	private Integer numExclamationMark;
 	
 	@Expose
     @SerializedName(value = "containsHappyEmo")
-	protected Boolean containsHappyEmo;
+	private Boolean containsHappyEmo;
 	
 	@Expose
     @SerializedName(value = "containsSadEmo")
-	protected Boolean containsSadEmo;
+	private Boolean containsSadEmo;
 	
 	@Expose
     @SerializedName(value = "containsFirstOrderPron")
-	protected Boolean containsFirstOrderPron;
+	private Boolean containsFirstOrderPron;
 	
 	@Expose
     @SerializedName(value = "containsSecondOrderPron")
-	protected Boolean containsSecondOrderPron;
+	private Boolean containsSecondOrderPron;
 	
 	@Expose
     @SerializedName(value = "containsThirdOrderPron")
-	protected Boolean containsThirdOrderPron;
+	private Boolean containsThirdOrderPron;
 	
 	@Expose
     @SerializedName(value = "numUppercaseChars")
-	protected Integer numUppercaseChars;
+	private Integer numUppercaseChars;
 	
 	@Expose
     @SerializedName(value = "numNegSentiWords")
-	protected Integer numNegSentiWords;
+	private Integer numNegSentiWords;
 	
 	@Expose
     @SerializedName(value = "numPosSentiWords")
-	protected Integer numPosSentiWords;
+	private Integer numPosSentiWords;
 	
 	@Expose
     @SerializedName(value = "numMentions")
-	protected Integer numMentions;
+	private Integer numMentions;
 	
 	@Expose
     @SerializedName(value = "numHashtags")
-	protected Integer numHashtags;
+	private Integer numHashtags;
 	
 	@Expose
     @SerializedName(value = "numURLs")
-	protected Integer numURLs;
+	private Integer numURLs;
 	
 	@Expose
     @SerializedName(value = "retweetCount")
-	protected Long retweetCount;
+	private Long retweetCount;
 	
 	@Expose
     @SerializedName(value = "hasColon")
-	protected Boolean hasColon;
+	private Boolean hasColon;
 	
 	@Expose
     @SerializedName(value = "hasPlease")
-	protected Boolean hasPlease;
+	private Boolean hasPlease;
 	
 	@Expose
     @SerializedName(value = "numNouns")
-	protected Integer numNouns;
+	private Integer numNouns;
 	
 	@Expose
     @SerializedName(value = "hasExternalLink")
-	protected Boolean hasExternalLink;
+	private Boolean hasExternalLink;
 	
 	@Expose
     @SerializedName(value = "wotTrust")
-	protected Integer wotTrust;
+	private Integer wotTrust;
 	
 	@Expose
     @SerializedName(value = "wotSafe")
-	protected Integer wotSafe;
+	private Integer wotSafe;
 	
 	@Expose
     @SerializedName(value = "numSlangs")
-	protected Integer numSlangs;
+	private Integer numSlangs;
 	
 	@Expose
     @SerializedName(value = "readability")
-	protected Double readability;
-		
+	private Double readability;
+	
+	@Expose
+    @SerializedName(value = "urlIndegree")
+	private Float urlIndegree;
+	
+	@Expose
+    @SerializedName(value = "urlHarmonic")
+	private Float urlHarmonic;
+	
 	@Expose
     @SerializedName(value = "containsWordFake")
-	protected Boolean containsWordFake;
+	private Boolean containsWordFake;
 	
 	@Expose
     @SerializedName(value = "numFakeWords")
-	protected Integer numFakeWords;
+	private Integer numFakeWords;
 	
 	@Expose
     @SerializedName(value = "numComments")
-	protected Integer numComments;
+	private Integer numComments;
 		
 	@Expose
     @SerializedName(value = "timeFromStart")
-	protected Long timeFromStart;
+	private Long timeFromStart;
 	
 	@Expose
     @SerializedName(value = "reliability")
-	protected String reliability;
+	private String reliability;
+	
+	@Expose
+    @SerializedName(value = "alexaPopularity")
+	private Integer alexaPopularity;
+	
+	@Expose
+    @SerializedName(value = "alexaReachRank")
+	private Integer alexaReachRank;
+	
+	@Expose
+    @SerializedName(value = "alexaDeltaRank")
+	private Integer alexaDeltaRank;
+	
+	@Expose
+    @SerializedName(value = "alexaCountryRank")
+	private Integer alexaCountryRank;
 	
 	public void setId(String id){
 		this.id = id;
@@ -355,7 +374,23 @@ public class ItemFeatures implements JSONable {
 	public Double getReadability() {
 		return readability;
 	}
-		
+	
+	public void setUrlIndegree(Float urlIndegree){
+		this.urlIndegree = urlIndegree;
+	}
+	
+	public Float getUrlIndegree() {
+		return urlIndegree;
+	}
+	
+	public void setUrlHarmonic(Float urlHarmonic){
+		this.urlHarmonic = urlHarmonic;
+	}
+	
+	public Float getUrlHarmonic() {
+		return urlHarmonic;
+	}
+	
 	public void setNumNouns(Integer numNouns){
 		this.numNouns = numNouns;
 	}
@@ -364,11 +399,41 @@ public class ItemFeatures implements JSONable {
 		return numNouns;
 	}
 	
-	@Override
+	public void setAlexaPopularity(Integer alexaPopularity) {
+		this.alexaPopularity = alexaPopularity;
+	}
+	
+	public Integer getAlexaPopularity() {
+		return alexaPopularity;
+	}
+	
+	public void setAlexaCountryRank(Integer alexaCountryRank) {
+		this.alexaCountryRank = alexaCountryRank;
+	}
+	
+	public Integer getAlexaCountryRank() {
+		return alexaCountryRank;
+	}
+	
+	public void setAlexaDeltaRank(Integer alexaDeltaRank) {
+		this.alexaDeltaRank = alexaDeltaRank;
+	}
+	
+	public Integer getAlexaDeltaRank() {
+		return alexaDeltaRank;
+	}
+	
+	public void setAlexaReachRank(Integer alexaReachRank) {
+		this.alexaReachRank = alexaReachRank;
+	}
+	
+	public Integer getAlexaReachRank() {
+		return alexaReachRank;
+	}
+	
 	public String toJSONString() {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		return gson.toJson(this);
-		
 	}
 	
 	 

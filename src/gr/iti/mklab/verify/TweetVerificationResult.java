@@ -11,7 +11,7 @@ import eu.socialsensor.framework.common.domain.JSONable;
  * Class used to save the result of the tweet image verification 
  * @author boididou
  */
-public class ImageVerificationResult implements JSONable {
+public class TweetVerificationResult implements JSONable {
 
 	@Expose
     @SerializedName(value = "id")

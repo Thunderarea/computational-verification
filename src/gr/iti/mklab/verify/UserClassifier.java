@@ -1,26 +1,19 @@
 package gr.iti.mklab.verify;
 
-import eu.socialsensor.framework.common.domain.MediaItem;
-import gr.iti.mklab.extractfeatures.ItemFeatures;
-import gr.iti.mklab.extractfeatures.ItemFeaturesExtractor;
 import gr.iti.mklab.extractfeatures.UserFeatures;
 import gr.iti.mklab.extractfeatures.UserFeaturesAnnotation;
-import gr.iti.mklab.extractfeatures.UserFeaturesExtractor;
+import gr.iti.mklab.extractfeatures.UserFeaturesExtractorJSON;
 import gr.iti.mklab.utils.Vars;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+
+import org.json.JSONObject;
 
 import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
-import weka.classifiers.evaluation.output.prediction.PlainText;
-import weka.classifiers.lazy.KStar;
 import weka.classifiers.misc.SerializedClassifier;
 import weka.classifiers.trees.J48;
-import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
 import weka.core.Debug;
 import weka.core.DenseInstance;
@@ -54,35 +47,35 @@ public class UserClassifier {
 		Attribute numTweets = new Attribute("numTweets");
 		Attribute numMediaContent = new Attribute("numMediaContent");
 		Attribute wotTrustUser = new Attribute("wotTrustUser");
-		// Attribute wotSafeUser = new Attribute("wotSafeUser");
 		Attribute accountAge = new Attribute("accountAge");
 		Attribute tweetRatio = new Attribute("tweetRatio");
+		Attribute indegreeUser = new Attribute("indegreeUser");
+		Attribute harmonicUser = new Attribute("harmonicUser");
+		Attribute alexaCountryRankUser = new Attribute("alexaCountryRankUser");
+		Attribute alexaDeltaRankUser = new Attribute("alexaDeltaRankUser");
+		Attribute alexaPopularityUser = new Attribute("alexaPopularityUser");
+		Attribute alexaReachRankUser = new Attribute("alexaReachRankUser");
 
-		// declare nominal attributes
 		List<String> fvnominal1 = new ArrayList<String>(2);
 		fvnominal1.add("true");
 		fvnominal1.add("false");
 		Attribute hasUrl = new Attribute("hasUrl", fvnominal1);
 
-		// declare nominal attributes
 		List<String> fvnominal2 = new ArrayList<String>(2);
 		fvnominal2.add("true");
 		fvnominal2.add("false");
 		Attribute isVerified = new Attribute("isVerified", fvnominal2);
 
-		// declare nominal attributes
 		List<String> fvnominal3 = new ArrayList<String>(2);
 		fvnominal3.add("true");
 		fvnominal3.add("false");
 		Attribute hasBio = new Attribute("hasBio", fvnominal3);
 
-		// declare nominal attributes
 		List<String> fvnominal4 = new ArrayList<String>(2);
 		fvnominal4.add("true");
 		fvnominal4.add("false");
 		Attribute hasLocation = new Attribute("hasLocation", fvnominal4);
 
-		// declare nominal attributes
 		List<String> fvnominal5 = new ArrayList<String>(2);
 		fvnominal5.add("true");
 		fvnominal5.add("false");
@@ -116,7 +109,6 @@ public class UserClassifier {
 		fvAttributes.add(hasUrl);
 		fvAttributes.add(isVerified);
 		fvAttributes.add(numTweets);
-
 		fvAttributes.add(hasBio);
 		fvAttributes.add(hasLocation);
 		fvAttributes.add(hasExistingLocation);
@@ -126,6 +118,12 @@ public class UserClassifier {
 		fvAttributes.add(hasProfileImg);
 		fvAttributes.add(hasHeaderImg);
 		fvAttributes.add(tweetRatio);
+		fvAttributes.add(indegreeUser);
+		fvAttributes.add(harmonicUser);
+		fvAttributes.add(alexaCountryRankUser); // new
+		fvAttributes.add(alexaDeltaRankUser);
+		fvAttributes.add(alexaPopularityUser);
+		fvAttributes.add(alexaReachRankUser);
 
 		fvAttributes.add(ClassAttribute);
 
@@ -142,7 +140,7 @@ public class UserClassifier {
 		Instance iExample = new DenseInstance(fvAttributes.size());
 
 		String id = list.getId().replaceAll("[^\\d.]", "");
-		
+
 		iExample.setValue((Attribute) fvAttributes.get(0), id);
 
 		iExample.setValue((Attribute) fvAttributes.get(1), list.getNumFriends());
@@ -202,21 +200,24 @@ public class UserClassifier {
 	 * @return Instances that form the testing set
 	 * @throws Exception
 	 */
-	public static Instances createTestingSet(List<UserFeatures> listUserFeatures,List<UserFeaturesAnnotation> listFeaturesAnnot) throws Exception {
+	public static Instances createTestingSet(
+			List<UserFeatures> listUserFeatures,
+			List<UserFeaturesAnnotation> listFeaturesAnnot) throws Exception {
 
 		int index = 0;
-		
+
 		if (UserClassifier.getFvAttributes().size() == 0) {
 			fvAttributes = (ArrayList<Attribute>) declareAttributes();
 		}
-		
+
 		// create an empty training set and then keep the instances
-		Instances isTestingSet = new Instances("Rel", fvAttributes,	listUserFeatures.size());
+		Instances isTestingSet = new Instances("Rel", fvAttributes,
+				listUserFeatures.size());
 		// Set class index
 		isTestingSet.setClassIndex(fvAttributes.size() - 1);
 
 		for (int i = 0; i < listUserFeatures.size(); i++) {
-			
+
 			// declare instance and define its values
 			Instance inst = createInstance(listUserFeatures.get(i));
 
@@ -227,7 +228,8 @@ public class UserClassifier {
 				}
 			}
 
-			inst.setValue((Attribute) fvAttributes.get(fvAttributes.size() - 1),
+			inst.setValue(
+					(Attribute) fvAttributes.get(fvAttributes.size() - 1),
 					listFeaturesAnnot.get(index).getReliability());
 			// add the instance to the testing set
 			isTestingSet.add(inst);
@@ -281,10 +283,11 @@ public class UserClassifier {
 			double pred = classifier.classifyInstance(isTestSet.instance(i));
 			System.out.println(pred);
 
-			String actual = isTestSet.classAttribute().value((int) isTestSet.instance(i).classValue());
+			String actual = isTestSet.classAttribute().value(
+					(int) isTestSet.instance(i).classValue());
 			String predicted = isTestSet.classAttribute().value((int) pred);
 			System.out.println("Actual " + actual + " predicted " + predicted);
-			
+
 			if (actual.equals(predicted)) {
 				count++;
 			}
@@ -294,7 +297,7 @@ public class UserClassifier {
 			} else {
 				flags[i] = false;
 			}
-			System.out.println("flag "+flags[i]);
+			System.out.println("flag " + flags[i]);
 		}
 
 		/*
@@ -330,10 +333,12 @@ public class UserClassifier {
 		}
 
 		// Create an empty training set
-		Instances isTrainingSet = new Instances("TrainingUserFeatures",	UserClassifier.getFvAttributes(), listUserFeatures.size());
+		Instances isTrainingSet = new Instances("TrainingUserFeatures",
+				UserClassifier.getFvAttributes(), listUserFeatures.size());
 
 		// Set class index
-		isTrainingSet.setClassIndex(UserClassifier.getFvAttributes().size() - 1);
+		isTrainingSet
+				.setClassIndex(UserClassifier.getFvAttributes().size() - 1);
 
 		for (int i = 0; i < listUserFeatures.size(); i++) {
 
@@ -379,235 +384,6 @@ public class UserClassifier {
 	}
 
 	/**
-	 * Function that organizes the classification process given the training and
-	 * testing set
-	 * 
-	 * @param itemsFakeTrain
-	 *            Fake Items for the training set
-	 * @param itemsFakeTest
-	 *            Fake Items for the testing set
-	 * @param itemsRealTrain
-	 *            Real Items for the training set
-	 * @param itemsRealTest
-	 *            Real Items for the testing set
-	 * @throws Exception
-	 */
-	public static void doClassification(List<MediaItem> itemsFakeTrain,
-			List<MediaItem> itemsFakeTest, List<MediaItem> itemsRealTrain,
-			List<MediaItem> itemsRealTest) throws Exception {
-
-		System.out.println("=== Classification using User features ===");
-
-		// define the list of itemFeatures that are used for training and
-		// testing
-		List<UserFeatures> userFeaturesTraining = new ArrayList<UserFeatures>();
-		List<UserFeatures> userFeaturesTesting = new ArrayList<UserFeatures>();
-		// define the list of annotations of the items trained
-		List<UserFeaturesAnnotation> itemFeaturesAnnot = new ArrayList<UserFeaturesAnnotation>();
-		List<UserFeaturesAnnotation> itemFeaturesAnnot2 = new ArrayList<UserFeaturesAnnotation>();
-
-		// features
-		UserFeaturesExtractor.setDb("Sochi");
-		UserFeaturesExtractor.setCollection("UsersFake");
-		System.out.println("Extracting features for training fake Items...");
-		List<UserFeatures> userFeatsFakeTrain = UserFeaturesExtractor
-				.userFeatureExtractionMedia(itemsFakeTrain);
-		System.out.println("Extracting features for testing fake Items...");
-		List<UserFeatures> userFeatsFakeTest = UserFeaturesExtractor
-				.userFeatureExtractionMedia(itemsFakeTest);
-
-		UserFeaturesExtractor.setCollection("UsersReal");
-		System.out.println("Extracting features for training real Items...");
-		List<UserFeatures> userFeatsRealTrain = UserFeaturesExtractor
-				.userFeatureExtractionMedia(itemsRealTrain);
-		System.out.println("Extracting features for testing real Items...");
-		List<UserFeatures> userFeatsRealTest = UserFeaturesExtractor
-				.userFeatureExtractionMedia(itemsRealTest);
-
-		/*--------FAKE ITEMS--------------*/
-		// annotate and add to the itemFeaturesAnnot list
-		// add item to the itemFeaturesTraining list
-		for (int i = 0; i < userFeatsFakeTrain.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setUsername(userFeatsFakeTrain.get(i).getUsername());
-			userAnnot.setReliability("fake");
-			itemFeaturesAnnot.add(userAnnot);
-			userFeaturesTraining.add(userFeatsFakeTrain.get(i));
-		}
-		int trainfakesize = userFeaturesTraining.size();
-		System.out.println("Training size of fake items : " + trainfakesize);
-
-		for (int i = 0; i < userFeatsFakeTest.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setUsername(userFeatsFakeTest.get(i).getUsername());
-			userAnnot.setReliability("fake");
-			itemFeaturesAnnot2.add(userAnnot);
-			userFeaturesTesting.add(userFeatsFakeTest.get(i));
-		}
-		int testfakesize = userFeaturesTesting.size();
-		System.out.println("Testing size of fake items : " + testfakesize);
-
-		/*--------REAL ITEMS--------------*/
-		// annotate and add to the itemFeaturesAnnot list
-		// add item to the itemFeaturesTraining list
-
-		for (int i = 0; i < userFeatsRealTrain.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setUsername(userFeatsRealTrain.get(i).getUsername());
-			userAnnot.setReliability("real");
-			itemFeaturesAnnot.add(userAnnot);
-			userFeaturesTraining.add(userFeatsRealTrain.get(i));
-		}
-		System.out.println("Training size of real items : "
-				+ (userFeaturesTraining.size() - trainfakesize));
-
-		for (int i = 0; i < userFeatsRealTest.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setUsername(userFeatsRealTest.get(i).getUsername());
-			userAnnot.setReliability("real");
-			itemFeaturesAnnot2.add(userAnnot);
-			userFeaturesTesting.add(userFeatsRealTest.get(i));
-		}
-		System.out.println("Testing size of real items : "
-				+ (userFeaturesTesting.size() - testfakesize));
-
-		Instances isTrainingSet = UserClassifier.createTrainingSet(
-				userFeaturesTraining, itemFeaturesAnnot);
-		Instances isTestingSet = UserClassifier.createTestingSet(
-				userFeaturesTesting, itemFeaturesAnnot2);
-
-		System.out.println("Total size of training set : "
-				+ isTrainingSet.size());
-		System.out
-				.println("Total size of testing set : " + isTestingSet.size());
-
-		createClassifier(isTrainingSet);
-		classifyItems(isTestingSet);
-	}
-
-	/**
-	 * Method that implements cross validation to the items specified
-	 * 
-	 * @param itemsFake
-	 *            the list of Items annotated as fake
-	 * @param itemsReal
-	 *            the list of Items annotated as real
-	 * @throws Exception
-	 */
-	public static void crossValidate(List<MediaItem> itemsFake,
-			List<MediaItem> itemsReal) throws Exception {
-
-		UserFeaturesExtractor.setDb("Sochi");
-		UserFeaturesExtractor.setCollection("UsersFake");
-		List<UserFeatures> userFeatsFake = UserFeaturesExtractor
-				.userFeatureExtractionMedia(itemsFake);
-
-		UserFeaturesExtractor.setCollection("UsersReal");
-		List<UserFeatures> userFeatsReal = UserFeaturesExtractor
-				.userFeatureExtractionMedia(itemsReal);
-
-		// define the list of itemFeatures that are used for training
-		List<UserFeatures> userFeaturesTraining = new ArrayList<UserFeatures>();
-		// define the list of annotations of the items trained
-		List<UserFeaturesAnnotation> userFeaturesAnnot = new ArrayList<UserFeaturesAnnotation>();
-
-		/*--------REAL ITEMS--------------*/
-		// a)annotate and add to the itemFeaturesAnnot list and
-		// b)add item to the itemFeaturesTraining list
-
-		Collections.shuffle(userFeatsReal);
-		for (int i = 0; i < userFeatsReal.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setUsername(userFeatsReal.get(i).getUsername());
-			userAnnot.setReliability("real");
-			userFeaturesAnnot.add(userAnnot);
-			userFeaturesTraining.add(userFeatsReal.get(i));
-		}
-		int trainreal = userFeaturesTraining.size();
-		System.out.println("Training size of real items : " + trainreal);
-
-		/*--------FAKE ITEMS--------------*/
-		// a)annotate and add to the itemFeaturesAnnot list and
-		// b)add item to the itemFeaturesTraining list
-
-		Collections.shuffle(userFeatsFake);
-		for (int i = 0; i < userFeatsFake.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setUsername(userFeatsFake.get(i).getUsername());
-			userAnnot.setReliability("fake");
-			userFeaturesAnnot.add(userAnnot);
-			userFeaturesTraining.add(userFeatsFake.get(i));
-		}
-
-		System.out.println("Training size of fake items : "
-				+ (userFeaturesTraining.size() - trainreal));
-		System.out.println("Total size of training set : "
-				+ userFeaturesTraining.size());
-
-		Instances isTrainingSet = UserClassifier.createTrainingSet(
-				userFeaturesTraining, userFeaturesAnnot);
-
-		/*--------- J48 tree --------------*/
-		Evaluation eval = new Evaluation(isTrainingSet);
-		J48 tree = new J48();
-
-		StringBuffer forPredictionsPrinting = new StringBuffer();
-		PlainText classifierOutput = new PlainText();
-
-		classifierOutput.setBuffer(forPredictionsPrinting);
-		weka.core.Range attsToOutput = null;
-		Boolean outputDistribution = new Boolean(true);
-		classifierOutput.setOutputDistribution(true);
-
-		eval.crossValidateModel(tree, isTrainingSet, 10, new Random(1),
-				classifierOutput, attsToOutput, outputDistribution);
-
-		System.out.println("===== J48 classifier =====");
-		System.out.println("Number of correct classified " + eval.correct());
-		System.out.println("Percentage of correct classified "
-				+ eval.pctCorrect());
-		System.out.println(eval.toClassDetailsString());
-		System.out.println(eval.toMatrixString());
-
-		System.out.println(eval.toSummaryString());
-
-		/*--------- Random Forest tree --------------*/
-		Evaluation evall = new Evaluation(isTrainingSet);
-		RandomForest tr = new RandomForest();
-		StringBuffer forPredictionsPrintingl = new StringBuffer();
-		PlainText classifierOutputl = new PlainText();
-
-		classifierOutputl.setBuffer(forPredictionsPrintingl);
-		weka.core.Range attsToOutputl = null;
-		Boolean outputDistributionl = new Boolean(true);
-		classifierOutputl.setOutputDistribution(true);
-
-		evall.crossValidateModel(tr, isTrainingSet, 10, new Random(1),
-				classifierOutputl, attsToOutputl, outputDistributionl);
-
-		System.out.println("===== Random Forest =====");
-		System.out.println("Number of correct classified " + evall.correct());
-		System.out.println("Percentage of correct classified "
-				+ evall.pctCorrect());
-		System.out.println(evall.toClassDetailsString());
-		System.out.println(evall.toMatrixString());
-		System.out.println(evall.toSummaryString());
-
-		/*--------- KStar --------------*/
-		Evaluation eval4 = new Evaluation(isTrainingSet);
-		KStar tree4 = new KStar();
-		eval4.crossValidateModel(tree4, isTrainingSet, 10, new Random(1));
-
-		System.out.println("===== KStar classifier =====");
-		System.out.println("Number of correct classified " + eval4.correct());
-		System.out.println("Percentage of correct classified "
-				+ eval4.pctCorrect());
-		System.out.println(eval4.toClassDetailsString());
-		System.out.println(eval4.toMatrixString());
-
-	}
-
-	/**
 	 * @param isTestSet
 	 *            the current Instances of the dataset
 	 * @return double[] distribution probabilities
@@ -623,107 +399,92 @@ public class UserClassifier {
 		classifier.setModelFile(new File(Vars.MODEL_PATH_USER_sample));
 
 		for (int i = 0; i < isTestSet.numInstances(); i++) {
-			double[] probabilityDistribution = classifier.distributionForInstance(isTestSet.instance(i));
+			double[] probabilityDistribution = classifier
+					.distributionForInstance(isTestSet.instance(i));
 			probabilities[i] = probabilityDistribution[1];
-			System.out.println(probabilityDistribution[0] + " "	+ probabilityDistribution[1]);
+			System.out.println(probabilityDistribution[0] + " "
+					+ probabilityDistribution[1]);
 		}
 
 		return probabilities;
 	}
-	
-	public static Instances formTrainingSet(List<MediaItem> itemsFake, List<MediaItem> itemsReal) throws Exception {
-		
-		System.out.println("Training set: User features extraction for fake items...");	
-		List<UserFeatures> userFeatsFake = UserFeaturesExtractor.userFeatureExtractionMedia(itemsFake);
-		System.out.println("Training set: User features extraction for real items...");	
-		List<UserFeatures> userFeatsReal = UserFeaturesExtractor.userFeatureExtractionMedia(itemsReal);
-				
-		// define the list of User Features that are used for training
-		List<UserFeatures> userFeaturesTraining = new ArrayList<UserFeatures>();
-		
-		// define the list of annotations of the items trained
-		List<UserFeaturesAnnotation> userFeaturesAnnot = new ArrayList<UserFeaturesAnnotation>();
-		
-				
-		for (int i = 0; i < userFeatsFake.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setId(userFeatsFake.get(i).getId());
-			userAnnot.setUsername(userFeatsFake.get(i).getUsername());
-			userAnnot.setReliability("fake");	
-			userFeaturesAnnot.add(userAnnot);
-			userFeaturesTraining.add(userFeatsFake.get(i));
+
+	/*
+	 * public static Instances formTrainingSet(List<MediaItem> itemsFake,
+	 * List<MediaItem> itemsReal) throws Exception {
+	 * 
+	 * System.out.println("Training set: User features extraction for fake items..."
+	 * ); List<UserFeatures> userFeatsFake =
+	 * UserFeaturesExtractor.userFeatureExtractionMedia(itemsFake);
+	 * System.out.println
+	 * ("Training set: User features extraction for real items...");
+	 * List<UserFeatures> userFeatsReal =
+	 * UserFeaturesExtractor.userFeatureExtractionMedia(itemsReal);
+	 * 
+	 * // define the list of User Features that are used for training
+	 * List<UserFeatures> userFeaturesTraining = new ArrayList<UserFeatures>();
+	 * 
+	 * // define the list of annotations of the items trained
+	 * List<UserFeaturesAnnotation> userFeaturesAnnot = new
+	 * ArrayList<UserFeaturesAnnotation>();
+	 * 
+	 * 
+	 * for (int i = 0; i < userFeatsFake.size(); i++) { UserFeaturesAnnotation
+	 * userAnnot = new UserFeaturesAnnotation();
+	 * userAnnot.setId(userFeatsFake.get(i).getId());
+	 * userAnnot.setUsername(userFeatsFake.get(i).getUsername());
+	 * userAnnot.setReliability("fake"); userFeaturesAnnot.add(userAnnot);
+	 * userFeaturesTraining.add(userFeatsFake.get(i)); }
+	 * 
+	 * int sizefake = userFeaturesTraining.size();
+	 * System.out.println("Training size of fake items "+ sizefake);
+	 * 
+	 * 
+	 * for (int i = 0; i < userFeatsReal.size(); i++) { UserFeaturesAnnotation
+	 * userAnnot = new UserFeaturesAnnotation();
+	 * userAnnot.setId(userFeatsReal.get(i).getId());
+	 * userAnnot.setUsername(userFeatsReal.get(i).getUsername());
+	 * userAnnot.setReliability("real"); userFeaturesAnnot.add(userAnnot);
+	 * userFeaturesTraining.add(userFeatsReal.get(i)); }
+	 * 
+	 * System.out.println("Training size of real items "+(userFeaturesTraining.size
+	 * ()-sizefake));
+	 * 
+	 * System.out.println("Training size "+userFeaturesTraining.size());
+	 * 
+	 * Instances isTrainingSet = null; try { isTrainingSet =
+	 * UserClassifier.createTrainingSet(userFeaturesTraining,
+	 * userFeaturesAnnot); } catch (Exception e) { e.printStackTrace(); }
+	 * 
+	 * return isTrainingSet; }
+	 */
+
+	public static Instances formTestingSet(JSONObject json) throws Exception {
+
+		if (UserClassifier.getFvAttributes().size()==0){
+			fvAttributes = (ArrayList<Attribute>) declareAttributes();
 		}
 		
-		int sizefake = userFeaturesTraining.size();
-		System.out.println("Training size of fake items "+ sizefake);
-		
-		
-		for (int i = 0; i < userFeatsReal.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setId(userFeatsReal.get(i).getId());
-			userAnnot.setUsername(userFeatsReal.get(i).getUsername());
-			userAnnot.setReliability("real");	
-			userFeaturesAnnot.add(userAnnot);
-			userFeaturesTraining.add(userFeatsReal.get(i));
-		}
-		
-		System.out.println("Training size of real items "+(userFeaturesTraining.size()-sizefake));
-		
-		System.out.println("Training size "+userFeaturesTraining.size());
-		
-		Instances isTrainingSet = null;
+		Instances testingSet = null;
+		UserFeatures userFeats;
+
 		try {
-			isTrainingSet = UserClassifier.createTrainingSet(userFeaturesTraining, userFeaturesAnnot);
+			// compute and get the Item features of the current JSON object
+			userFeats = UserFeaturesExtractorJSON.extractFeatures(json);
+			// create the Item annotation instance
+			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
+			userAnnot.setId(userFeats.getId());
+			userAnnot.setReliability("fake");
+			// create the testing set using the above data
+			testingSet = createTestingSet(userFeats, userAnnot);
+
 		} catch (Exception e) {
+			System.out
+					.println("Error on forming the User features testing set...!");
 			e.printStackTrace();
 		}
-		
-		return isTrainingSet;
+
+		return testingSet;
 	}
-	
-	public static Instances formTestingSet(List<MediaItem> itemsFake, List<MediaItem> itemsReal) throws Exception{
-		
-		System.out.println("Testing set: User features extraction for fake items");	
-		List<UserFeatures> itemFeatsFake = UserFeaturesExtractor.userFeatureExtractionMedia(itemsFake);
-		System.out.println("Testing set: User features extraction for real items");
-		List<UserFeatures> itemFeatsReal = UserFeaturesExtractor.userFeatureExtractionMedia(itemsReal);
-		
-		// define the list of User Features that are used for training
-		List<UserFeatures> userFeaturesTesting = new ArrayList<UserFeatures>();
-				
-		// define the list of annotations of the items trained
-		List<UserFeaturesAnnotation> userFeaturesAnnot = new ArrayList<UserFeaturesAnnotation>();
-				
-				
-		for (int i = 0; i < itemFeatsFake.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setId(itemFeatsFake.get(i).getId());
-			userAnnot.setUsername(itemFeatsFake.get(i).getUsername());
-			userAnnot.setReliability("fake");	
-			userFeaturesAnnot.add(userAnnot);
-			userFeaturesTesting.add(itemFeatsFake.get(i));
-		}
-		
-				
-		int sizefake = userFeaturesTesting.size();
-		
-		System.out.println("Testing size of fake items "+sizefake);
-		
-		for (int i = 0; i < itemFeatsReal.size(); i++) {
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
-			userAnnot.setId(itemFeatsReal.get(i).getId());
-			userAnnot.setUsername(itemFeatsReal.get(i).getUsername());
-			userAnnot.setReliability("real");	
-			userFeaturesAnnot.add(userAnnot);
-			userFeaturesTesting.add(itemFeatsReal.get(i));
-		}
-		
-		System.out.println("Testing size of real items "+ ( userFeaturesTesting.size() - sizefake) );
-		System.out.println("Testing size "+ userFeaturesTesting.size() );
-		
-		Instances isTestingSet = createTestingSet(userFeaturesTesting, userFeaturesAnnot);
-		
-		return isTestingSet;
-	}
-	
+
 }

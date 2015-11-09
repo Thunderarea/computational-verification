@@ -101,6 +101,23 @@ public class UserFeatures implements JSONable{
     @SerializedName(value = "tweetRatio")
 	protected Float tweetRatio;
 	
+	@Expose
+    @SerializedName(value = "alexaPopularity")
+	protected Integer alexaPopularity;
+	
+	@Expose
+    @SerializedName(value = "alexaReachRank")
+	protected Integer alexaReachRank;
+	
+	@Expose
+    @SerializedName(value = "alexaDeltaRank")
+	protected Integer alexaDeltaRank;
+	
+	@Expose
+    @SerializedName(value = "alexaCountryRank")
+	protected Integer alexaCountryRank;
+	
+	
 	public String getId(){
 		return id;
 	}
@@ -167,6 +184,9 @@ public class UserFeatures implements JSONable{
 	public Float getTweetRatio() {
 		return tweetRatio;
 	}
+	
+	
+	
 	public static class Builder{
 		
 		@Expose
@@ -261,6 +281,22 @@ public class UserFeatures implements JSONable{
 	    @SerializedName(value = "tweetRatio")
 		protected Float tweetRatio;
 		
+		@Expose
+	    @SerializedName(value = "alexaPopularity")
+		protected Integer alexaPopularity;
+		
+		@Expose
+	    @SerializedName(value = "alexaReachRank")
+		protected Integer alexaReachRank;
+		
+		@Expose
+	    @SerializedName(value = "alexaDeltaRank")
+		protected Integer alexaDeltaRank;
+		
+		@Expose
+	    @SerializedName(value = "alexaCountryRank")
+		protected Integer alexaCountryRank;
+		
 		public Builder(String id, String username){
 			this.id = id;
 			this.username = username;
@@ -326,9 +362,22 @@ public class UserFeatures implements JSONable{
 		public Builder tweetRatio(Float val){
 			tweetRatio = val; return this;
 		}
+		public Builder alexaPopularity(Integer val){
+			wotSafeUser = val; return this;
+		}
+		public Builder alexaCountryRank(Integer val){
+			wotSafeUser = val; return this;
+		}
+		public Builder alexaDeltaRank(Integer val){
+			wotSafeUser = val; return this;
+		}
+		public Builder alexaReachRank(Integer val){
+			wotSafeUser = val; return this;
+		}
 		public UserFeatures build(){
 			return new UserFeatures(this);
 		}	
+		
 	}
 	public void setId(String id){
 		this.id = id;
@@ -379,6 +428,38 @@ public class UserFeatures implements JSONable{
 		this.tweetRatio = tweetRatio;
 	}
 	
+	public void setAlexaPopularity(Integer alexaPopularity) {
+		this.alexaPopularity = alexaPopularity;
+	}
+	
+	public Integer getAlexaPopularity() {
+		return alexaPopularity;
+	}
+	
+	public void setAlexaCountryRank(Integer alexaCountryRank) {
+		this.alexaCountryRank = alexaCountryRank;
+	}
+	
+	public Integer getAlexaCountryRank() {
+		return alexaCountryRank;
+	}
+	
+	public void setAlexaDeltaRank(Integer alexaDeltaRank) {
+		this.alexaDeltaRank = alexaDeltaRank;
+	}
+	
+	public Integer getAlexaDeltaRank() {
+		return alexaDeltaRank;
+	}
+	
+	public void setAlexaReachRank(Integer alexaReachRank) {
+		this.alexaReachRank = alexaReachRank;
+	}
+	
+	public Integer getAlexaReachRank() {
+		return alexaReachRank;
+	}
+	
 	private UserFeatures(Builder builder){
 		id					= builder.id;
 		username			= builder.username;
@@ -402,13 +483,15 @@ public class UserFeatures implements JSONable{
 		hasProfileImg		= builder.hasProfileImg;
 		hasHeaderImg		= builder.hasHeaderImg;
 		tweetRatio			= builder.tweetRatio;
+		alexaPopularity		= builder.alexaPopularity;
+		alexaCountryRank	= builder.alexaCountryRank;
+		alexaDeltaRank		= builder.alexaDeltaRank;
+		alexaReachRank		= builder.alexaReachRank;
 	}
 	
-	@Override
 	public String toJSONString() {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		return gson.toJson(this);
 	}
 	
 }
-

@@ -33,7 +33,16 @@ public class Vars {
 	public static final String NEG_WORDS_ES_PATH = "resources/files/negative-words-spanish.txt";
 	public static final String NEG_WORDS_DE_PATH = "resources/files/negative-words-german.txt";
 		
+	//Stop words
+	public static final String STOP_WORDS_ENG 	 = "C:/Users/boididou/workspace/TweetFeatureExtraction/resources/files/Stop_words/stop-words-eng.txt";
+	public static final String STOP_WORDS_ES 	 = "C:/Users/boididou/workspace/TweetFeatureExtraction/resources/files/Stop_words/stop-words-es.txt";
+	public static final String STOP_WORDS_TWEET  = "C:/Users/boididou/workspace/TweetFeatureExtraction/resources/files/Stop_words/stop-words-twitter.txt";
 		
+	//Indegree and Harmonic file
+	public static final String INDEGREE_FILE  = "resources/hostgraph-indegree.tsv";
+	public static final String HARMONIC_FILE  = "resources/hostgraph-h.tsv";
+	
+	
 	//Classification
 	//Previous model files that we used for our training and testing experiments with initial item and user features included
 	public static final String MODEL_PATH_ITEM = "resources/model/j48updated.model";

@@ -6,10 +6,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import org.json.JSONObject;
+
 import eu.socialsensor.framework.common.domain.MediaItem;
 import gr.iti.mklab.extractfeatures.ItemFeatures;
 import gr.iti.mklab.extractfeatures.ItemFeaturesAnnotation;
 import gr.iti.mklab.extractfeatures.ItemFeaturesExtractor;
+import gr.iti.mklab.extractfeatures.ItemFeaturesExtractorJSON;
+import gr.iti.mklab.extractfeatures.UserFeatures;
+import gr.iti.mklab.extractfeatures.UserFeaturesExtractorJSON;
 import gr.iti.mklab.utils.Vars;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -44,6 +49,7 @@ public class ItemClassifier {
 	 * @return List of attributes needed for the classification
 	 */
 	public static List<Attribute> declareAttributes(){
+		
 		Attribute ItemLength = new Attribute("ItemLength");
 		Attribute numWords = new Attribute("numWords");
 		Attribute numQuestionMark = new Attribute("numQuestionMark");
@@ -58,67 +64,90 @@ public class ItemClassifier {
 		Attribute numSlangs = new Attribute("numSlangs");
 		Attribute numNouns = new Attribute("numNouns");
 		Attribute wotTrust = new Attribute("wotTrust");
-		// Attribute wotSafe = new Attribute("wotSafe");
+		Attribute urlIndegree = new Attribute("urlIndegree");
 		Attribute readability = new Attribute("readability");
+		Attribute urlHarmonic = new Attribute("urlHarmonic");
+		Attribute alexaCountryRank = new Attribute("alexaCountryRank");
+		Attribute alexaDeltaRank = new Attribute("alexaDeltaRank");
+		Attribute alexaPopularity = new Attribute("alexaPopularity");
+		Attribute alexaReachRank = new Attribute("alexaReachRank");
 
 		// declare nominal attributes
 		List<String> fvnominal1 = new ArrayList<String>(2);
 		fvnominal1.add("true");
 		fvnominal1.add("false");
-		Attribute containsQuestionMark = new Attribute("containsQuestionMark",	fvnominal1);
+		Attribute containsQuestionMark = new Attribute("containsQuestionMark",
+				fvnominal1);
+		// Attribute containsQuestionMark = new
+		// Attribute("containsQuestionMark");
 
 		List<String> fvnominal2 = new ArrayList<String>(2);
 		fvnominal2.add("true");
 		fvnominal2.add("false");
 		Attribute containsExclamationMark = new Attribute(
 				"containsExclamationMark", fvnominal2);
+		// Attribute containsExclamationMark = new
+		// Attribute("containsExclamationMark");
 
 		List<String> fvnominal3 = new ArrayList<String>(2);
 		fvnominal3.add("true");
 		fvnominal3.add("false");
 		Attribute containsHappyEmo = new Attribute("containsHappyEmo",
 				fvnominal3);
+		// Attribute containsHappyEmo = new Attribute("containsHappyEmo");
 
 		List<String> fvnominal4 = new ArrayList<String>(2);
 		fvnominal4.add("true");
 		fvnominal4.add("false");
 		Attribute containsSadEmo = new Attribute("containsSadEmo", fvnominal4);
+		// Attribute containsSadEmo = new Attribute("containsSadEmo");
 
 		List<String> fvnominal5 = new ArrayList<String>(2);
 		fvnominal5.add("true");
 		fvnominal5.add("false");
-		Attribute containsFirstOrderPron = new Attribute("containsFirstOrderPron", fvnominal5);
+		Attribute containsFirstOrderPron = new Attribute(
+				"containsFirstOrderPron", fvnominal5);
+		// Attribute containsFirstOrderPron = new
+		// Attribute("containsFirstOrderPron");
 
 		List<String> fvnominal6 = new ArrayList<String>(2);
 		fvnominal6.add("true");
 		fvnominal6.add("false");
-		Attribute containsSecondOrderPron = new Attribute("containsSecondOrderPron", fvnominal6);
+		Attribute containsSecondOrderPron = new Attribute(
+				"containsSecondOrderPron", fvnominal6);
+		// Attribute containsSecondOrderPron = new
+		// Attribute("containsSecondOrderPron");
 
 		List<String> fvnominal7 = new ArrayList<String>(2);
 		fvnominal7.add("true");
 		fvnominal7.add("false");
 		Attribute containsThirdOrderPron = new Attribute(
 				"containsThirdOrderPron", fvnominal7);
+		// Attribute containsThirdOrderPron = new
+		// Attribute("containsThirdOrderPron");
 
 		List<String> fvnominal8 = new ArrayList<String>(2);
 		fvnominal8.add("true");
 		fvnominal8.add("false");
 		Attribute hasColon = new Attribute("hasColon", fvnominal8);
+		// Attribute hasColon = new Attribute("hasColon");
 
 		List<String> fvnominal9 = new ArrayList<String>(2);
 		fvnominal9.add("true");
 		fvnominal9.add("false");
 		Attribute hasPlease = new Attribute("hasPlease", fvnominal9);
+		// Attribute hasPlease = new Attribute("hasPlease");
 
 		List<String> fvnominal10 = new ArrayList<String>(2);
 		fvnominal10.add("true");
 		fvnominal10.add("false");
 		Attribute hasExternalLink = new Attribute("hasExternalLink",
 				fvnominal10);
+		// Attribute hasExternalLink = new Attribute("hasExternalLink");
 
 		List<String> fvnominal11 = null;
-		Attribute id = new Attribute("id",fvnominal11);
-		
+		Attribute id = new Attribute("id", fvnominal11);
+
 		List<String> fvClass = new ArrayList<String>(2);
 		fvClass.add("real");
 		fvClass.add("fake");
@@ -126,13 +155,13 @@ public class ItemClassifier {
 
 		// declare the feature vector
 		fvAttributes.add(id);
-		
+
 		fvAttributes.add(ItemLength);
 		fvAttributes.add(numWords);
 		fvAttributes.add(containsQuestionMark);
 		fvAttributes.add(containsExclamationMark);
-		fvAttributes.add(hasExternalLink);
-		fvAttributes.add(numNouns);
+		fvAttributes.add(hasExternalLink); // new
+		fvAttributes.add(numNouns); // new 
 		fvAttributes.add(containsHappyEmo);
 		fvAttributes.add(containsSadEmo);
 		fvAttributes.add(containsFirstOrderPron);
@@ -145,13 +174,20 @@ public class ItemClassifier {
 		fvAttributes.add(numHashtags);
 		fvAttributes.add(numURLs);
 		fvAttributes.add(retweetCount);
-		fvAttributes.add(numSlangs);
-		fvAttributes.add(hasColon);
-		fvAttributes.add(hasPlease);
-		fvAttributes.add(wotTrust);
+		
+		fvAttributes.add(numSlangs); // new
+		fvAttributes.add(hasColon); // new
+		fvAttributes.add(hasPlease); // new
+		fvAttributes.add(wotTrust); // new
 		fvAttributes.add(numQuestionMark);
 		fvAttributes.add(numExclamationMark);
-		fvAttributes.add(readability);
+		fvAttributes.add(readability); // new
+		fvAttributes.add(urlIndegree); // new
+		fvAttributes.add(urlHarmonic); // new
+		fvAttributes.add(alexaCountryRank); // new
+		fvAttributes.add(alexaDeltaRank);
+		fvAttributes.add(alexaPopularity);
+		fvAttributes.add(alexaReachRank);
 		
 		/*fvAttributes.add(numPosSentiWords);
 		fvAttributes.add(numNegSentiWords);
@@ -627,7 +663,7 @@ public class ItemClassifier {
 		return probabilities;
 	}
 	
-	public static Instances formTrainingSet(List<MediaItem> itemsFake, List<MediaItem> itemsReal) throws Exception {
+	/*public static Instances formTrainingSet(List<MediaItem> itemsFake, List<MediaItem> itemsReal) throws Exception {
 		
 		System.out.println("Training set: Item features extraction for fake items...");	
 		List<ItemFeatures> itemFeatsFake = ItemFeaturesExtractor.featureExtractionMedia(itemsFake);
@@ -667,43 +703,33 @@ public class ItemClassifier {
 		System.out.println("Total training size "+itemFeaturesTraining.size());
 		
 		return isTrainingSet;
-	}
+	}*/
 	
-	public static Instances formTestingSet(List<MediaItem> itemsFake, List<MediaItem> itemsReal) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
+	public static Instances formTestingSet(JSONObject json){
 
-		System.out.println("Testing set: Item features extraction for fake items...");	
-		List<ItemFeatures> itemFeatsFake = ItemFeaturesExtractor.featureExtractionMedia(itemsFake);
-		System.out.println("Testing set: Item features extraction for real items...");	
-		List<ItemFeatures> itemFeatsReal = ItemFeaturesExtractor.featureExtractionMedia(itemsReal);
+		if (ItemClassifier.getFvAttributes().size()==0){
+			fvAttributes = (ArrayList<Attribute>) declareAttributes();
+		}
 		
-		List<ItemFeatures> itemFeaturesTesting = new ArrayList<ItemFeatures>();
-		List<ItemFeaturesAnnotation> itemFeaturesAnnot = new ArrayList<ItemFeaturesAnnotation>();
-
-
-		for (int i = 0; i < itemFeatsFake.size(); i++) {
+		Instances testingSet = null;
+		ItemFeatures itemFeats;
+		
+		try {
+			//compute and get the Item features of the current JSON object
+			itemFeats = ItemFeaturesExtractorJSON.extractFeatures(json);
+			//create the Item annotation instance
 			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsFake.get(i).getId());
+			itemAnnot.setId(itemFeats.getId());
 			itemAnnot.setReliability("fake");
-			itemFeaturesAnnot.add(itemAnnot);
-			itemFeaturesTesting.add(itemFeatsFake.get(i));
+			//create the testing set using the above data
+			testingSet = createTestingSet(itemFeats, itemAnnot);
+			
+		} catch (Exception e) {
+			System.out.println("Error on forming the Item features testing set...!");
+			e.printStackTrace();
 		}
-		int sizefake = itemFeaturesTesting.size();
-		System.out.println("Testing set of fake items " + sizefake);
 		
-		
-		for (int i = 0; i < itemFeatsReal.size(); i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsReal.get(i).getId());
-			itemAnnot.setReliability("real");
-			itemFeaturesAnnot.add(itemAnnot);
-			itemFeaturesTesting.add(itemFeatsReal.get(i));
-		}
-		System.out.println("Testing size of real items "+ (itemFeaturesTesting.size() - sizefake));
-		System.out.println("Testing size "+ itemFeaturesTesting.size());
-		
-		Instances isTestingSet = createTestingSet(itemFeaturesTesting, itemFeaturesAnnot);
-		
-		return isTestingSet;
+		return testingSet;
 	}
 	
 	public static ClassifierAccuracy getClsAccuracy() {
