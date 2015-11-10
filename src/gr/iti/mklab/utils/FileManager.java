@@ -4,38 +4,17 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
-import org.tartarus.snowball.SnowballStemmer;
-
-import me.champeau.ld.UberLanguageDetector;
 import weka.core.Instances;
-import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.process.Morphology;
-import eu.socialsensor.framework.client.dao.impl.ItemDAOImpl;
-import eu.socialsensor.framework.client.dao.impl.MediaItemDAOImpl;
-import eu.socialsensor.framework.client.mongo.MongoHandler;
-import eu.socialsensor.framework.common.domain.Item;
-import eu.socialsensor.framework.common.domain.MediaItem;
-import gr.iti.mklab.extractfeatures.ItemFeatures;
-import gr.iti.mklab.extractfeatures.TotalFeatures;
-import gr.iti.mklab.extractfeatures.TotalFeaturesExtractor;
 
 public class FileManager {
 

@@ -179,7 +179,7 @@ public class Bagging {
 	
 	
 	
-	static Instances[] testingSets = new Instances[9];
+	static Instances[] testingSets = new Instances[5];
 	
 	public static Instances[] getTestingSets() {
 		return testingSets;
@@ -194,8 +194,8 @@ public class Bagging {
 		ArrayList<int[]> random = new ArrayList<int[]>();
 		
 		//1st
-		random.add(new int[] {6,7,8,90,32,69,777,188,149});
-		random.add(new int[] {56,38,58,42,59,65,71,18,19});
+		random.add(new int[] {6,7,8,90,32});
+		/*random.add(new int[] {56,38,58,42,59,65,71,18,19});
 		random.add(new int[] {33,46,11,88,99,27,35,29,20});
 		random.add(new int[] {10,55,13,81,199,127,235,329,420});
 		random.add(new int[] {28,29,30,31,39,327,335,429,520});
@@ -203,7 +203,7 @@ public class Bagging {
 		random.add(new int[] {51,62,333,334,955,255,36,877,626});
 		random.add(new int[] {27,227,123,234,135,147,336,890,891});
 		random.add(new int[] {9,10,11,22,783,472,90,91,99});
-		random.add(new int[] {31,34,67,88,89,908,869,245,12});
+		random.add(new int[] {31,34,67,88,89,908,869,245,12});*/
 		
 		//2nd
 		/*random.add(new int[] {6,7,8,90,32,334,777,188,149});
@@ -237,7 +237,7 @@ public class Bagging {
 		int countFake=0, countReal=0;
 		Classifier[] classifiers = new Classifier[randomVals.length];
 		
-		System.out.println("CREATE CLASSIFIERS: ITEM");
+		//System.out.println("CREATE CLASSIFIERS: ITEM");
 		//System.out.println("TRAINING SIZE/2 = "+ training.size()/2);
 		
 		for (int j=0; j<randomVals.length; j++) {
@@ -267,7 +267,7 @@ public class Bagging {
 					}
 				}
 			}
-			System.out.println("fake "+countFake+" real "+countReal+" all "+currentTrain.size());
+			//System.out.println("fake "+countFake+" real "+countReal+" all "+currentTrain.size());
 					
 		
 			
@@ -297,7 +297,7 @@ public class Bagging {
 			MultiFilter mf = new MultiFilter();
 			
 			try {
-				fc.setFilter(mf);
+				fc.setFilter(rm);
 				fc.setClassifier(tree);				
 				fc.buildClassifier(currentTrain);
 				classifiers[j] = fc;
@@ -313,7 +313,7 @@ public class Bagging {
 	
 	
 	
-	static Instances[] testingSetsUser = new Instances[9];
+	static Instances[] testingSetsUser = new Instances[5];
 	
 	public static Instances[] getTestingSetsUser() {
 		return testingSetsUser;
@@ -332,7 +332,7 @@ public class Bagging {
 		int countFake=0, countReal=0;
 		Classifier[] classifiers = new Classifier[randomVals.length];
 		
-		System.out.println("CREATE CLASSIFIERS: USER");
+		//System.out.println("CREATE CLASSIFIERS: USER");
 		
 		for (int j=0; j<randomVals.length; j++) {
 			
@@ -361,19 +361,13 @@ public class Bagging {
 					}
 				}
 			}
-			System.out.println("fake "+countFake+" real "+countReal+" all "+currentTrain.size());
+			//System.out.println("fake "+countFake+" real "+countReal+" all "+currentTrain.size());
 			
 			//Linear Regression approach
 			currentTrain = DataHandler.getInstance().getTransformedTrainingUserOverall(currentTrain);
 			testingSetsUser[j] = DataHandler.getInstance().getTransformedTestingUserOverall(testing);
 			
-			//ReplaceMissingValues approach
-			//if (tree instanceof LibSVM) {
-				/*ReplaceMissingValues replace = new ReplaceMissingValues();
-				replace.setInputFormat(currentTrain);
-				currentTrain = DataHandler.getInstance().replaceMissingValues(currentTrain, replace);
-				testingSetsUser[j] = DataHandler.getInstance().replaceMissingValues(testingSetsUser[j],replace);*/
-			//}			
+				
 			
 			
 			//classifier details
@@ -382,16 +376,11 @@ public class Bagging {
 			Classifier tree = dvb.getCurrentClassifier();
 			Remove rm = new Remove();
 			rm.setAttributeIndices("1");
-			
-			
-			String sb="";
-			
-			MultiFilter mf = new MultiFilter();
-				
+							
 			
 			try {
 				fc.setClassifier(tree);
-				fc.setFilter(mf);				
+				fc.setFilter(rm);				
 				fc.buildClassifier(currentTrain);
 				classifiers[j] = fc;
 				

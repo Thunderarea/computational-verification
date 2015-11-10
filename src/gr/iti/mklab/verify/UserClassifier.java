@@ -459,18 +459,63 @@ public class UserClassifier {
 	 * return isTrainingSet; }
 	 */
 
-	public static Instances formTestingSet(JSONObject json) throws Exception {
+	public static Instances reformatInstances(Instances instances) {
+		
+		UserClassifier.declareAttributes();
+		
+		Instances newInstances = new Instances("data", UserClassifier.getFvAttributes(), instances.size());
+		
+		for (int i=0; i<instances.numInstances(); i++) {
+			
+			Instance inst = new DenseInstance(UserClassifier.getFvAttributes().size());
+			
+			inst.setValue((Attribute) fvAttributes.get(0), instances.instance(0).stringValue(0));
+			inst.setValue((Attribute) fvAttributes.get(1), instances.instance(i).value(1));
+			inst.setValue((Attribute) fvAttributes.get(2), instances.instance(i).value(2));
+			inst.setValue((Attribute) fvAttributes.get(3), instances.instance(i).value(3));
+			inst.setValue((Attribute) fvAttributes.get(4), instances.instance(i).value(4));
+			inst.setValue((Attribute) fvAttributes.get(5), instances.instance(i).value(5));
+			inst.setValue((Attribute) fvAttributes.get(6), instances.instance(i).value(6));
+			inst.setValue((Attribute) fvAttributes.get(7), instances.instance(i).value(7));
+			inst.setValue((Attribute) fvAttributes.get(8), instances.instance(i).value(8));
+			inst.setValue((Attribute) fvAttributes.get(9), instances.instance(i).value(9));
+			inst.setValue((Attribute) fvAttributes.get(10), instances.instance(i).value(10));
+			inst.setValue((Attribute) fvAttributes.get(11), instances.instance(i).value(11));
+			inst.setValue((Attribute) fvAttributes.get(12),	instances.instance(i).value(12));
+			inst.setValue((Attribute) fvAttributes.get(13),	instances.instance(i).value(13));
+			inst.setValue((Attribute) fvAttributes.get(14),	instances.instance(i).value(14));
+			inst.setValue((Attribute) fvAttributes.get(15),	instances.instance(i).value(15));
+			inst.setValue((Attribute) fvAttributes.get(16),	instances.instance(i).value(16));
+			inst.setValue((Attribute) fvAttributes.get(17),	instances.instance(i).value(17));
+			inst.setValue((Attribute) fvAttributes.get(18),	instances.instance(i).value(18));
+			inst.setValue((Attribute) fvAttributes.get(19), instances.instance(i).value(19));
+			inst.setValue((Attribute) fvAttributes.get(20), instances.instance(i).value(20));
+			inst.setValue((Attribute) fvAttributes.get(21),	instances.instance(i).value(21));
+			inst.setValue((Attribute) fvAttributes.get(22),	instances.instance(i).value(22));
+			inst.setValue((Attribute) fvAttributes.get(23),	instances.instance(i).stringValue(23));
+			
+			inst.setDataset(newInstances);
+			newInstances.add(inst);
+			
+
+		}
+		
+		return newInstances;
+		
+	}
+	
+	public static Instances formTestingSet(UserFeatures userFeats) throws Exception {
 
 		if (UserClassifier.getFvAttributes().size()==0){
 			fvAttributes = (ArrayList<Attribute>) declareAttributes();
 		}
 		
 		Instances testingSet = null;
-		UserFeatures userFeats;
+		//UserFeatures userFeats;
 
 		try {
 			// compute and get the Item features of the current JSON object
-			userFeats = UserFeaturesExtractorJSON.extractFeatures(json);
+			//userFeats = UserFeaturesExtractorJSON.extractFeatures(json);
 			// create the Item annotation instance
 			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
 			userAnnot.setId(userFeats.getId());
@@ -479,8 +524,7 @@ public class UserClassifier {
 			testingSet = createTestingSet(userFeats, userAnnot);
 
 		} catch (Exception e) {
-			System.out
-					.println("Error on forming the User features testing set...!");
+			System.out.println("Error on forming the User features testing set...!");
 			e.printStackTrace();
 		}
 

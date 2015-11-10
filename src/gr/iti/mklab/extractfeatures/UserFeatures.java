@@ -4,10 +4,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import eu.socialsensor.framework.common.domain.JSONable;
 
-
-public class UserFeatures implements JSONable{
+public class UserFeatures{
 	
 	@Expose
     @SerializedName(value = "id")

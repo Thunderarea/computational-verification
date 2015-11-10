@@ -1,21 +1,13 @@
 package gr.iti.mklab.verifyutils;
 
-import gr.iti.mklab.utils.FileManager;
 import gr.iti.mklab.verify.ItemClassifier;
-import gr.iti.mklab.verify.TotalClassifier;
 import gr.iti.mklab.verify.UserClassifier;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.LinearRegression;
@@ -52,7 +44,7 @@ public class DataHandler {
 	static Normalize normFilter = new Normalize();
 	static Normalize normFilterUser = new Normalize();
 
-	static FilteredClassifier model = new FilteredClassifier();
+	static FilteredClassifier model  = new FilteredClassifier();
 	static FilteredClassifier model2 = new FilteredClassifier();
 	static FilteredClassifier model3 = new FilteredClassifier();
 	static FilteredClassifier model4 = new FilteredClassifier();
@@ -316,6 +308,7 @@ public class DataHandler {
 
 		Instances newData = new Instances("Rel", fvAttributes, size);
 
+		//System.out.println(data);
 		// change the class index
 		// isTrainingSet.setClassIndex(index);
 		int index = data.classIndex();
@@ -335,7 +328,7 @@ public class DataHandler {
 					
 					//System.out.println(inst);
 					//System.out.println(inst.classIndex());
-					value = model.classifyInstance(inst);
+					value = model.classifyInstance((DenseInstance)data.get(i));
 					
 					Instance newinst = new DenseInstance(fvAttributes.size());
 					for (int j = 0; j < inst.numAttributes(); j++) {
@@ -363,6 +356,8 @@ public class DataHandler {
 		data.setClassIndex(fvAttributes.size() - 1);
 		// System.out.println(isTrainingSet);
 
+		
+		
 		return newData;
 	}
 
@@ -684,11 +679,11 @@ public class DataHandler {
 		Remove rm14 = new Remove();
 		rm14.setAttributeIndices("1");
 		
+		
 		// REGRESSION
 		// wotTrust
 		trainingSet.setClass(fvAttributes.get(22));
-		System.out.println("CLASS INDEX");
-		System.out.println(trainingSet.classIndex());
+				
 		LinearRegression lr = new LinearRegression();
 		Instances training_regr = null;
 		model.setFilter(rm);
@@ -696,13 +691,13 @@ public class DataHandler {
 
 		try {
 			model.buildClassifier(trainingSet);
-			training_regr = DataHandler.getInstance().applyRegressionModel(
-					trainingSet, fvAttributes, model);
+			training_regr = DataHandler.getInstance().applyRegressionModel(trainingSet, fvAttributes, model);
 		} catch (Exception e) {
 			training_regr = trainingSet;
-			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
-		System.out.println(training_regr);
+		
+		
+		
 		// readability
 		training_regr.setClass(fvAttributes.get(25));
 		LinearRegression lr2 = new LinearRegression();
@@ -866,6 +861,7 @@ public class DataHandler {
 			training_regr12 = training_regr11;
 		}
 		
+		
 		//1st pron
 		training_regr12.setClass(fvAttributes.get(9));
 		LinearRegression lr13 = new LinearRegression();
@@ -874,11 +870,11 @@ public class DataHandler {
 		model13.setClassifier(lr13);
 		try {
 			model13.buildClassifier(training_regr12);
-			training_regr13 = DataHandler.getInstance().applyRegressionModel(
-					training_regr12, fvAttributes, model13);
+			training_regr13 = DataHandler.getInstance().applyRegressionModel(training_regr12, fvAttributes, model13);			
 		} catch (Exception e) {
 			training_regr13 = training_regr12;
 		}
+		
 		
 		//2nd pron
 		training_regr13.setClass(fvAttributes.get(10));
@@ -907,7 +903,6 @@ public class DataHandler {
 		} catch (Exception e) {
 			training_regr15 = training_regr14;
 		}
-		System.out.println(training_regr15);
 
 		
 		// normalization part
@@ -915,11 +910,11 @@ public class DataHandler {
 		normFilter.setOptions(options);
 		normFilter.setInputFormat(training_regr15);
 
-		System.out.println("SIZE OF DATA "+training_regr15.size());
+		//System.out.println("SIZE OF DATA "+training_regr15.size());
+		//System.out.println(training_regr15.toSummaryString());
 		
-		
-		Instances trainingSet_normed = training_regr15;
-		/*Instances trainingSet_normed = DataHandler.getInstance().normalizeData(training_regr15, fvAttributes.size() - 1, normFilter);
+		//Instances trainingSet_normed = training_regr15;
+		Instances trainingSet_normed = DataHandler.getInstance().normalizeData(training_regr15, fvAttributes.size() - 1, normFilter);
 		trainingSet_normed.setClassIndex(fvAttributes.size()-1);
 		
 		for (int i=0; i<trainingSet_normed.size(); i++) {
@@ -931,7 +926,7 @@ public class DataHandler {
 			//System.out.println(trainingSet_normed.get(i));
 		}
 		
-		trainingSet_normed = getTrimmedInstances(trainingSet_normed);*/
+		trainingSet_normed = getTrimmedInstances(trainingSet_normed);
 		
 		return trainingSet_normed;
 
@@ -3629,7 +3624,6 @@ public class DataHandler {
 
 		ArrayList<Attribute> fvAttributes = UserClassifier.getFvAttributes();
 		
-		System.out.println(trainingSet.get(0));
 		
 		// remove filter in order to remove the id attribute
 		Remove rm = new Remove();
@@ -3784,7 +3778,7 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 		
-		System.out.println(training_regr9.get(0));
+		//System.out.println(training_regr9.get(0));
 		
 		// normalization
 		normFilterUser = DataHandler.getInstance().createNormalizationFilter(training_regr9);

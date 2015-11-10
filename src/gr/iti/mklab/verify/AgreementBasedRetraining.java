@@ -9,18 +9,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.classifiers.Classifier;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.RandomForest;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -30,6 +35,10 @@ import weka.filters.unsupervised.attribute.Remove;
 import eu.socialsensor.framework.client.dao.impl.MediaItemDAOImpl;
 import eu.socialsensor.framework.common.domain.MediaItem;
 import gr.iti.mklab.extractfeatures.ElementAnnotation;
+import gr.iti.mklab.extractfeatures.ItemFeatures;
+import gr.iti.mklab.extractfeatures.ItemFeaturesExtractorJSON;
+import gr.iti.mklab.extractfeatures.UserFeatures;
+import gr.iti.mklab.extractfeatures.UserFeaturesExtractorJSON;
 import gr.iti.mklab.utils.Vars;
 import gr.iti.mklab.verifyutils.AttributeSelectionHandler;
 import gr.iti.mklab.verifyutils.DataHandler;
@@ -69,14 +78,15 @@ public class AgreementBasedRetraining {
 		try {
 			
 			DataSource ds = new DataSource(prop.getProperty("TRAININGDATA_ITEM_FEATURES"));
-			trainDatasets[0] = new Instances("trainItem", ItemClassifier.getFvAttributes(), 0);
-			trainDatasets[0] = ds.getDataSet();
-			trainDatasets[0].setClassIndex(trainDatasets[0].numAttributes() - 1);
-
+			Instances temp = ds.getDataSet();			
+			temp.setClassIndex(temp.numAttributes() - 1);
+			trainDatasets[0] = ItemClassifier.reformatInstances(temp);
+			
+			
 			DataSource ds1 = new DataSource(prop.getProperty("TRAININGDATA_USER_FEATURES"));
-			trainDatasets[1] = new Instances("trainUser", UserClassifier.getFvAttributes(), 0);
-			trainDatasets[1] = ds1.getDataSet();
-			trainDatasets[1].setClassIndex(trainDatasets[1].numAttributes() - 1);
+			Instances temp1 = ds1.getDataSet();	
+			temp1.setClassIndex(temp1.numAttributes() - 1);
+			trainDatasets[1] = UserClassifier.reformatInstances(temp1);
 
 		} catch (Exception e) {
 			System.out.println("Error! Cannot fetch datasets...");
@@ -86,31 +96,17 @@ public class AgreementBasedRetraining {
 		return trainDatasets;
 	}
 
-	public Instances[] getTestDatasets() {
-		
+	public Instances[] getTestDatasets(ItemFeatures itemFeats, UserFeatures userFeats) {
+			
 		try {
 			
-			BufferedReader br = new BufferedReader (new FileReader(prop.getProperty("TESTINGDATA_JSON")) );
-			String obj = br.readLine();
-
-			JSONObject jsonObject = new JSONObject(obj);
-
-			try {
-				testDatasets[0] = ItemClassifier.formTestingSet(jsonObject);
-				testDatasets[1] = UserClassifier.formTestingSet(jsonObject);
-			} catch (Exception e) {
-				System.out.println("Error! Cannot fetch datasets...");
-				e.printStackTrace();
-			}
-			
-			br.close();
-			
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
+			testDatasets[0] = ItemClassifier.formTestingSet(itemFeats);
+			testDatasets[1] = UserClassifier.formTestingSet(userFeats);
+		} catch (Exception e) {
+			System.out.println("Error! Cannot fetch datasets...");
+			e.printStackTrace();
 		}
-
+			
 		return testDatasets;
 	}
 
@@ -203,9 +199,8 @@ public class AgreementBasedRetraining {
 			}
 		}
 
-		System.out.println("Common items found " + commonIds.size() + ". Fake "
-				+ countFake + ", real " + countReal);
-		System.out.println("sets " + sets[0].size() + " " + sets[1].size());
+		//System.out.println("Common items found " + commonIds.size() + ". Fake "+ countFake + ", real " + countReal);
+		//System.out.println("sets " + sets[0].size() + " " + sets[1].size());
 
 		return sets;
 	}
@@ -223,18 +218,16 @@ public class AgreementBasedRetraining {
 	public static ElementAnnotation getElemAnnotation(Instance inst1, VerificationResult verif1, VerificationResult verif2) {
 
 		ElementAnnotation ela = new ElementAnnotation();
+		
 		// set id of the element
 		ela.setId(inst1.stringValue(0));
-		// set its actual value
-		//String actual = sets[0].classAttribute().value((int) inst1.classValue());
-		//ela.setActual(actual);
-		// set its predicted value (only for the agreed elements)
-		// set the agreed value of the element
+		
 		if (verif1.getPrediction().equals(verif2.getPrediction())) {
 			ela.setPredicted(verif1.getPrediction());
 			ela.setConfidenceValue((verif1.getProb() + verif2.getProb()) / 2);
 			ela.setAgreed(true);
 		} else {
+			
 			if (itemScore*verif1.getProb() > userScore*verif2.getProb()) {
 				ela.setConfidenceValue(verif1.getProb());
 			}
@@ -243,6 +236,7 @@ public class AgreementBasedRetraining {
 			}
 			ela.setAgreed(false);
 		}
+		
 		return ela;
 	}
 
@@ -925,8 +919,7 @@ public class AgreementBasedRetraining {
 		Instances trainNew;
 		String currentCase = "ITEM";
 
-		//System.out.println(train);
-		
+				
 		try {
 			if (pointer == 0) {
 				trainNew = DataHandler.getInstance().getTransformedTrainingOverall(train);
@@ -935,6 +928,7 @@ public class AgreementBasedRetraining {
 				currentCase = "USER";
 			}
 
+			
 			Classifier tree = getCurrentClassifier();
 
 			rm.setInputFormat(trainNew);
@@ -949,6 +943,21 @@ public class AgreementBasedRetraining {
 		}
 
 		return score;
+	}
+	
+	public static JSONObject mergeJSONObjects(JSONObject json1, JSONObject json2) {
+		JSONObject mergedJSON = new JSONObject();
+		try {
+			mergedJSON = new JSONObject(json1, JSONObject.getNames(json1));
+			for (String crunchifyKey : JSONObject.getNames(json2)) {
+				mergedJSON.put(crunchifyKey, json2.get(crunchifyKey));
+			}
+		} catch (JSONException e) {
+			throw new RuntimeException("JSON Exception" + e);
+		} catch (NullPointerException n) {
+			
+		}
+		return mergedJSON;
 	}
 
 	/**
@@ -965,107 +974,89 @@ public class AgreementBasedRetraining {
 		ArrayList<int[]> randomVals = Bagging.initializeRandomVals();
 
 		// create a DoubleVerifyBagging object
-		AgreementBasedRetraining dvb = new AgreementBasedRetraining();
+		AgreementBasedRetraining abr = new AgreementBasedRetraining();
 
-		/*
-		 * //define the fake and real list of MediaItems for Item and User
-		 * classifier case used for training List<MediaItem> trainFake = new
-		 * ArrayList<MediaItem>(); MediaItemDAOImpl dao = new
-		 * MediaItemDAOImpl("ip", "db", "collection"); trainFake =
-		 * dao.getLastMediaItems(0);
-		 * 
-		 * List<MediaItem> trainReal = new ArrayList<MediaItem>();
-		 * MediaItemDAOImpl dao2 = new MediaItemDAOImpl("ip", "db",
-		 * "collection"); trainReal = dao2.getLastMediaItems(0);
-		 * 
-		 * List<List<MediaItem>> list = new ArrayList<List<MediaItem>>();
-		 * list.add(trainFake); list.add(trainReal);
-		 */
-
+		/** TRAINING SET **/
 		// call method to create the training sets with the lists given above
-		trainDatasets = dvb.getTrainDatasets();
-
-		// define the fake and real list of MediaItems for Item and User
-		// classifier case used for testing
-		/*
-		 * List<MediaItem> testFake = new ArrayList<MediaItem>();
-		 * MediaItemDAOImpl dao3 = new MediaItemDAOImpl("ip", "db",
-		 * "collection"); testFake = dao3.getLastMediaItems(0);
-		 * 
-		 * List<MediaItem> testReal = new ArrayList<MediaItem>();
-		 * MediaItemDAOImpl dao4 = new MediaItemDAOImpl("ip", "db",
-		 * "collection"); testReal = dao4.getLastMediaItems(0);
-		 * 
-		 * List<List<MediaItem>> list2 = new ArrayList<List<MediaItem>>();
-		 * list2.add(testFake); list2.add(testReal);
-		 */
-
+		trainDatasets = abr.getTrainDatasets();
+	
+		
+		/** TESTING SET **/
+		
+		BufferedReader br = new BufferedReader (new FileReader(prop.getProperty("TESTINGDATA_JSON")) );
+		String obj = br.readLine();
+		
+		JSONObject jsonObject = new JSONObject(obj);
+		ItemFeatures itemFeats = ItemFeaturesExtractorJSON.extractFeatures(jsonObject);
+		UserFeatures userFeats = UserFeaturesExtractorJSON.extractFeatures(jsonObject);
 		// call method to create the testing sets with the lists given above
-		testDatasets = dvb.getTestDatasets();
+		testDatasets = abr.getTestDatasets(itemFeats, userFeats);
 
-		/** === END OF STEP 2 === **/
+		br.close();
+		
 		initializeParameters();
-		/** === STEP 3: CLASSIFICATION === **/
+		
+		
 		// get the item/user score from cross validation process
-		itemScore = dvb.getScore(trainDatasets[0], 0);
-		userScore = dvb.getScore(trainDatasets[1], 1);
+		itemScore = abr.getScore(trainDatasets[0], 0);
+		userScore = abr.getScore(trainDatasets[1], 1);
 
 		// repeat the process several times in order to differentiate the
 		// training set (statement "for" is an optional part, you can just run
 		// it once)
-		for (int i = 0; i < randomVals.size(); i++) {
+		
 
-			// values initialization before each trial execution
-			initializeParameters();
+		// values initialization before each trial execution
+		initializeParameters();
 
-			// call method to find the common sets among the testing sets
-			/*
-			 * Even if we define one set of testing items, feature extraction
-			 * may not be performed for some of them, i.e a user's account may
-			 * be suspended, so there will be no user features for this one, but
-			 * only item features. So, we aim to find those items that co-exist
-			 * in the two sets and have both item and user features.
-			 */
-			sets = dvb.findCommonSets(testDatasets);
+		// call method to find the common sets among the testing sets
+		
+		/* * Even if we define one set of testing items, feature extraction
+		 * may not be performed for some of them, i.e a user's account may
+		 * be suspended, so there will be no user features for this one, but
+		 * only item features. So, we aim to find those items that co-exist
+		 * in the two sets and have both item and user features.*/
+		 
+		sets = abr.findCommonSets(testDatasets);
 
-			// define the current value of random values
-			Bagging.randomVals = randomVals.get(i);
+		// define the current value of random values
+		Bagging.randomVals = randomVals.get(0);
 
-			// classify the testing set using a random instance of the training
-			// set
-			try {
-				// dvb.classifyWithRandomTrainInstance(trainDatasets[0],sets[0],0);
-				// dvb.classifyWithRandomTrainInstance(trainDatasets[1],sets[1],1);
-			} catch (Exception e) {
-				e.printStackTrace();
+	
+		// define the set of classifiers for each case
+		Classifier[] itemCls;
+		Classifier[] userCls;
+
+		try {
+
+			Bagging bg = new Bagging();
+
+			// call method to create the bagging classifiers with the
+			// trainDatasets and sets for item and user case
+			int trainingSize = trainDatasets[0].size() / 3;
+			itemCls = bg.createClassifiers(trainDatasets[0], sets[0], trainingSize);
+			trainingSize = trainDatasets[1].size() / 3;
+			userCls = bg.createClassifiersUser(trainDatasets[1], sets[1], trainingSize);
+
+			// classify testing sets using the classifiers created above
+			List<ElementAnnotation> listEla = abr.classifyItems(itemCls, userCls);
+			
+			JSONObject jsonElementAnnotation = new JSONObject(listEla.get(0).toJSONString());
+			JSONObject jsonItemFeats = new JSONObject(itemFeats.toJSONString());
+			JSONObject jsonUserFeats = new JSONObject(userFeats.toJSONString());
+
+						
+			JSONObject jsonTemp = mergeJSONObjects(jsonItemFeats,jsonUserFeats);
+			
+			JSONObject JSONresult = mergeJSONObjects(jsonTemp, jsonElementAnnotation);
+			
+			System.out.println(JSONresult);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 			}
 
-			// define the set of classifiers for each case
-			Classifier[] itemCls;
-			Classifier[] userCls;
-
-			try {
-
-				Bagging bg = new Bagging();
-
-				// call method to create the bagging classifiers with the
-				// trainDatasets and sets for item and user case
-				int trainingSize = trainDatasets[0].size() / 3;
-				itemCls = bg.createClassifiers(trainDatasets[0], sets[0], trainingSize);
-				trainingSize = trainDatasets[1].size() / 3;
-				userCls = bg.createClassifiersUser(trainDatasets[1], sets[1], trainingSize);
-
-				// classify testing sets using the classifiers created above
-				List<ElementAnnotation> listEla = dvb.classifyItems(itemCls, userCls);
-				// classify disagreed items using the annotation from the
-				// previous step
-				//dvb.classifyDisagreed(listEla);
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		}
+		
 
 	}
 

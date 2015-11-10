@@ -1,30 +1,17 @@
 package gr.iti.mklab.verify;
+import gr.iti.mklab.extractfeatures.ItemFeatures;
+import gr.iti.mklab.extractfeatures.ItemFeaturesAnnotation;
+import gr.iti.mklab.extractfeatures.ItemFeaturesExtractorJSON;
+import gr.iti.mklab.utils.Vars;
+
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import org.json.JSONObject;
 
-import eu.socialsensor.framework.common.domain.MediaItem;
-import gr.iti.mklab.extractfeatures.ItemFeatures;
-import gr.iti.mklab.extractfeatures.ItemFeaturesAnnotation;
-import gr.iti.mklab.extractfeatures.ItemFeaturesExtractor;
-import gr.iti.mklab.extractfeatures.ItemFeaturesExtractorJSON;
-import gr.iti.mklab.extractfeatures.UserFeatures;
-import gr.iti.mklab.extractfeatures.UserFeaturesExtractorJSON;
-import gr.iti.mklab.utils.Vars;
-import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
-import weka.classifiers.evaluation.output.prediction.PlainText;
-import weka.classifiers.lazy.KStar;
 import weka.classifiers.misc.SerializedClassifier;
-import weka.classifiers.trees.J48;
-import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
-import weka.core.Debug;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -50,7 +37,7 @@ public class ItemClassifier {
 	 */
 	public static List<Attribute> declareAttributes(){
 		
-		Attribute ItemLength = new Attribute("ItemLength");
+		Attribute ItemLength = new Attribute("itemLength");
 		Attribute numWords = new Attribute("numWords");
 		Attribute numQuestionMark = new Attribute("numQuestionMark");
 		Attribute numExclamationMark = new Attribute("numExclamationMark");
@@ -287,7 +274,32 @@ public class ItemClassifier {
 			inst.setValue((Attribute) fvAttributes.get(25),
 					listItemFeatures.getReadability());
 		}
+		if (listItemFeatures.getUrlIndegree() != null) {
+			inst.setValue((Attribute) fvAttributes.get(26),
+					listItemFeatures.getUrlIndegree());
+		}
+		if (listItemFeatures.getUrlHarmonic() != null) {
+			inst.setValue((Attribute) fvAttributes.get(27),
+					listItemFeatures.getUrlHarmonic());
+		}
+		if (listItemFeatures.getAlexaCountryRank() != null) {
+			inst.setValue((Attribute) fvAttributes.get(28),
+					listItemFeatures.getAlexaCountryRank());
+		}
+		if (listItemFeatures.getAlexaDeltaRank() != null) {
+			inst.setValue((Attribute) fvAttributes.get(29),
+					listItemFeatures.getAlexaDeltaRank());
+		}
+		if (listItemFeatures.getAlexaPopularity() != null) {
+			inst.setValue((Attribute) fvAttributes.get(30),
+					listItemFeatures.getAlexaPopularity());
+		}
 		
+		if (listItemFeatures.getAlexaReachRank() != null) {
+			
+			inst.setValue((Attribute) fvAttributes.get(31),
+					listItemFeatures.getAlexaReachRank());
+		}
 		
 
 		return inst;
@@ -432,291 +444,77 @@ public class ItemClassifier {
 		return isTrainingSet;
 	}
 	
-	/**
-	 * Method that creates the classifier
-	 * @param isTrainingSet the Instances from which the classifier is created
-	 * @throws Exception
-	 */
-	public static void createClassifier(Instances isTrainingSet) throws Exception{
-
-		//create the classifier
-		J48 j48 = new J48();
-		Classifier fc = (Classifier) j48 ;
-		fc.buildClassifier(isTrainingSet);
-		Debug.saveToFile(Vars.MODEL_PATH_ITEM_sample, fc);
-		System.out.println("Model file saved to "+Vars.MODEL_PATH_ITEM_sample);
-	}
 	
-	/**
-	 * Function that organizes the classification given the training and testing sets
-	 * @param itemsFakeTrain Fake Items for the training set
-	 * @param itemsFakeTest Fake Items for the testing set
-	 * @param itemsRealTrain Real Items for the training set
-	 * @param itemsRealTest Real Items for the testing set
-	 * @throws Exception
-	 */
-	public static void doClassification(List<MediaItem> itemsFakeTrain, List<MediaItem> itemsFakeTest, List<MediaItem> itemsRealTrain, List<MediaItem> itemsRealTest) throws Exception{
-		
-		System.out.println("=== Classification using Item(Content) features ===");
-		
-		//define the list of itemFeatures that are used for training and testing
-		List<ItemFeatures> itemFeaturesTraining = new ArrayList<ItemFeatures>();
-		List<ItemFeatures> itemFeaturesTesting  = new ArrayList<ItemFeatures>();
-		//define the list of annotations of the items trained
-		List<ItemFeaturesAnnotation> itemFeaturesAnnot  = new ArrayList<ItemFeaturesAnnotation>();
-		List<ItemFeaturesAnnotation> itemFeaturesAnnot2 = new ArrayList<ItemFeaturesAnnotation>();
-		
-		//features
-		System.out.println("Extracting features for training fake Items...");
-		List<ItemFeatures> itemFeatsFakeTrain = ItemFeaturesExtractor.featureExtractionMedia(itemsFakeTrain);
-		System.out.println("Extracting features for training real Items...");
-		List<ItemFeatures> itemFeatsRealTrain = ItemFeaturesExtractor.featureExtractionMedia(itemsRealTrain);
-		System.out.println("Extracting features for testing fake Items...");
-		List<ItemFeatures> itemFeatsFakeTest  = ItemFeaturesExtractor.featureExtractionMedia(itemsFakeTest);
-		System.out.println("Extracting features for testing real Items...");
-		List<ItemFeatures> itemFeatsRealTest  = ItemFeaturesExtractor.featureExtractionMedia(itemsRealTest);
-		
-		System.out.println();
-		
-		/*--------FAKE ITEMS--------------*/
-		//annotate and add to the itemFeaturesAnnot list
-		//add item to the itemFeaturesTraining list
-		for (int i = 0; i < itemFeatsFakeTrain.size(); i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsFakeTrain.get(i).getId());
-			itemAnnot.setReliability("fake");	
-			itemFeaturesAnnot.add(itemAnnot);
-			itemFeaturesTraining.add(itemFeatsFakeTrain.get(i));
-		}
-		int trainfakesize = itemFeaturesTraining.size();
-		System.out.println("Training size of fake items : " + trainfakesize);
-		
-		for (int i = 0; i < itemFeatsFakeTest.size(); i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsFakeTest.get(i).getId());
-			itemAnnot.setReliability("fake");	
-			itemFeaturesAnnot2.add(itemAnnot);
-			itemFeaturesTesting.add(itemFeatsFakeTest.get(i));
-		}
-		int testfakesize = itemFeaturesTesting.size();
-		System.out.println("Testing size of fake items : "+ testfakesize);
-		
-		
-		
-		/*--------REAL ITEMS--------------*/
-		//annotate and add to the itemFeaturesAnnot list
-		//add item to the itemFeaturesTraining list
-		for (int i = 0; i < itemFeatsRealTrain.size(); i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsRealTrain.get(i).getId());
-			itemAnnot.setReliability("real");	
-			itemFeaturesAnnot.add(itemAnnot);
-			itemFeaturesTraining.add(itemFeatsRealTrain.get(i));
-		}
-		
-		System.out.println("Training size of real items : "+ (itemFeaturesTraining.size() - trainfakesize));
-		
-		for (int i = 0 ; i < itemFeatsRealTest.size() ; i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsRealTest.get(i).getId());
-			itemAnnot.setReliability("real");	
-			itemFeaturesAnnot2.add(itemAnnot);
-			itemFeaturesTesting.add(itemFeatsRealTest.get(i));
-		}
-		System.out.println("Testing size of real items : "+ (itemFeaturesTesting.size() - testfakesize));
-		
-		
-		Instances isTrainingSet = ItemClassifier.createTrainingSet(itemFeaturesTraining,itemFeaturesAnnot);
-		Instances isTestingSet  = ItemClassifier.createTestingSet(itemFeaturesTesting,itemFeaturesAnnot2);
-		
-		System.out.println("Total size of training set : " +  isTrainingSet.size());
-		System.out.println("Total size of testing set : "  +  isTestingSet.size());
-		
-		//create the classifier
-		createClassifier(isTrainingSet);
-		classifyItems(isTestingSet);
-	}
-	
-	
-	/**
-	 * Method that implements cross validation to the items specified
-	 * @param itemsFake	the list of Items annotated as fake
-	 * @param itemsReal the list of Items annotated as real
-	 * @throws Exception
-	 */
-	public static void crossValidate(List<MediaItem> itemsFake, List<MediaItem> itemsReal) throws Exception{
-		
-		List<ItemFeatures> itemFeatsFake = ItemFeaturesExtractor.featureExtractionMedia(itemsFake);
-		List<ItemFeatures> itemFeatsReal = ItemFeaturesExtractor.featureExtractionMedia(itemsReal);
-		
-		
-		//define the list of itemFeatures that are used for training
-		List<ItemFeatures> itemFeaturesTraining = new ArrayList<ItemFeatures>();
-		//define the list of annotations of the items trained
-		List<ItemFeaturesAnnotation> itemFeaturesAnnot = new ArrayList<ItemFeaturesAnnotation>();
-		
-		
-		/*--------REAL ITEMS--------------*/
-		// a)annotate and add to the itemFeaturesAnnot list and 
-		// b)add item to the itemFeaturesTraining list
-		
-		Collections.shuffle(itemFeatsReal);
-		for (int i = 0; i < itemFeatsReal.size(); i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsReal.get(i).getId());
-			itemAnnot.setReliability("real");	
-			itemFeaturesAnnot.add(itemAnnot);
-			itemFeaturesTraining.add(itemFeatsReal.get(i));
-		}
-		int trainreal = itemFeaturesTraining.size();
-		System.out.println("Training size of real items : "+ trainreal);
-		
-		
-		/*--------FAKE ITEMS--------------*/
-		// a)annotate and add to the itemFeaturesAnnot list and 
-		// b)add item to the itemFeaturesTraining list
-		
-		Collections.shuffle(itemFeatsFake);
-		for (int i = 0 ; i < itemFeatsFake.size(); i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsFake.get(i).getId());
-			itemAnnot.setReliability("fake");	
-			itemFeaturesAnnot.add(itemAnnot);
-			itemFeaturesTraining.add(itemFeatsFake.get(i));
-		}
-		
-		System.out.println("Training size of fake items : " + (itemFeaturesTraining.size() - trainreal));
-		System.out.println("Total size of training set  : " +  itemFeaturesTraining.size());
-		
-		Instances isTrainingSet = ItemClassifier.createTrainingSet(itemFeaturesTraining,itemFeaturesAnnot);
-		
-		/*--------- J48 tree --------------*/
-		Evaluation eval = new Evaluation(isTrainingSet);
-		J48 tree = new J48(); 
 
-		StringBuffer forPredictionsPrinting = new StringBuffer();
-		PlainText classifierOutput = new PlainText();
+	
+	public static Instances reformatInstances(Instances instances) {
 		
-		classifierOutput.setBuffer(forPredictionsPrinting);
-		weka.core.Range attsToOutput = null;
-		Boolean outputDistribution = new Boolean(true);
-		classifierOutput.setOutputDistribution(true);
-
-		eval.crossValidateModel(tree, isTrainingSet, 10, new Random(1), classifierOutput, attsToOutput, outputDistribution);
+		ItemClassifier.declareAttributes();
+		
+		Instances newInstances = new Instances("data", ItemClassifier.getFvAttributes(), instances.size());
+		
+		for (int i=0; i<instances.numInstances(); i++) {
 			
-		System.out.println("===== J48 classifier =====");
-		System.out.println("Number of correct classified "+eval.correct());
-		System.out.println("Percentage of correct classified "+eval.pctCorrect());
-		System.out.println(eval.toClassDetailsString());
-		System.out.println(eval.toMatrixString());
+			Instance inst = new DenseInstance(ItemClassifier.getFvAttributes().size());
 	
-		System.out.println(eval.toSummaryString());
-		
-		/*--------- Random Forest tree --------------*/
-		Evaluation evall = new Evaluation(isTrainingSet);
-		RandomForest tr = new RandomForest();
-		StringBuffer forPredictionsPrintingl = new StringBuffer();
-		PlainText classifierOutputl = new PlainText();
-		
-		classifierOutputl.setBuffer(forPredictionsPrintingl);
-		weka.core.Range attsToOutputl = null;
-		Boolean outputDistributionl = new Boolean(true);
-		classifierOutputl.setOutputDistribution(true);
-
-		evall.crossValidateModel(tr, isTrainingSet, 10, new Random(1), classifierOutputl, attsToOutputl, outputDistributionl);
-		
-		System.out.println("===== Random Forest =====");
-		System.out.println("Number of correct classified "+evall.correct());
-		System.out.println("Percentage of correct classified "+evall.pctCorrect());
-		System.out.println(evall.toClassDetailsString());
-		System.out.println(evall.toMatrixString());
-		System.out.println(evall.toSummaryString());
-		
-		/*--------- KStar --------------*/
-		Evaluation eval4 = new Evaluation(isTrainingSet);	
-		KStar tree4 = new KStar();
-		eval4.crossValidateModel(tree4, isTrainingSet, 10, new Random(1));
-		
-		System.out.println("===== KStar classifier =====");
-		System.out.println("Number of correct classified "+eval4.correct());
-		System.out.println("Percentage of correct classified "+eval4.pctCorrect());
-		System.out.println(eval4.toClassDetailsString());
-		System.out.println(eval4.toMatrixString());
-	}
-	
-	/**
-	 * @param isTestSet the current Instances of the dataset
-	 * @return double[] distribution probabilities
-	 * @throws Exception file
-	 */
-	public static double[] findProbDistribution(Instances isTestSet) throws Exception{
-		
-		//probabilities variable
-		double[] probabilities = new double[isTestSet.size()];
-		SerializedClassifier classifier = new SerializedClassifier();
-		classifier.setModelFile(new File(Vars.MODEL_PATH_ITEM_sample));
-		
-		for (int i = 0; i < isTestSet.numInstances(); i++) {
-			double[] probabilityDistribution = classifier.distributionForInstance(isTestSet.instance(i));
-			probabilities[i] = probabilityDistribution[1];
-		}
-		return probabilities;
-	}
-	
-	/*public static Instances formTrainingSet(List<MediaItem> itemsFake, List<MediaItem> itemsReal) throws Exception {
-		
-		System.out.println("Training set: Item features extraction for fake items...");	
-		List<ItemFeatures> itemFeatsFake = ItemFeaturesExtractor.featureExtractionMedia(itemsFake);
-		System.out.println("Training set: Item features extraction for real items...");	
-		List<ItemFeatures> itemFeatsReal = ItemFeaturesExtractor.featureExtractionMedia(itemsReal);
-		
-		Instances isTrainingSet = null;
-		// define the list of itemFeatures that are used for training
-		List<ItemFeatures> itemFeaturesTraining = new ArrayList<ItemFeatures>();
-		// define the list of annotations of the items trained
-		List<ItemFeaturesAnnotation> itemFeaturesAnnot = new ArrayList<ItemFeaturesAnnotation>();
-					
-		//fake
-		for (int i = 0; i < itemFeatsFake.size(); i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsFake.get(i).getId());
-			itemAnnot.setReliability("fake");
-			itemFeaturesAnnot.add(itemAnnot);
-			itemFeaturesTraining.add(itemFeatsFake.get(i));
-		}
-		
-		int sizefake = itemFeaturesTraining.size();
-		System.out.println("Size of fake training "+sizefake);
-		
-		//real
-		
-		for (int i = 0; i < itemFeatsReal.size(); i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeatsReal.get(i).getId());
-			itemAnnot.setReliability("real");
-			itemFeaturesAnnot.add(itemAnnot);
-			itemFeaturesTraining.add(itemFeatsReal.get(i));
-		}
+			inst.setValue((Attribute) fvAttributes.get(0), instances.instance(i).stringValue(0));
+			inst.setValue((Attribute) fvAttributes.get(1), instances.instance(i).value(1));
+			inst.setValue((Attribute) fvAttributes.get(2), instances.instance(i).value(2));
+			inst.setValue((Attribute) fvAttributes.get(3), instances.instance(i).value(3));
+			inst.setValue((Attribute) fvAttributes.get(4), instances.instance(i).value(4));
+			inst.setValue((Attribute) fvAttributes.get(5), instances.instance(i).value(5));
+			inst.setValue((Attribute) fvAttributes.get(6), instances.instance(i).value(6));
+			inst.setValue((Attribute) fvAttributes.get(7), instances.instance(i).value(7));
+			inst.setValue((Attribute) fvAttributes.get(8), instances.instance(i).value(8));
+			inst.setValue((Attribute) fvAttributes.get(9), instances.instance(i).value(9));
+			inst.setValue((Attribute) fvAttributes.get(10), instances.instance(i).value(10));
+			inst.setValue((Attribute) fvAttributes.get(11), instances.instance(i).value(11));
+			inst.setValue((Attribute) fvAttributes.get(12),	instances.instance(i).value(12));
+			inst.setValue((Attribute) fvAttributes.get(13),	instances.instance(i).value(13));
+			inst.setValue((Attribute) fvAttributes.get(14),	instances.instance(i).value(14));
+			inst.setValue((Attribute) fvAttributes.get(15),	instances.instance(i).value(15));
+			inst.setValue((Attribute) fvAttributes.get(16),	instances.instance(i).value(16));
+			inst.setValue((Attribute) fvAttributes.get(17),	instances.instance(i).value(17));
+			inst.setValue((Attribute) fvAttributes.get(18),	instances.instance(i).value(18));
+			inst.setValue((Attribute) fvAttributes.get(19), instances.instance(i).value(19));
+			inst.setValue((Attribute) fvAttributes.get(20), instances.instance(i).value(20));
+			inst.setValue((Attribute) fvAttributes.get(21),	instances.instance(i).value(21));
+			inst.setValue((Attribute) fvAttributes.get(22),	instances.instance(i).value(22));
+			inst.setValue((Attribute) fvAttributes.get(23),	instances.instance(i).value(23));
+			inst.setValue((Attribute) fvAttributes.get(24),	instances.instance(i).value(24));
+			inst.setValue((Attribute) fvAttributes.get(25),	instances.instance(i).value(25));
+			inst.setValue((Attribute) fvAttributes.get(26),	instances.instance(i).value(26));
+			inst.setValue((Attribute) fvAttributes.get(27),	instances.instance(i).value(27));
+			inst.setValue((Attribute) fvAttributes.get(28),	instances.instance(i).value(28));
+			inst.setValue((Attribute) fvAttributes.get(29),	instances.instance(i).value(29));
+			inst.setValue((Attribute) fvAttributes.get(30),	instances.instance(i).value(30));
+			inst.setValue((Attribute) fvAttributes.get(31), instances.instance(i).value(31));
+			inst.setValue((Attribute) fvAttributes.get(32), instances.instance(i).stringValue(32));
 				
-		System.out.println("Size of real training "+(itemFeaturesTraining.size()-sizefake));
-		isTrainingSet = ItemClassifier.createTrainingSet(itemFeaturesTraining,itemFeaturesAnnot);
-		System.out.println("Total training size "+itemFeaturesTraining.size());
 		
-		return isTrainingSet;
-	}*/
+			inst.setDataset(newInstances);
+		
+			newInstances.add(inst);
+			
+		}
+		
 	
-	public static Instances formTestingSet(JSONObject json){
+		return newInstances;
+	}
+	
+	
+	public static Instances formTestingSet(ItemFeatures itemFeats){
 
 		if (ItemClassifier.getFvAttributes().size()==0){
 			fvAttributes = (ArrayList<Attribute>) declareAttributes();
 		}
 		
 		Instances testingSet = null;
-		ItemFeatures itemFeats;
+		//ItemFeatures itemFeats;
 		
 		try {
 			//compute and get the Item features of the current JSON object
-			itemFeats = ItemFeaturesExtractorJSON.extractFeatures(json);
+			//itemFeats = ItemFeaturesExtractorJSON.extractFeatures(json);
 			//create the Item annotation instance
 			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
 			itemAnnot.setId(itemFeats.getId());
