@@ -2,20 +2,11 @@ package gr.iti.mklab.verify;
 
 import gr.iti.mklab.extractfeatures.UserFeatures;
 import gr.iti.mklab.extractfeatures.UserFeaturesAnnotation;
-import gr.iti.mklab.extractfeatures.UserFeaturesExtractorJSON;
-import gr.iti.mklab.utils.Vars;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONObject;
-
-import weka.classifiers.Classifier;
-import weka.classifiers.misc.SerializedClassifier;
-import weka.classifiers.trees.J48;
 import weka.core.Attribute;
-import weka.core.Debug;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -49,8 +40,8 @@ public class UserClassifier {
 		Attribute wotTrustUser = new Attribute("wotTrustUser");
 		Attribute accountAge = new Attribute("accountAge");
 		Attribute tweetRatio = new Attribute("tweetRatio");
-		Attribute indegreeUser = new Attribute("indegreeUser");
-		Attribute harmonicUser = new Attribute("harmonicUser");
+		//Attribute indegreeUser = new Attribute("indegreeUser");
+		//Attribute harmonicUser = new Attribute("harmonicUser");
 		Attribute alexaCountryRankUser = new Attribute("alexaCountryRankUser");
 		Attribute alexaDeltaRankUser = new Attribute("alexaDeltaRankUser");
 		Attribute alexaPopularityUser = new Attribute("alexaPopularityUser");
@@ -118,8 +109,8 @@ public class UserClassifier {
 		fvAttributes.add(hasProfileImg);
 		fvAttributes.add(hasHeaderImg);
 		fvAttributes.add(tweetRatio);
-		fvAttributes.add(indegreeUser);
-		fvAttributes.add(harmonicUser);
+		//fvAttributes.add(indegreeUser);
+		//fvAttributes.add(harmonicUser);
 		fvAttributes.add(alexaCountryRankUser); // new
 		fvAttributes.add(alexaDeltaRankUser);
 		fvAttributes.add(alexaPopularityUser);
@@ -137,59 +128,78 @@ public class UserClassifier {
 	 */
 	public static Instance createInstance(UserFeatures list) {
 
-		Instance iExample = new DenseInstance(fvAttributes.size());
+		Instance inst = new DenseInstance(fvAttributes.size());
 
 		String id = list.getId().replaceAll("[^\\d.]", "");
 
-		iExample.setValue((Attribute) fvAttributes.get(0), id);
+		inst.setValue((Attribute) fvAttributes.get(0), id);
 
-		iExample.setValue((Attribute) fvAttributes.get(1), list.getNumFriends());
-		iExample.setValue((Attribute) fvAttributes.get(2),
+		inst.setValue((Attribute) fvAttributes.get(1), list.getNumFriends());
+		inst.setValue((Attribute) fvAttributes.get(2),
 				list.getNumFollowers());
-		iExample.setValue((Attribute) fvAttributes.get(3),
+		inst.setValue((Attribute) fvAttributes.get(3),
 				list.getFolFrieRatio());
-		iExample.setValue((Attribute) fvAttributes.get(4),
+		inst.setValue((Attribute) fvAttributes.get(4),
 				list.getTimesListed());
-		iExample.setValue((Attribute) fvAttributes.get(5), list.gethasURL()
+		inst.setValue((Attribute) fvAttributes.get(5), list.gethasURL()
 				.toString());
-		iExample.setValue((Attribute) fvAttributes.get(6), list.getisVerified()
+		inst.setValue((Attribute) fvAttributes.get(6), list.getisVerified()
 				.toString());
-		iExample.setValue((Attribute) fvAttributes.get(7), list.getNumTweets());
+		inst.setValue((Attribute) fvAttributes.get(7), list.getNumTweets());
 
-		iExample.setValue((Attribute) fvAttributes.get(8), list.gethasBio()
+		inst.setValue((Attribute) fvAttributes.get(8), list.gethasBio()
 				.toString());
-		iExample.setValue((Attribute) fvAttributes.get(9), list
+		inst.setValue((Attribute) fvAttributes.get(9), list
 				.gethasLocation().toString());
-		iExample.setValue((Attribute) fvAttributes.get(10), list
+		inst.setValue((Attribute) fvAttributes.get(10), list
 				.gethasExistingLocation().toString());
 
 		if (list.getWotTrustUser() != null) {
-			iExample.setValue((Attribute) fvAttributes.get(11),
+			inst.setValue((Attribute) fvAttributes.get(11),
 					list.getWotTrustUser());
 		}
 
-		iExample.setValue((Attribute) fvAttributes.get(12),
+		inst.setValue((Attribute) fvAttributes.get(12),
 				list.getNumMediaContent());
 
 		if (list.getAccountAge() != null) {
-			iExample.setValue((Attribute) fvAttributes.get(13),
+			inst.setValue((Attribute) fvAttributes.get(13),
 					list.getAccountAge());
 		}
 		if (list.getHasProfileImg() != null) {
-			iExample.setValue((Attribute) fvAttributes.get(14), list
+			inst.setValue((Attribute) fvAttributes.get(14), list
 					.getHasProfileImg().toString());
 		}
 		if (list.getHasHeaderImg() != null) {
-			iExample.setValue((Attribute) fvAttributes.get(15), list
+			inst.setValue((Attribute) fvAttributes.get(15), list
 					.getHasHeaderImg().toString());
 		}
 
 		if (list.getTweetRatio() != null) {
-			iExample.setValue((Attribute) fvAttributes.get(16),
+			inst.setValue((Attribute) fvAttributes.get(16),
 					list.getTweetRatio());
 		}
+		
+		if (list.getAlexaCountryRank() != null) {
+			inst.setValue((Attribute) fvAttributes.get(17),
+					list.getAlexaCountryRank());
+		}
+		if (list.getAlexaDeltaRank() != null) {
+			inst.setValue((Attribute) fvAttributes.get(18),
+					list.getAlexaDeltaRank());
+		}
+		if (list.getAlexaPopularity() != null) {
+			inst.setValue((Attribute) fvAttributes.get(19),
+					list.getAlexaPopularity());
+		}
+		
+		if (list.getAlexaReachRank() != null) {
+			
+			inst.setValue((Attribute) fvAttributes.get(20),
+					list.getAlexaReachRank());
+		}
 
-		return iExample;
+		return inst;
 	}
 
 	/**
@@ -211,8 +221,7 @@ public class UserClassifier {
 		}
 
 		// create an empty training set and then keep the instances
-		Instances isTestingSet = new Instances("Rel", fvAttributes,
-				listUserFeatures.size());
+		Instances isTestingSet = new Instances("Rel", fvAttributes,	listUserFeatures.size());
 		// Set class index
 		isTestingSet.setClassIndex(fvAttributes.size() - 1);
 
@@ -222,15 +231,12 @@ public class UserClassifier {
 			Instance inst = createInstance(listUserFeatures.get(i));
 
 			for (int j = 0; j < listFeaturesAnnot.size(); j++) {
-				if (listUserFeatures.get(i).getUsername()
-						.equals(listFeaturesAnnot.get(j).getUsername())) {
+				if (listUserFeatures.get(i).getUsername().equals(listFeaturesAnnot.get(j).getUsername())) {
 					index = j;
 				}
 			}
 
-			inst.setValue(
-					(Attribute) fvAttributes.get(fvAttributes.size() - 1),
-					listFeaturesAnnot.get(index).getReliability());
+			inst.setValue((Attribute) fvAttributes.get(fvAttributes.size() - 1), listFeaturesAnnot.get(index).getReliability());
 			// add the instance to the testing set
 			isTestingSet.add(inst);
 		}
@@ -271,193 +277,6 @@ public class UserClassifier {
 	 * @return Boolean table of reliability values of the test set instances
 	 * @throws Exception
 	 */
-	public static boolean[] classifyItems(Instances isTestSet) throws Exception {
-
-		int count = 0;
-		boolean[] flags = new boolean[isTestSet.size()];
-		SerializedClassifier classifier = new SerializedClassifier();
-		classifier.setModelFile(new File(Vars.MODEL_PATH_USER_sample));
-
-		for (int i = 0; i < isTestSet.numInstances(); i++) {
-
-			double pred = classifier.classifyInstance(isTestSet.instance(i));
-			System.out.println(pred);
-
-			String actual = isTestSet.classAttribute().value(
-					(int) isTestSet.instance(i).classValue());
-			String predicted = isTestSet.classAttribute().value((int) pred);
-			System.out.println("Actual " + actual + " predicted " + predicted);
-
-			if (actual.equals(predicted)) {
-				count++;
-			}
-
-			if (predicted == "fake") {
-				flags[i] = true;
-			} else {
-				flags[i] = false;
-			}
-			System.out.println("flag " + flags[i]);
-		}
-
-		/*
-		 * System.out.println(); System.out.println("=== Results ===");
-		 * System.out.println("Total items "+isTestSet.numInstances());
-		 * System.out.println("Items classified correctly:"+count);
-		 * System.out.println
-		 * ("Percentage "+((double)count/isTestSet.numInstances())*100);
-		 * System.out.println();
-		 */
-		return flags;
-	}
-
-	/**
-	 * Function that creates the training set given the features calculated
-	 * before
-	 * 
-	 * @param listUserFeatures
-	 *            the list of User features
-	 * @param userFeaturesAnnot
-	 *            the Items' annotation details
-	 * @return the Instances formed
-	 */
-	public static Instances createTrainingSet(
-			List<UserFeatures> listUserFeatures,
-			List<UserFeaturesAnnotation> userFeaturesAnnot) {
-
-		// auxiliary variable
-		Integer index = 0;
-
-		if (UserClassifier.getFvAttributes().size() == 0) {
-			fvAttributes = (ArrayList<Attribute>) declareAttributes();
-		}
-
-		// Create an empty training set
-		Instances isTrainingSet = new Instances("TrainingUserFeatures",
-				UserClassifier.getFvAttributes(), listUserFeatures.size());
-
-		// Set class index
-		isTrainingSet
-				.setClassIndex(UserClassifier.getFvAttributes().size() - 1);
-
-		for (int i = 0; i < listUserFeatures.size(); i++) {
-
-			Instance inst = createInstance(listUserFeatures.get(i));
-
-			for (int j = 0; j < userFeaturesAnnot.size(); j++) {
-				if ((listUserFeatures.get(i).getUsername())
-						.equals(userFeaturesAnnot.get(j).getUsername())) {
-					index = j;
-				}
-			}
-
-			inst.setValue((Attribute) fvAttributes.get(UserClassifier
-					.getFvAttributes().size() - 1), userFeaturesAnnot
-					.get(index).getReliability());
-			isTrainingSet.add(inst);
-		}
-
-		// System.out.println("-----TRAINING SET-------");
-		// System.out.println(isTrainingSet);
-
-		return isTrainingSet;
-	}
-
-	/**
-	 * Method that creates the classifier
-	 * 
-	 * @param isTrainingSet
-	 *            the Instances from which the classifier is created
-	 * @throws Exception
-	 */
-	public static void createClassifier(Instances isTrainingSet)
-			throws Exception {
-
-		// create the classifier
-		J48 j48 = new J48();
-		Classifier fc = (Classifier) j48;
-		fc.buildClassifier(isTrainingSet);
-		Debug.saveToFile(Vars.MODEL_PATH_USER_sample, fc);
-		System.out
-				.println("Model file saved to " + Vars.MODEL_PATH_USER_sample);
-
-	}
-
-	/**
-	 * @param isTestSet
-	 *            the current Instances of the dataset
-	 * @return double[] distribution probabilities
-	 * @throws Exception
-	 *             file
-	 */
-	public static double[] findProbDistribution(Instances isTestSet)
-			throws Exception {
-
-		// probabilities variable
-		double[] probabilities = new double[isTestSet.size()];
-		SerializedClassifier classifier = new SerializedClassifier();
-		classifier.setModelFile(new File(Vars.MODEL_PATH_USER_sample));
-
-		for (int i = 0; i < isTestSet.numInstances(); i++) {
-			double[] probabilityDistribution = classifier
-					.distributionForInstance(isTestSet.instance(i));
-			probabilities[i] = probabilityDistribution[1];
-			System.out.println(probabilityDistribution[0] + " "
-					+ probabilityDistribution[1]);
-		}
-
-		return probabilities;
-	}
-
-	/*
-	 * public static Instances formTrainingSet(List<MediaItem> itemsFake,
-	 * List<MediaItem> itemsReal) throws Exception {
-	 * 
-	 * System.out.println("Training set: User features extraction for fake items..."
-	 * ); List<UserFeatures> userFeatsFake =
-	 * UserFeaturesExtractor.userFeatureExtractionMedia(itemsFake);
-	 * System.out.println
-	 * ("Training set: User features extraction for real items...");
-	 * List<UserFeatures> userFeatsReal =
-	 * UserFeaturesExtractor.userFeatureExtractionMedia(itemsReal);
-	 * 
-	 * // define the list of User Features that are used for training
-	 * List<UserFeatures> userFeaturesTraining = new ArrayList<UserFeatures>();
-	 * 
-	 * // define the list of annotations of the items trained
-	 * List<UserFeaturesAnnotation> userFeaturesAnnot = new
-	 * ArrayList<UserFeaturesAnnotation>();
-	 * 
-	 * 
-	 * for (int i = 0; i < userFeatsFake.size(); i++) { UserFeaturesAnnotation
-	 * userAnnot = new UserFeaturesAnnotation();
-	 * userAnnot.setId(userFeatsFake.get(i).getId());
-	 * userAnnot.setUsername(userFeatsFake.get(i).getUsername());
-	 * userAnnot.setReliability("fake"); userFeaturesAnnot.add(userAnnot);
-	 * userFeaturesTraining.add(userFeatsFake.get(i)); }
-	 * 
-	 * int sizefake = userFeaturesTraining.size();
-	 * System.out.println("Training size of fake items "+ sizefake);
-	 * 
-	 * 
-	 * for (int i = 0; i < userFeatsReal.size(); i++) { UserFeaturesAnnotation
-	 * userAnnot = new UserFeaturesAnnotation();
-	 * userAnnot.setId(userFeatsReal.get(i).getId());
-	 * userAnnot.setUsername(userFeatsReal.get(i).getUsername());
-	 * userAnnot.setReliability("real"); userFeaturesAnnot.add(userAnnot);
-	 * userFeaturesTraining.add(userFeatsReal.get(i)); }
-	 * 
-	 * System.out.println("Training size of real items "+(userFeaturesTraining.size
-	 * ()-sizefake));
-	 * 
-	 * System.out.println("Training size "+userFeaturesTraining.size());
-	 * 
-	 * Instances isTrainingSet = null; try { isTrainingSet =
-	 * UserClassifier.createTrainingSet(userFeaturesTraining,
-	 * userFeaturesAnnot); } catch (Exception e) { e.printStackTrace(); }
-	 * 
-	 * return isTrainingSet; }
-	 */
 
 	public static Instances reformatInstances(Instances instances) {
 		
@@ -486,13 +305,13 @@ public class UserClassifier {
 			inst.setValue((Attribute) fvAttributes.get(14),	instances.instance(i).value(14));
 			inst.setValue((Attribute) fvAttributes.get(15),	instances.instance(i).value(15));
 			inst.setValue((Attribute) fvAttributes.get(16),	instances.instance(i).value(16));
-			inst.setValue((Attribute) fvAttributes.get(17),	instances.instance(i).value(17));
-			inst.setValue((Attribute) fvAttributes.get(18),	instances.instance(i).value(18));
-			inst.setValue((Attribute) fvAttributes.get(19), instances.instance(i).value(19));
-			inst.setValue((Attribute) fvAttributes.get(20), instances.instance(i).value(20));
-			inst.setValue((Attribute) fvAttributes.get(21),	instances.instance(i).value(21));
-			inst.setValue((Attribute) fvAttributes.get(22),	instances.instance(i).value(22));
-			inst.setValue((Attribute) fvAttributes.get(23),	instances.instance(i).stringValue(23));
+			//inst.setValue((Attribute) fvAttributes.get(17),	instances.instance(i).value(17));
+			//inst.setValue((Attribute) fvAttributes.get(18),	instances.instance(i).value(18));
+			inst.setValue((Attribute) fvAttributes.get(17), instances.instance(i).value(19));
+			inst.setValue((Attribute) fvAttributes.get(18), instances.instance(i).value(20));
+			inst.setValue((Attribute) fvAttributes.get(19),	instances.instance(i).value(21));
+			inst.setValue((Attribute) fvAttributes.get(20),	instances.instance(i).value(22));
+			inst.setValue((Attribute) fvAttributes.get(21),	instances.instance(i).stringValue(23));
 			
 			inst.setDataset(newInstances);
 			newInstances.add(inst);

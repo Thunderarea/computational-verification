@@ -4,6 +4,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * *not used at the moment. conf.propertied files in use*
+ * Auxiliary class that holds the paths of the files used.  
+ * @author Christina Boididou
+ *
+ */
 public class Vars {
 	
 	
@@ -42,18 +48,7 @@ public class Vars {
 	public static final String INDEGREE_FILE  = "resources/hostgraph-indegree.tsv";
 	public static final String HARMONIC_FILE  = "resources/hostgraph-h.tsv";
 	
-	
-	//Classification
-	//Previous model files that we used for our training and testing experiments with initial item and user features included
-	public static final String MODEL_PATH_ITEM = "resources/model/j48updated.model";
-	public static final String MODEL_PATH_USER= "resources/model/j48user.model";
-	public static final String MODEL_PATH_TOTAL= "resources/model/j48total.model";
-	
-	//Updated files that we used for our experiments with new item and user features included
-	public static final String MODEL_PATH_ITEM_sample = "resources/model/j48-item.model";
-	public static final String MODEL_PATH_USER_sample = "resources/model/j48-user.model";
-	public static final String MODEL_PATH_TOTAL_sample = "";
-	
+		
 	//supported langs
 	public static final HashSet<String> SUPPORTED_LANGS = new HashSet<String>(Arrays.asList("en","es","nolang"));	
 		

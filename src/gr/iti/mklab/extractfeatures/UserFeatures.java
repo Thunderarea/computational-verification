@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class UserFeatures{
 	
-	@Expose
+	@Expose(serialize=false)
     @SerializedName(value = "id")
 	protected String id;
 	
@@ -16,103 +16,99 @@ public class UserFeatures{
 	protected String username;
 	
 	@Expose
-    @SerializedName(value = "numFriends")
+    @SerializedName(value = "num_friends")
 	protected Long numFriends;
 	
 	@Expose
-    @SerializedName(value = "numFollowers")
+    @SerializedName(value = "num_followers")
 	protected Long numFollowers;
 	
 	@Expose
-    @SerializedName(value = "FolFrieRatio")
+    @SerializedName(value = "follower_friend_ratio")
 	protected Float FolFrieRatio;
 	
 	@Expose
-    @SerializedName(value = "timesListed")
+    @SerializedName(value = "times_listed")
 	protected Long timesListed;
 	
 	@Expose
-    @SerializedName(value = "hasURL")
+    @SerializedName(value = "has_URL")
 	protected Boolean hasURL;
 	
 	@Expose
-    @SerializedName(value = "hasBio")
+    @SerializedName(value = "has_bio_desc")
 	protected Boolean hasBio;
 	
 	@Expose
-    @SerializedName(value = "isVerified")
+    @SerializedName(value = "is_verified")
 	protected Boolean isVerified;
 	
 	@Expose
-    @SerializedName(value = "numTweets")
+    @SerializedName(value = "num_tweets")
 	protected Long numTweets;
 	
 	@Expose
-    @SerializedName(value = "numMediaContent")
+    @SerializedName(value = "num_media_content")
 	protected Long numMediaContent;
 	
 	@Expose
-    @SerializedName(value = "numFavorites")
+    @SerializedName(value = "num_favorites")
 	protected Long numFavorites;
 	
-	/*@Expose
-    @SerializedName(value = "distance")
-	protected double distance;*/
-	
 	@Expose
-    @SerializedName(value = "hasLocation")
+    @SerializedName(value = "has_location")
 	protected Boolean hasLocation;
 	
 	@Expose
-    @SerializedName(value = "hasExistingLocation")
+    @SerializedName(value = "has_existing_location")
 	protected Boolean hasExistingLocation;
 	
 	@Expose
-    @SerializedName(value = "accountAge")
+    @SerializedName(value = "account_age")
 	protected Long accountAge;
 	
 	@Expose
-    @SerializedName(value = "wotTrustUser")
+    @SerializedName(value = "wot_trust")
 	protected Integer wotTrustUser;
 	
-	@Expose
+	@Expose(serialize=false)
     @SerializedName(value = "wotSafeUser")
 	protected Integer wotSafeUser;
 	
 	@Expose
-    @SerializedName(value = "indegree")
+    @SerializedName(value = "indegree_centrality")
 	protected Float indegree;
 	
 	@Expose
-    @SerializedName(value = "harmonic")
+    @SerializedName(value = "harmonic_centrality")
 	protected Float harmonic;
 	
 	@Expose
-    @SerializedName(value = "hasProfileImg")
+    @SerializedName(value = "has_profile_img")
 	protected Boolean hasProfileImg;
 	
 	@Expose
-    @SerializedName(value = "hasHeaderImg")
+    @SerializedName(value = "has_header_img")
 	protected Boolean hasHeaderImg;
 	
 	@Expose
-    @SerializedName(value = "tweetRatio")
+    @SerializedName(value = "tweet_ratio")
 	protected Float tweetRatio;
 	
 	@Expose
-    @SerializedName(value = "alexaPopularity")
+    @SerializedName(value = "alexa_popularity")
 	protected Integer alexaPopularity;
 	
 	@Expose
-    @SerializedName(value = "alexaReachRank")
+    @SerializedName(value = "alexa_reach_rank")
 	protected Integer alexaReachRank;
 	
 	@Expose
-    @SerializedName(value = "alexaDeltaRank")
+    @SerializedName(value = "alexa_delta_rank")
 	protected Integer alexaDeltaRank;
 	
 	@Expose
-    @SerializedName(value = "alexaCountryRank")
+    @SerializedName(value = "alexa_country_rank")
 	protected Integer alexaCountryRank;
 	
 	
@@ -161,9 +157,6 @@ public class UserFeatures{
 	public Boolean getisVerified(){
 		return isVerified;
 	}
-	/*public double getDistance(){
-		return distance;
-	}*/
 	public Long getAccountAge() {
 		return accountAge;
 	}

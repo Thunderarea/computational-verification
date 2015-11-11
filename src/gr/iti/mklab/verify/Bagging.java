@@ -4,8 +4,6 @@ import gr.iti.mklab.extractfeatures.ItemFeatures;
 import gr.iti.mklab.extractfeatures.ItemFeaturesAnnotation;
 import gr.iti.mklab.extractfeatures.UserFeatures;
 import gr.iti.mklab.extractfeatures.UserFeaturesAnnotation;
-import gr.iti.mklab.utils.FileManager;
-import gr.iti.mklab.verifyutils.AttributeSelectionHandler;
 import gr.iti.mklab.verifyutils.DataHandler;
 
 import java.util.ArrayList;
@@ -14,16 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import weka.attributeSelection.InfoGainAttributeEval;
-import weka.attributeSelection.Ranker;
 import weka.classifiers.Classifier;
 import weka.classifiers.meta.FilteredClassifier;
-import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.filters.Filter;
-import weka.filters.MultiFilter;
-import weka.filters.supervised.attribute.AttributeSelection;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.Remove;
 
@@ -52,132 +44,6 @@ public class Bagging {
 	
 
 
-	public static Instances[] getInitialSplit() {
-		
-		Collections.shuffle(itemfeatsfake, new Random(74));
-		Collections.shuffle(itemfeatsreal, new Random(15));
-		
-		int testingSize = 1822; //1200 fake and 1200 real
-	
-		
-		List<ItemFeatures> training = new ArrayList<ItemFeatures>();
-		List<ItemFeatures> testing  = new ArrayList<ItemFeatures>();
-		
-		//create testing set
-		for (int i=0; i<testingSize; i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemfeatsfake.get(i).getId());
-			itemAnnot.setReliability("fake");
-			itemFeaturesAnnot.add(itemAnnot);
-			testing.add(itemfeatsfake.get(i));
-		}
-		for (int i=0; i<testingSize; i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemfeatsreal.get(i).getId());
-			itemAnnot.setReliability("real");
-			itemFeaturesAnnot.add(itemAnnot);
-			testing.add(itemfeatsreal.get(i));
-		}
-		
-		for (int i=0; i<itemfeatsfake.size()-testingSize; i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemfeatsfake.get(i).getId());
-			itemAnnot.setReliability("fake");
-			itemFeaturesAnnot2.add(itemAnnot);
-			training.add(itemfeatsfake.get(i));
-		}
-		
-		for (int i=0; i<itemfeatsreal.size() - testingSize; i++) {
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemfeatsreal.get(i).getId());
-			itemAnnot.setReliability("real");
-			itemFeaturesAnnot2.add(itemAnnot);
-			training.add(itemfeatsreal.get(i));
-		}
-		
-		Instances[] insts = new Instances[2];
-		try {
-			
-			Instances trainingSet = ItemClassifier.createTrainingSet(training, itemFeaturesAnnot2);
-			Instances testingSet  = ItemClassifier.createTestingSet(testing, itemFeaturesAnnot);
-						
-			insts[0] = trainingSet;
-			insts[1] = testingSet;
-			
-			System.out.println(trainingSet.size());
-			System.out.println(testingSet.size());
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	
-		return insts;
-	}
-	
-	public static Instances[] getInitialSplitUser() {
-		
-		Collections.shuffle(userfeatsfake, new Random(89));
-		Collections.shuffle(userfeatsreal, new Random(105));
-		
-		int testingSize = 1200; //1200 fake and 1200 real
-	
-		
-		List<UserFeatures> training = new ArrayList<UserFeatures>();
-		List<UserFeatures> testing  = new ArrayList<UserFeatures>();
-		
-		//create testing set
-		for (int i=0; i<testingSize; i++) {
-			UserFeaturesAnnotation itemAnnot = new UserFeaturesAnnotation();
-			itemAnnot.setId(userfeatsfake.get(i).getId());
-			itemAnnot.setReliability("fake");
-			userFeaturesAnnot.add(itemAnnot);
-			testing.add(userfeatsfake.get(i));
-		}
-		for (int i=0; i<testingSize; i++) {
-			UserFeaturesAnnotation itemAnnot = new UserFeaturesAnnotation();
-			itemAnnot.setId(userfeatsreal.get(i).getId());
-			itemAnnot.setReliability("real");
-			userFeaturesAnnot.add(itemAnnot);
-			testing.add(userfeatsreal.get(i));
-		}
-		
-		
-		for (int i=0; i<userfeatsfake.size()-testingSize; i++) {
-			UserFeaturesAnnotation itemAnnot = new UserFeaturesAnnotation();
-			itemAnnot.setId(userfeatsfake.get(i).getId());
-			itemAnnot.setReliability("fake");
-			userFeaturesAnnot2.add(itemAnnot);
-			training.add(userfeatsfake.get(i));
-		}
-		
-		for (int i=0; i<userfeatsreal.size() - testingSize; i++) {
-			UserFeaturesAnnotation itemAnnot = new UserFeaturesAnnotation();
-			itemAnnot.setId(userfeatsreal.get(i).getId());
-			itemAnnot.setReliability("real");
-			userFeaturesAnnot2.add(itemAnnot);
-			training.add(userfeatsreal.get(i));
-		}
-		
-		Instances[] insts = new Instances[2];
-		try {
-			
-			Instances trainingSet = UserClassifier.createTrainingSet(training, userFeaturesAnnot2);
-			Instances testingSet  = UserClassifier.createTestingSet(testing, userFeaturesAnnot);
-						
-			insts[0] = trainingSet;
-			insts[1] = testingSet;
-			
-			System.out.println(trainingSet.size());
-			System.out.println(testingSet.size());
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	
-		return insts;
-	}
-	
-	
 	
 	static Instances[] testingSets = new Instances[5];
 	
@@ -189,38 +55,10 @@ public class Bagging {
 		Bagging.testingSets = testingSets;
 	}
 	
-	public static ArrayList<int[]> initializeRandomVals() {
+	public static int[] initializeRandomVals() {
 		
-		ArrayList<int[]> random = new ArrayList<int[]>();
-		
-		//1st
-		random.add(new int[] {6,7,8,90,32});
-		/*random.add(new int[] {56,38,58,42,59,65,71,18,19});
-		random.add(new int[] {33,46,11,88,99,27,35,29,20});
-		random.add(new int[] {10,55,13,81,199,127,235,329,420});
-		random.add(new int[] {28,29,30,31,39,327,335,429,520});
-		random.add(new int[] {1,2,3,4,55,55,6,77,66});
-		random.add(new int[] {51,62,333,334,955,255,36,877,626});
-		random.add(new int[] {27,227,123,234,135,147,336,890,891});
-		random.add(new int[] {9,10,11,22,783,472,90,91,99});
-		random.add(new int[] {31,34,67,88,89,908,869,245,12});*/
-		
-		//2nd
-		/*random.add(new int[] {6,7,8,90,32,334,777,188,149});
-		//random.add(new int[] {5,9,77,2,19,6,71,81,98});
-		//random.add(new int[] {56,38,58,42,59,65,71,18,19});
-		random.add(new int[] {33,46,11,88,99,27,35,29,20});
-		random.add(new int[] {10,55,13,81,199,127,235,329,420});
-		//random.add(new int[] {28,29,30,31,39,327,335,429,520});
-		//random.add(new int[] {1,2,3,4,55,55,6,77,66});
-		random.add(new int[] {51,62,333,334,955,255,36,877,626});
-		//random.add(new int[] {27,227,123,234,135,147,336,890,891});
-		//random.add(new int[] {9,10,11,22,783,472,90,91,99});
-		random.add(new int[] {31,34,67,88,89,908,869,245,12});
-		//random.add(new int[] {1,4,47,818,819,9081,8691,2451,121});
-		random.add(new int[] {21,24,427,8128,8192,90821,86921,24251,1221});
-		//random.add(new int[] {24,12,4,82,819,982,892,225,12});
-*/		
+		int[] random = new int[] {6,7,8,90,32};
+			
 		return random;
 	}
 	
@@ -231,14 +69,14 @@ public class Bagging {
 	
 	public Classifier[] createClassifiers(Instances training2, Instances testing2, int trainingSize) throws Exception {
 		
+		Bagging.randomVals = Bagging.initializeRandomVals();
+		
 		Instances training = new Instances(training2);
 		Instances testing  = new Instances(testing2);
 		
 		int countFake=0, countReal=0;
 		Classifier[] classifiers = new Classifier[randomVals.length];
 		
-		//System.out.println("CREATE CLASSIFIERS: ITEM");
-		//System.out.println("TRAINING SIZE/2 = "+ training.size()/2);
 		
 		for (int j=0; j<randomVals.length; j++) {
 			
@@ -267,34 +105,22 @@ public class Bagging {
 					}
 				}
 			}
-			//System.out.println("fake "+countFake+" real "+countReal+" all "+currentTrain.size());
-					
 		
-			
 			//Linear Regression approach
 			currentTrain = DataHandler.getInstance().getTransformedTrainingOverall(currentTrain);				
 			testingSets[j] = DataHandler.getInstance().getTransformedTestingOverall(testing);
 
 			
-			
-			//ReplaceMissingValues approach
-			//if (tree instanceof LibSVM) {
-			/*ReplaceMissingValues replace = new ReplaceMissingValues();
-			replace.setInputFormat(currentTrain);
-			currentTrain = DataHandler.getInstance().replaceMissingValues(currentTrain, replace);
-			testingSets[j] = DataHandler.getInstance().replaceMissingValues(testingSets[j],replace);*/
-			//}
+		
 			
 			//classifier details
 			FilteredClassifier fc = new FilteredClassifier();
-			AgreementBasedRetraining dvb = new AgreementBasedRetraining();
+			AgreementBasedClassification dvb = new AgreementBasedClassification();
 			Classifier tree = dvb.getCurrentClassifier();
 			Remove rm = new Remove();
 			rm.setAttributeIndices("1");
 						
 
-			String sb="";
-			MultiFilter mf = new MultiFilter();
 			
 			try {
 				fc.setFilter(rm);
@@ -323,8 +149,9 @@ public class Bagging {
 		Bagging.testingSetsUser = testingSetsUser;
 	}
 	
-	static int overall = 0;
 	public Classifier[] createClassifiersUser(Instances training2, Instances testing2, int trainingSize) throws Exception {
+		
+		Bagging.randomVals = Bagging.initializeRandomVals();
 		
 		Instances training = new Instances(training2);
 		Instances testing  = new Instances(testing2);
@@ -372,7 +199,7 @@ public class Bagging {
 			
 			//classifier details
 			FilteredClassifier fc = new FilteredClassifier();
-			AgreementBasedRetraining dvb = new AgreementBasedRetraining();
+			AgreementBasedClassification dvb = new AgreementBasedClassification();
 			Classifier tree = dvb.getCurrentClassifier();
 			Remove rm = new Remove();
 			rm.setAttributeIndices("1");
@@ -420,74 +247,14 @@ public class Bagging {
 		return prediction;
 	}
 	
-	/*public static String classifyItem(Classifier cls,Instance inst) {
-		
-		String predicted = null;
-		
-		double pred;
-		try {
-			pred = cls.classifyInstance(inst);
-			predicted = inst.classAttribute().value((int) pred);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		
-		return predicted;
-	}*/
-	
-	
-	
-	/*public static VerificationResult getMajorityPred(VerificationResult[] predicted) {
-		
-		Map<String,Integer> map = new HashMap<String,Integer>();
-		for (int i=0;i<predicted.length;i++) {
-			String prd = predicted[i].getPrediction();
-			if (map.get(prd) == null) {
-				map.put(prd,1);
-			}
-			else {
-				map.put(prd, map.get(prd)+1);
-			}
-		}
-		
-		//System.out.println("Classifiers' decision: "+map);
-		
-		String resultStr = "";
-		if (map.get("fake") == null) resultStr = "real";
-		if (map.get("real") == null) resultStr = "fake";
-		
-		if (resultStr.equals("")) {
-			if (map.get("fake") > map.get("real")) {
-				resultStr = "fake";
-			}
-			else {
-				resultStr = "real";
-			}
-		}
-		
-		double sum = 0.0;
-		int counter = 0;
-		for (int i=0; i<predicted.length; i++) {
-			if (predicted[i].getPrediction().equals(resultStr)) {
-				sum+=predicted[i].getProb();
-				counter++;
-			}
-		}
-		VerificationResult overallRes = new VerificationResult();
-		overallRes.setPrediction(resultStr);
-		overallRes.setProb(sum/counter);
-		
-		return overallRes;
-	}*/
-	
+
 	
 	public static VerificationResult getMajorityPred(VerificationResult[] predicted) {
 		
 		double sumScores = 0.0;
 		
 		for (int j=0; j<predicted.length; j++) {
-			//System.out.println("id "+predicted[j].getPrediction() + " " + predicted[j].getProb());
+			
 			//if fake add the probability of being fake prob(fake) to the sum 
 			if (predicted[j].getPrediction().equals("fake")) {
 				sumScores += predicted[j].getProb();
@@ -510,23 +277,19 @@ public class Bagging {
 			overallRes.setPrediction("fake");
 			overallRes.setProb(avgProb);
 		}
-		
-		//System.out.println(overallRes.getPrediction() + " " + overallRes.getProb());
-		
+			
 		
 		return overallRes;
 	}
 	
 	
-	static int internal = 0;
-	static Double allper;
 	
 	public static VerificationResult[] classifyItems(Classifier[] classifiers,Instances[] testingSets) {
 		
 		int sizeTest = testingSets[0].size();
 		VerificationResult[] finalPredictions = new VerificationResult[sizeTest];
 		VerificationResult[] predicted = new VerificationResult[classifiers.length];
-		int count = 0,countFake=0,countReal=0, fake=0, real=0;
+		
 		String actual = "";
 		
 		HashMap<String,String> idsLabels = new HashMap<String, String>();
@@ -547,7 +310,8 @@ public class Bagging {
 			idsLabels.put(id, predict.getPrediction());
 			
 			finalPredictions[j] = predict;
-			//System.out.println("actual "+actual);
+		
+			/*//System.out.println("actual "+actual);
 			//System.out.println("prediction "+predict);
 			if (predict.getPrediction().equals(actual)) {
 				count++;
@@ -559,18 +323,14 @@ public class Bagging {
 			}
 			if (actual == "fake") fake++;
 			else real++;
+		*/
 		}
-			
-		System.out.println("Total items " + sizeTest);
+		
+		/*System.out.println("Total items " + sizeTest);
 		System.out.println("Items classified correctly:" + count);
 		System.out.println("Fake items classified correctly: " + countFake	+ ". Percentage: " + ((double) countFake / fake)* 100);
 		System.out.println("Real items classified correctly: " + countReal	+ ". Percentage: " + ((double) countReal / real)* 100);
-		System.out.println("Percentage " + ((double) count / sizeTest) * 100);
-		
-		Double fakeper = ((double) countFake / fake)* 100;
-		Double realper =  ((double) countReal / real)* 100;
-		allper = ((double) count / sizeTest) * 100;
-		
+		System.out.println("Percentage " + ((double) count / sizeTest) * 100);*/
 		
 		return finalPredictions;
 	}

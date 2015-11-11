@@ -9,6 +9,7 @@ import gr.iti.mklab.utils.TextProcessing;
 import gr.iti.mklab.utils.URLProcessing;
 import gr.iti.mklab.utils.Vars;
 import gr.iti.mklab.utils.WebOfTrustManager;
+import gr.iti.mklab.verify.AgreementBasedClassification;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -433,75 +434,7 @@ public class UserFeaturesExtractorJSON {
 		return rank;
 	}
 
-	/**
-	 * Function that gets the ranking (indegree or centrality) of a url
-	 * 
-	 * @param url
-	 *            String
-	 * @param filePath
-	 *            String the path of the file that holds the rankings
-	 * @return Float the ranking
-	 * @throws IOException
-	 * @throws Exception
-	 */
-	/*
-	 * public static Float getRank(String url, String filePath) throws
-	 * IOException {
-	 * 
-	 * long start = System.currentTimeMillis();
-	 * 
-	 * Float rank = null; BufferedReader in;
-	 * 
-	 * // [optional] expand the url if appeared in a shortened form String host0
-	 * = expandUrl(url); if (host0 == null) { host0 = url; }
-	 * 
-	 * host0 = url;
-	 * 
-	 * System.out.println("Ranking the: " + host0); host0 = host0.replaceAll(
-	 * "(http://|https://|http://www\\.|https://www\\.|www\\.)", ""); String
-	 * host; if (host0.contains("/")) { host = host0.split("/")[0]; } else {
-	 * host = host0; } System.out.println("Simple form " + host);
-	 * 
-	 * File file = new File(filePath);
-	 * 
-	 * @SuppressWarnings("resource") FileChannel fileChannel = new
-	 * RandomAccessFile(file, "r").getChannel();
-	 * 
-	 * MappedByteBuffer buffer = fileChannel.map( FileChannel.MapMode.READ_ONLY,
-	 * 0, fileChannel.size()); // the buffer now reads the file as if it were
-	 * loaded in memory. note // that for smaller files it would be faster // to
-	 * just load the file in memory // lets see if this buffer is loaded fully
-	 * into memory System.out.println(buffer.isLoaded()); // the
-	 * mappedbytebuffer can be used as a normal buffer to do read and/or //
-	 * write operations // read the size System.out.println(buffer.capacity());
-	 * 
-	 * try (Scanner sc = new Scanner(new File(filePath), "UTF-8")) {
-	 * 
-	 * while (sc.hasNextLine()) {
-	 * 
-	 * String line = sc.nextLine(); if (line != null) {
-	 * 
-	 * String part[] = line.split("\t"); //System.out.println(line); if
-	 * (URLProcessing.getInstance().isTumblrPage(host)) { // Tumblr users' pages
-	 * have the form : // "username.tumblr.com". // Just remove the username
-	 * part resulting in "tumblr.com". host = host.substring(host.indexOf(".") +
-	 * 1, host.length()); } if (part[0].equals(host)) { rank =
-	 * Float.parseFloat(part[1]); break; }
-	 * 
-	 * } } // note that Scanner suppresses exceptions if (sc.ioException() !=
-	 * null) { throw sc.ioException(); } sc.close(); }catch(Exception e) {
-	 * e.printStackTrace(); }
-	 * 
-	 * 
-	 * 
-	 * System.out.println("Url: " + host + ". Score " + rank);
-	 * 
-	 * long end = System.currentTimeMillis();
-	 * 
-	 * System.out.println((double)(end-start)/1000+ " seconds");
-	 * 
-	 * return rank; }
-	 */
+	
 
 	public static Boolean hasProfileImg(JSONObject json) {
 
@@ -612,12 +545,12 @@ public class UserFeaturesExtractorJSON {
 				//preprocess
 				jsonUrl = URLProcessing.getInstance().processUrlForRunnable(jsonUrl);
 
-				indegree = organizeRunRank("indegree-" + currentTweetId, jsonUrl,Vars.INDEGREE_FILE);
+				/*indegree = organizeRunRank("indegree-" + currentTweetId, jsonUrl,Vars.INDEGREE_FILE);
 				if (indegree != null)
 					harmonic = organizeRunRank("harmonic-" + currentTweetId, jsonUrl,Vars.HARMONIC_FILE);
 
 				System.out.println("In-degree centrality value: " + indegree);
-				System.out.println("Harmonic centrality value: " + harmonic);
+				System.out.println("Harmonic centrality value: " + harmonic);*/
 				
 				AlexaRankingManager arm = new AlexaRankingManager();
 				alexaRankings = arm.getAlexaRanking(jsonUrl);
@@ -670,10 +603,9 @@ public class UserFeaturesExtractorJSON {
 
 	public static void initializeFiles() {
 
-		rootGeonamesDir = "C:/Users/boididou/workspace/geo-util-master/";
-		citiesFile = rootGeonamesDir + "cities1000_mod.txt";
-		countryInfoFile = rootGeonamesDir + "countryInfo.txt";
-		adminNamesFile = rootGeonamesDir + "admin1CodesASCII_mod.txt";
+		citiesFile = AgreementBasedClassification.prop.getProperty("CITIES_PATH");
+		countryInfoFile = AgreementBasedClassification.prop.getProperty("COUNTRY_INFO_PATH");
+		adminNamesFile = AgreementBasedClassification.prop.getProperty("ADMIN_NAMES_PATH");
 
 	}
 
@@ -784,36 +716,7 @@ public class UserFeaturesExtractorJSON {
 
 	}
 
-	/*public List<UserFeatures> getLatestItems(String dbString,
-			String collection, int n) {
 
-		List<UserFeatures> results = new ArrayList<UserFeatures>();
-		Mongo mongo;
-		try {
-			mongo = new MongoClient(Vars.LOCALHOST_IP);
-			DB db = mongo.getDB(dbString);
-			DBCollection coll = db.getCollection(collection);
-			System.out.println("Fetching items from " + db + " " + collection
-					+ "...");
-
-			List<String> jsonStrings = new ArrayList<String>();
-			DBCursor cursor = coll.find();
-			while (cursor.hasNext()) {
-				String s = JSON.serialize(cursor.next());
-				jsonStrings.add(s);
-			}
-
-			for (String json : jsonStrings) {
-				results.add(create(json));
-			}
-
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-
-		return results;
-
-	}*/
 
 	static Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation()
 			.create();
@@ -825,29 +728,5 @@ public class UserFeaturesExtractorJSON {
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
-		
-		/*MongoHandler mh = null;
-		try {
-			mh = new MongoHandler(Vars.LOCALHOST_IP, "TestSetFeaturesAll");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		List<JSONObject> jsons = DBHandler.getInstance().getExistingTweets(
-				"TestSet", "VaroufakisFakes");
 
-		List<String> idsexist = DBHandler.getInstance().getExistingTweetsIds("TestSetFeaturesAll", "Varoufakis_fake_User", "id");
-		
-		//List<UserFeatures> listfeats = new ArrayList<UserFeatures>();
-		for (JSONObject json : jsons) {
-			if (!idsexist.contains(json.getString("id_str"))){
-				UserFeatures ifeats = extractFeatures(json);
-				mh.insert(ifeats, "Varoufakis_fake_User");
-				//listfeats.add(ifeats);
-			}
-		}*/
-		
-
-		
-	}
 }

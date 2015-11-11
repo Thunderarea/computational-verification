@@ -7,108 +7,108 @@ import com.google.gson.annotations.SerializedName;
 
 public class ItemFeatures {
 	
-	@Expose
+	@Expose(serialize=false)
     @SerializedName(value = "id")
 	private String id;
 	
 	@Expose
-    @SerializedName(value = "itemLength")
+    @SerializedName(value = "item_length")
 	private Integer itemLength;
 	
 	@Expose
-    @SerializedName(value = "numWords")
+    @SerializedName(value = "num_words")
 	private Integer numWords;
 	
 	@Expose
-    @SerializedName(value = "containsQuestionMark")
+    @SerializedName(value = "contains_questionmark")
 	private Boolean containsQuestionMark;
 	
 	@Expose
-    @SerializedName(value = "containsExclamationMark")
+    @SerializedName(value = "contains_exclamationmark")
 	private Boolean containsExclamationMark;
 	
 	@Expose
-    @SerializedName(value = "numQuestionMark")
+    @SerializedName(value = "num_questionmark")
 	private Integer numQuestionMark;
 	
 	@Expose
-    @SerializedName(value = "numExclamationMark")
+    @SerializedName(value = "num_exclamationmark")
 	private Integer numExclamationMark;
 	
 	@Expose
-    @SerializedName(value = "containsHappyEmo")
+    @SerializedName(value = "contains_happy_emoticon")
 	private Boolean containsHappyEmo;
 	
 	@Expose
-    @SerializedName(value = "containsSadEmo")
+    @SerializedName(value = "contains_sad_emoticon")
 	private Boolean containsSadEmo;
 	
 	@Expose
-    @SerializedName(value = "containsFirstOrderPron")
+    @SerializedName(value = "contains_first_order_pronoun")
 	private Boolean containsFirstOrderPron;
 	
 	@Expose
-    @SerializedName(value = "containsSecondOrderPron")
+    @SerializedName(value = "contains_second_order_pronoun")
 	private Boolean containsSecondOrderPron;
 	
 	@Expose
-    @SerializedName(value = "containsThirdOrderPron")
+    @SerializedName(value = "contains_third_order_pronoun")
 	private Boolean containsThirdOrderPron;
 	
 	@Expose
-    @SerializedName(value = "numUppercaseChars")
+    @SerializedName(value = "num_uppercasechars")
 	private Integer numUppercaseChars;
 	
 	@Expose
-    @SerializedName(value = "numNegSentiWords")
+    @SerializedName(value = "num_neg_sentiment_words")
 	private Integer numNegSentiWords;
 	
 	@Expose
-    @SerializedName(value = "numPosSentiWords")
+    @SerializedName(value = "num_pos_sentiment_words")
 	private Integer numPosSentiWords;
 	
 	@Expose
-    @SerializedName(value = "numMentions")
+    @SerializedName(value = "num_mentions")
 	private Integer numMentions;
 	
 	@Expose
-    @SerializedName(value = "numHashtags")
+    @SerializedName(value = "num_hashtags")
 	private Integer numHashtags;
 	
 	@Expose
-    @SerializedName(value = "numURLs")
+    @SerializedName(value = "num_URLs")
 	private Integer numURLs;
 	
 	@Expose
-    @SerializedName(value = "retweetCount")
+    @SerializedName(value = "retweet_count")
 	private Long retweetCount;
 	
 	@Expose
-    @SerializedName(value = "hasColon")
+    @SerializedName(value = "has_colon")
 	private Boolean hasColon;
 	
 	@Expose
-    @SerializedName(value = "hasPlease")
+    @SerializedName(value = "has_please")
 	private Boolean hasPlease;
 	
 	@Expose
-    @SerializedName(value = "numNouns")
+    @SerializedName(value = "num_nouns")
 	private Integer numNouns;
 	
 	@Expose
-    @SerializedName(value = "hasExternalLink")
+    @SerializedName(value = "has_external_link")
 	private Boolean hasExternalLink;
 	
 	@Expose
-    @SerializedName(value = "wotTrust")
+    @SerializedName(value = "wot_Trust")
 	private Integer wotTrust;
 	
-	@Expose
+	@Expose(serialize=false)
     @SerializedName(value = "wotSafe")
 	private Integer wotSafe;
 	
 	@Expose
-    @SerializedName(value = "numSlangs")
+    @SerializedName(value = "num_slangs")
 	private Integer numSlangs;
 	
 	@Expose
@@ -116,47 +116,27 @@ public class ItemFeatures {
 	private Double readability;
 	
 	@Expose
-    @SerializedName(value = "urlIndegree")
+    @SerializedName(value = "indegree_centrality")
 	private Float urlIndegree;
 	
 	@Expose
-    @SerializedName(value = "urlHarmonic")
+    @SerializedName(value = "harmonic_centrality")
 	private Float urlHarmonic;
 	
 	@Expose
-    @SerializedName(value = "containsWordFake")
-	private Boolean containsWordFake;
-	
-	@Expose
-    @SerializedName(value = "numFakeWords")
-	private Integer numFakeWords;
-	
-	@Expose
-    @SerializedName(value = "numComments")
-	private Integer numComments;
-		
-	@Expose
-    @SerializedName(value = "timeFromStart")
-	private Long timeFromStart;
-	
-	@Expose
-    @SerializedName(value = "reliability")
-	private String reliability;
-	
-	@Expose
-    @SerializedName(value = "alexaPopularity")
+    @SerializedName(value = "alexa_popularity")
 	private Integer alexaPopularity;
 	
 	@Expose
-    @SerializedName(value = "alexaReachRank")
+    @SerializedName(value = "alexa_reach_rank")
 	private Integer alexaReachRank;
 	
 	@Expose
-    @SerializedName(value = "alexaDeltaRank")
+    @SerializedName(value = "alexa_delta_rank")
 	private Integer alexaDeltaRank;
 	
 	@Expose
-    @SerializedName(value = "alexaCountryRank")
+    @SerializedName(value = "alexa_country_rank")
 	private Integer alexaCountryRank;
 	
 	public void setId(String id){
@@ -310,15 +290,7 @@ public class ItemFeatures {
 	public Long getRetweetCount(){
 		return retweetCount;
 	}
-	
-	public void setReliability(String reliability){
-		this.reliability = reliability;
-	}
-	
-	public String getReliability(){
-		return reliability;
-	}
-	
+		
 	public void setNumSlangs(Integer numSlangs){
 		this.numSlangs = numSlangs;
 	}

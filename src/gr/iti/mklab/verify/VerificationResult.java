@@ -1,5 +1,11 @@
 package gr.iti.mklab.verify;
 
+/**
+ * Auxiliary class that holds information about the classification of the tweets with the BAGGING technique.
+ * Note that it is used only by the Bagging class.
+ * @author boididou
+ *
+ */
 public class VerificationResult {
 
 	

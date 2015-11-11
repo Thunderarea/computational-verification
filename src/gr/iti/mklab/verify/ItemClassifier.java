@@ -1,16 +1,10 @@
 package gr.iti.mklab.verify;
 import gr.iti.mklab.extractfeatures.ItemFeatures;
 import gr.iti.mklab.extractfeatures.ItemFeaturesAnnotation;
-import gr.iti.mklab.extractfeatures.ItemFeaturesExtractorJSON;
-import gr.iti.mklab.utils.Vars;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONObject;
-
-import weka.classifiers.misc.SerializedClassifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -51,9 +45,9 @@ public class ItemClassifier {
 		Attribute numSlangs = new Attribute("numSlangs");
 		Attribute numNouns = new Attribute("numNouns");
 		Attribute wotTrust = new Attribute("wotTrust");
-		Attribute urlIndegree = new Attribute("urlIndegree");
+		//Attribute urlIndegree = new Attribute("urlIndegree");
 		Attribute readability = new Attribute("readability");
-		Attribute urlHarmonic = new Attribute("urlHarmonic");
+		//Attribute urlHarmonic = new Attribute("urlHarmonic");
 		Attribute alexaCountryRank = new Attribute("alexaCountryRank");
 		Attribute alexaDeltaRank = new Attribute("alexaDeltaRank");
 		Attribute alexaPopularity = new Attribute("alexaPopularity");
@@ -169,19 +163,14 @@ public class ItemClassifier {
 		fvAttributes.add(numQuestionMark);
 		fvAttributes.add(numExclamationMark);
 		fvAttributes.add(readability); // new
-		fvAttributes.add(urlIndegree); // new
-		fvAttributes.add(urlHarmonic); // new
+		//fvAttributes.add(urlIndegree); // new
+		//fvAttributes.add(urlHarmonic); // new
 		fvAttributes.add(alexaCountryRank); // new
 		fvAttributes.add(alexaDeltaRank);
 		fvAttributes.add(alexaPopularity);
 		fvAttributes.add(alexaReachRank);
 		
-		/*fvAttributes.add(numPosSentiWords);
-		fvAttributes.add(numNegSentiWords);
-		fvAttributes.add(ItemLength);
-		fvAttributes.add(wotTrust);
-		fvAttributes.add(hasExternalLink);
-		fvAttributes.add(readability);*/
+		
 
 		fvAttributes.add(ClassAttribute);
 
@@ -274,30 +263,30 @@ public class ItemClassifier {
 			inst.setValue((Attribute) fvAttributes.get(25),
 					listItemFeatures.getReadability());
 		}
-		if (listItemFeatures.getUrlIndegree() != null) {
+		/*if (listItemFeatures.getUrlIndegree() != null) {
 			inst.setValue((Attribute) fvAttributes.get(26),
 					listItemFeatures.getUrlIndegree());
 		}
 		if (listItemFeatures.getUrlHarmonic() != null) {
 			inst.setValue((Attribute) fvAttributes.get(27),
 					listItemFeatures.getUrlHarmonic());
-		}
+		}*/
 		if (listItemFeatures.getAlexaCountryRank() != null) {
-			inst.setValue((Attribute) fvAttributes.get(28),
+			inst.setValue((Attribute) fvAttributes.get(26),
 					listItemFeatures.getAlexaCountryRank());
 		}
 		if (listItemFeatures.getAlexaDeltaRank() != null) {
-			inst.setValue((Attribute) fvAttributes.get(29),
+			inst.setValue((Attribute) fvAttributes.get(27),
 					listItemFeatures.getAlexaDeltaRank());
 		}
 		if (listItemFeatures.getAlexaPopularity() != null) {
-			inst.setValue((Attribute) fvAttributes.get(30),
+			inst.setValue((Attribute) fvAttributes.get(28),
 					listItemFeatures.getAlexaPopularity());
 		}
 		
 		if (listItemFeatures.getAlexaReachRank() != null) {
 			
-			inst.setValue((Attribute) fvAttributes.get(31),
+			inst.setValue((Attribute) fvAttributes.get(29),
 					listItemFeatures.getAlexaReachRank());
 		}
 		
@@ -359,49 +348,7 @@ public class ItemClassifier {
 		
 	}
 	
-	/**
-	 * @param isTestSet Instances of the test set
-	 * @return Boolean table of reliability values of the test set instances 
-	 * @throws Exception file
-	 */
-	public static boolean[] classifyItems(Instances isTestSet) throws Exception{
-		
-		//flags variable for the values of the verification
-		boolean[] flags = new boolean[isTestSet.size()];
-		int count = 0;
-		//define the classifier and set the appropriate model file 
-		SerializedClassifier classifier = new SerializedClassifier();
-		classifier.setModelFile(new File(Vars.MODEL_PATH_ITEM_sample));
-
-		for (int i = 0; i < isTestSet.numInstances(); i++) {
-			
-			double pred = classifier.classifyInstance(isTestSet.instance(i));
-			
-			String actual = isTestSet.classAttribute().value((int)isTestSet.instance(i).classValue());
-			String predicted = isTestSet.classAttribute().value((int) pred);
-			if (actual.equals(predicted)){
-				count++;
-			}
-			
-			//assign appropriate value to the flag
-			if (predicted=="fake"){
-				flags[i]=true;
-			}
-			else{
-				flags[i]=false;
-			}
-			
-		}
-		
-		//print info
-		/*System.out.println();
-		System.out.println("=== Results ===");
-		System.out.println("Total items "+isTestSet.numInstances());
-		System.out.println("Items classified correctly:"+count);
-		System.out.println("Percentage "+((double)count/isTestSet.numInstances())*100);
-		System.out.println();*/
-		return flags;
-	}
+	
 	
 	/**
 	 * Function that creates the training set given the features calculated before
@@ -483,13 +430,13 @@ public class ItemClassifier {
 			inst.setValue((Attribute) fvAttributes.get(23),	instances.instance(i).value(23));
 			inst.setValue((Attribute) fvAttributes.get(24),	instances.instance(i).value(24));
 			inst.setValue((Attribute) fvAttributes.get(25),	instances.instance(i).value(25));
-			inst.setValue((Attribute) fvAttributes.get(26),	instances.instance(i).value(26));
-			inst.setValue((Attribute) fvAttributes.get(27),	instances.instance(i).value(27));
-			inst.setValue((Attribute) fvAttributes.get(28),	instances.instance(i).value(28));
-			inst.setValue((Attribute) fvAttributes.get(29),	instances.instance(i).value(29));
-			inst.setValue((Attribute) fvAttributes.get(30),	instances.instance(i).value(30));
-			inst.setValue((Attribute) fvAttributes.get(31), instances.instance(i).value(31));
-			inst.setValue((Attribute) fvAttributes.get(32), instances.instance(i).stringValue(32));
+			//inst.setValue((Attribute) fvAttributes.get(26),	instances.instance(i).value(26));
+			//inst.setValue((Attribute) fvAttributes.get(27),	instances.instance(i).value(27));
+			inst.setValue((Attribute) fvAttributes.get(26),	instances.instance(i).value(28));
+			inst.setValue((Attribute) fvAttributes.get(27),	instances.instance(i).value(29));
+			inst.setValue((Attribute) fvAttributes.get(28),	instances.instance(i).value(30));
+			inst.setValue((Attribute) fvAttributes.get(29), instances.instance(i).value(31));
+			inst.setValue((Attribute) fvAttributes.get(30), instances.instance(i).stringValue(32));
 				
 		
 			inst.setDataset(newInstances);

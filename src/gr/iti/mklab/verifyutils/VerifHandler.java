@@ -1,11 +1,7 @@
 package gr.iti.mklab.verifyutils;
 
-import java.io.File;
 import java.util.Random;
 
-import gr.iti.mklab.utils.URLProcessing;
-import gr.iti.mklab.utils.Vars;
-import gr.iti.mklab.verify.ClassifierAccuracy;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.evaluation.output.prediction.PlainText;

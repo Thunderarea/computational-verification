@@ -46,6 +46,7 @@ import gr.iti.mklab.utils.TextProcessing;
 import gr.iti.mklab.utils.URLProcessing;
 import gr.iti.mklab.utils.Vars;
 import gr.iti.mklab.utils.WebOfTrustManager;
+import gr.iti.mklab.verify.AgreementBasedClassification;
 
 public class ItemFeaturesExtractorJSON {
 
@@ -53,10 +54,8 @@ public class ItemFeaturesExtractorJSON {
 	static String itemTitle;
 	public static Instances isTrainingSet;
 	// public static Long startTime = 1350864000L;
-	public static LexicalizedParser lp = LexicalizedParser
-			.loadModel(Vars.MODEL_PARSER);
-	public static List<String> indegreeLines = new ArrayList<String>();
-	public static List<String> harmonicLines = new ArrayList<String>();
+	public static LexicalizedParser lp = LexicalizedParser.loadModel(AgreementBasedClassification.prop.getProperty("MODEL_PARSER"));
+	
 
 	public static void setItemTitle(String itemTitle) {
 		ItemFeaturesExtractorJSON.itemTitle = itemTitle;
@@ -125,11 +124,11 @@ public class ItemFeaturesExtractorJSON {
 				+ feat.getNumQuestionMark());
 
 		// contains happy emoticon
-		feat.setContainsHappyEmo(containsEmo(Vars.HAPPY_EMO_PATH));
+		feat.setContainsHappyEmo(containsEmo(AgreementBasedClassification.prop.getProperty("HAPPY_EMO_PATH")));
 		System.out.println("Contains happy emoticon: "
 				+ feat.getContainsHappyEmo());
 		// contains sad emoticon
-		feat.setContainsSadEmo(containsEmo(Vars.SAD_EMO_PATH));
+		feat.setContainsSadEmo(containsEmo(AgreementBasedClassification.prop.getProperty("SAD_EMO_PATH")));
 		System.out
 				.println("Contains sad emoticon: " + feat.getContainsSadEmo());
 
@@ -199,7 +198,7 @@ public class ItemFeaturesExtractorJSON {
 					.processUrlForRunnable(extLink);
 
 			// UserFeatures
-			Float indegree = organizeRunRank("indegree-" + currentTweetId,
+			/*Float indegree = organizeRunRank("indegree-" + currentTweetId,
 					extLink, Vars.INDEGREE_FILE);
 
 			Float harmonic = null;
@@ -214,7 +213,7 @@ public class ItemFeaturesExtractorJSON {
 			System.out.println("In-degree centrality value: "
 					+ feat.getUrlIndegree());
 			System.out.println("Harmonic centrality value: "
-					+ feat.getUrlHarmonic());
+					+ feat.getUrlHarmonic());*/
 
 			AlexaRankingManager arm = new AlexaRankingManager();
 			int[] alexaRankings = arm.getAlexaRanking(extLink);
@@ -240,28 +239,28 @@ public class ItemFeaturesExtractorJSON {
 		// english
 		if (lang.equals("en")) {
 			// num of positive sentiment words
-			feat.setNumPosSentiWords(getNumSentiWords(Vars.POS_WORDS_ENG_PATH));
+			feat.setNumPosSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("POS_WORDS_ENG_PATH")));
 			System.out.println("Number of positive sentiment words: "
 					+ feat.getNumPosSentiWords());
 			// num of negative sentiment words
-			feat.setNumNegSentiWords(getNumSentiWords(Vars.NEG_WORDS_ENG_PATH));
+			feat.setNumNegSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("NEG_WORDS_ENG_PATH")));
 			System.out.println("Number of negative words: "
 					+ feat.getNumNegSentiWords());
 
 			// contains first,second and third order pronoun
-			feat.setContainsFirstOrderPron(containsPronoun(Vars.FIRST_PRON_PATH));
+			feat.setContainsFirstOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("FIRST_PRON_PATH")));
 			System.out.println("Contains 1st person pronoun: "
 					+ feat.getContainsFirstOrderPron());
-			feat.setContainsSecondOrderPron(containsPronoun(Vars.SECOND_PRON_PATH));
+			feat.setContainsSecondOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("SECOND_PRON_PATH")));
 			System.out.println("Contains 2nd person pronoun: "
 					+ feat.getContainsSecondOrderPron());
-			feat.setContainsThirdOrderPron(containsPronoun(Vars.THIRD_PRON_PATH));
+			feat.setContainsThirdOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("THIRD_PRON_PATH")));
 			System.out.println("Contains 3rd person pronoun: "
 					+ feat.getContainsThirdOrderPron());
 
 			// Features only available in english
 			// num of slang words
-			feat.setNumSlangs(getNumSlangs(Vars.SLANG_ENG_PATH, "en"));
+			feat.setNumSlangs(getNumSlangs(AgreementBasedClassification.prop.getProperty("SLANG_ENG_PATH"), "en"));
 			System.out.println("Number of slang words: " + feat.getNumSlangs());
 			// number of nouns
 			feat.setNumNouns(getNumNouns());
@@ -276,45 +275,45 @@ public class ItemFeaturesExtractorJSON {
 
 			// spanish
 		} else if (lang.equals("es")) {
-			feat.setNumPosSentiWords(getNumSentiWords(Vars.POS_WORDS_ES_PATH));
+			feat.setNumPosSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("POS_WORDS_ES_PATH")));
 			System.out.println("Number of positive sentiment words: "
 					+ feat.getNumPosSentiWords());
-			feat.setNumNegSentiWords(getNumSentiWords(Vars.NEG_WORDS_ES_PATH));
+			feat.setNumNegSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("NEG_WORDS_ES_PATH")));
 			System.out.println("Number of negative words: "
 					+ feat.getNumNegSentiWords());
 
-			feat.setContainsFirstOrderPron(containsPronoun(Vars.FIRST_PRON_ES_PATH));
+			feat.setContainsFirstOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("FIRST_PRON_ES_PATH")));
 			System.out.println("Contains 1st person pronoun: "
 					+ feat.getContainsFirstOrderPron());
 
-			feat.setContainsSecondOrderPron(containsPronoun(Vars.SECOND_PRON_ES_PATH));
+			feat.setContainsSecondOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("SECOND_PRON_ES_PATH")));
 			System.out.println("Contains 2nd person pronoun: "
 					+ feat.getContainsSecondOrderPron());
 
-			feat.setContainsThirdOrderPron(containsPronoun(Vars.THIRD_PRON_ES_PATH));
+			feat.setContainsThirdOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("THIRD_PRON_ES_PATH")));
 			System.out.println("Contains 3rd person pronoun: "
 					+ feat.getContainsThirdOrderPron());
 
-			feat.setNumSlangs(getNumSlangs(Vars.SLANG_ES_PATH, "es"));
+			feat.setNumSlangs(getNumSlangs(AgreementBasedClassification.prop.getProperty("SLANG_ES_PATH"), "es"));
 			System.out.println("Number of slang words: " + feat.getNumSlangs());
 
 			// german
 		} else if (lang.equals("de")) {
-			feat.setNumPosSentiWords(getNumSentiWords(Vars.POS_WORDS_DE_PATH));
+			feat.setNumPosSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("POS_WORDS_DE_PATH")));
 			System.out.println("Number of positive sentiment words: "
 					+ feat.getNumPosSentiWords());
 
-			feat.setNumNegSentiWords(getNumSentiWords(Vars.NEG_WORDS_DE_PATH));
+			feat.setNumNegSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("NEG_WORDS_DE_PATH")));
 			System.out.println("Number of negative words: "
 					+ feat.getNumNegSentiWords());
 
-			feat.setContainsFirstOrderPron(containsPronoun(Vars.FIRST_PRON_DE_PATH));
+			feat.setContainsFirstOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("FIRST_PRON_DE_PATH")));
 			System.out.println("Contains 1st person pronoun: "
 					+ feat.getContainsFirstOrderPron());
-			feat.setContainsSecondOrderPron(containsPronoun(Vars.SECOND_PRON_DE_PATH));
+			feat.setContainsSecondOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("SECOND_PRON_DE_PATH")));
 			System.out.println("Contains 2nd person pronoun: "
 					+ feat.getContainsSecondOrderPron());
-			feat.setContainsThirdOrderPron(containsPronoun(Vars.THIRD_PRON_DE_PATH));
+			feat.setContainsThirdOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("THIRD_PRON_DE_PATH")));
 			System.out.println("Contains 3rd person pronoun: "
 					+ feat.getContainsThirdOrderPron());
 

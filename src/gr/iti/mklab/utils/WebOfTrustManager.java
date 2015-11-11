@@ -15,7 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * The WebOfTrustManager class organizes the extraction of the WOT values and
+ * The WebOfTrustManager class organizes the extraction of the WOT(Web Of Trust) values and
  * includes all the necessary values for this purpose.
  * 
  * @author boididou
@@ -80,7 +80,7 @@ public class WebOfTrustManager {
 			IOException, JSONException {
 
 		Integer[] values = { 0, 0 };
-		System.out.println("the host " + host);
+		//System.out.println("the host " + host);
 
 		String host0 = expandUrl(host);
 		if (host0 == null) {
@@ -94,7 +94,7 @@ public class WebOfTrustManager {
 		} catch (Exception e) {
 			hostToCheck = host0;
 		}
-		System.out.println("for the request " + hostToCheck);
+		//System.out.println("for the request " + hostToCheck);
 
 		if (hostToCheck.contains("?")){
 			hostToCheck = hostToCheck.split(Pattern.quote("?"))[0];
@@ -105,15 +105,15 @@ public class WebOfTrustManager {
 						+ hostToCheck
 						+ "/&key=75ff0cddd33a6e731c2d862c570de6c19f78423f")
 				.openStream();
-		System.out.println("response "+response);
+		//System.out.println("response "+response);
 		String res = getStringFromInputStream(response);
-		System.out.println("res "+res);
+		//System.out.println("res "+res);
 		
 		JSONObject jO = new JSONObject(res);
 		if (jO.length() != 0) {
-			System.out.println(jO);
+			//System.out.println(jO);
 			String name = jO.names().get(0).toString();
-			System.out.println("the name " + name);
+			//System.out.println("the name " + name);
 
 			try {
 				JSONArray trust = jO.getJSONObject(name).getJSONArray("0");
