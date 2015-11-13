@@ -133,6 +133,70 @@ public class WebOfTrustManager {
 		}
 		return values;
 	}
+	
+	/**
+	 * Calculates the WOT values(trust and safe) of a link. Returns 0 for
+	 * unavailable values.
+	 * 
+	 * @param host
+	 *            the link to calculate for
+	 * @return int[] WOT values
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	public Integer getWotTrustValue(String host) throws MalformedURLException,
+			IOException, JSONException {
+
+		Integer value = 0;
+		//System.out.println("the host " + host);
+
+		String host0 = expandUrl(host);
+		if (host0 == null) {
+			host0 = host;
+		}
+
+		String hostToCheck = null;
+		try {
+			hostToCheck = host0.split("/")[0] + "/" + host0.split("/")[1] + "/"
+					+ host0.split("/")[2];
+		} catch (Exception e) {
+			hostToCheck = host0;
+		}
+		//System.out.println("for the request " + hostToCheck);
+
+		if (hostToCheck.contains("?")){
+			hostToCheck = hostToCheck.split(Pattern.quote("?"))[0];
+		}
+		
+		InputStream response = new URL(
+				"http://api.mywot.com/0.4/public_link_json2?hosts="
+						+ hostToCheck
+						+ "/&key=75ff0cddd33a6e731c2d862c570de6c19f78423f")
+				.openStream();
+		//System.out.println("response "+response);
+		String res = getStringFromInputStream(response);
+		//System.out.println("res "+res);
+		
+		JSONObject jO = new JSONObject(res);
+		if (jO.length() != 0) {
+			//System.out.println(jO);
+			String name = jO.names().get(0).toString();
+			//System.out.println("the name " + name);
+
+			try {
+				JSONArray trust = jO.getJSONObject(name).getJSONArray("0");
+				int valueTrust = Integer.parseInt(trust.get(0).toString());
+				int confTrust = Integer.parseInt(trust.get(1).toString());
+				value = valueTrust * confTrust / 100;
+
+			} catch (Exception e) {
+				//value = 0;
+				//System.out.println("Not available WOT trust value for this link!");
+			}
+		}
+		return value;
+	}
 
 	/**
 	 * Given an InputStream, returns the corresponding String

@@ -1,6 +1,5 @@
 package gr.iti.mklab.extractfeatures;
 
-import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -51,34 +50,63 @@ import gr.iti.mklab.verify.AgreementBasedClassification;
 public class ItemFeaturesExtractorJSON {
 
 	static String[] tokens;
-	static String itemTitle;
-	public static Instances isTrainingSet;
-	// public static Long startTime = 1350864000L;
-	public static LexicalizedParser lp = LexicalizedParser.loadModel(AgreementBasedClassification.prop.getProperty("MODEL_PARSER"));
+	static String text;
+	static String preprocessedText;
 	
+	public static Instances isTrainingSet;
+	public static LexicalizedParser lp; 
+	public static String happy_emo_path;
+	public static String sad_emo_path;
+	public static String pos_words_eng_path;
+	public static String neg_words_eng_path;
+	public static String first_pron_path;
+	public static String second_pron_path;
+	public static String third_pron_path;
+	public static String slang_eng_path;
+	public static String pos_words_es_path;
+	public static String neg_words_es_path;
+	public static String first_pron_es_path;
+	public static String second_pron_es_path;
+	public static String third_pron_es_path;
+	public static String slang_es_path;
+	public static String pos_words_de_path;
+	public static String neg_words_de_path;
+	public static String first_pron_de_path;
+	public static String second_pron_de_path;
+	public static String third_pron_de_path;
 
-	public static void setItemTitle(String itemTitle) {
-		ItemFeaturesExtractorJSON.itemTitle = itemTitle;
+	
+	public static void initializeFiles() {		
+		lp = LexicalizedParser.loadModel(AgreementBasedClassification.prop.getProperty("MODEL_PARSER"));
+		happy_emo_path = AgreementBasedClassification.prop.getProperty("HAPPY_EMO_PATH");
+		sad_emo_path = AgreementBasedClassification.prop.getProperty("SAD_EMO_PATH");
+		pos_words_eng_path = AgreementBasedClassification.prop.getProperty("POS_WORDS_ENG_PATH");
+		neg_words_eng_path = AgreementBasedClassification.prop.getProperty("NEG_WORDS_ENG_PATH");
+		first_pron_path = AgreementBasedClassification.prop.getProperty("FIRST_PRON_PATH");
+		second_pron_path = AgreementBasedClassification.prop.getProperty("SECOND_PRON_PATH");
+		third_pron_path = AgreementBasedClassification.prop.getProperty("THIRD_PRON_PATH");
+		slang_eng_path = AgreementBasedClassification.prop.getProperty("SLANG_ENG_PATH");
+		pos_words_es_path = AgreementBasedClassification.prop.getProperty("POS_WORDS_ES_PATH");
+		neg_words_es_path = AgreementBasedClassification.prop.getProperty("NEG_WORDS_ES_PATH");
+		first_pron_es_path = AgreementBasedClassification.prop.getProperty("FIRST_PRON_ES_PATH");
+		second_pron_es_path = AgreementBasedClassification.prop.getProperty("SECOND_PRON_ES_PATH");
+		third_pron_es_path = AgreementBasedClassification.prop.getProperty("THIRD_PRON_ES_PATH");
+		slang_es_path = AgreementBasedClassification.prop.getProperty("SLANG_ES_PATH");
+		pos_words_de_path = AgreementBasedClassification.prop.getProperty("POS_WORDS_DE_PATH");
+		neg_words_de_path = AgreementBasedClassification.prop.getProperty("NEG_WORDS_DE_PATH");
+		first_pron_de_path = AgreementBasedClassification.prop.getProperty("FIRST_PRON_DE_PATH");
+		second_pron_de_path = AgreementBasedClassification.prop.getProperty("SECOND_PRON_DE_PATH");
+		third_pron_de_path = AgreementBasedClassification.prop.getProperty("THIRD_PRON_DE_PATH");
 	}
-
-	static String text = "";
-
-	public static List<ItemFeatures> getListItemFeatures(){
-		
-		List<ItemFeatures> listItemFeatures = new ArrayList<ItemFeatures>();
-		
-		//for ()
-		
-		return listItemFeatures;
-	}
+	
+	
 	
 	public static ItemFeatures extractFeatures(JSONObject json) throws Exception {
 
 		String currentTweetId = json.getString("id_str");
 
 		// info
-		System.out.println("Extracting Item features for the " + currentTweetId
-				+ "...");
+		System.out.println("Extracting Tweet features for the tweet with ID: " + currentTweetId	+ "...");
 
 		// define the ItemFeatures object that holds the features
 		ItemFeatures feat = new ItemFeatures();
@@ -93,8 +121,7 @@ public class ItemFeaturesExtractorJSON {
 		}
 
 		// preprocess the text
-		String str = text.replaceAll("http+s*+://[^ ]+", "")
-				.replaceAll("@[^ ]+", "").replaceAll("#[^ ]+ ", "")
+		preprocessedText = text.replaceAll("http+s*+://[^ ]+", "").replaceAll("@[^ ]+", "").replaceAll("@ [^ ]+", "").replaceAll("#[^ ]+ ", "")
 				.replaceAll("RT", "").toLowerCase().trim();
 
 		/** Features depending on the Item(Tweet) **/
@@ -102,50 +129,41 @@ public class ItemFeaturesExtractorJSON {
 		feat.setId(currentTweetId);
 		// item length
 		feat.setItemLength(text.length());
-		System.out.println("Tweet text length: " + text.length());
+		//System.out.println("Tweet text length: " + text.length());
 		// num of words
 		feat.setNumWords(getNumItemWords());
-		System.out.println("Number of words: " + feat.getNumWords());
+		//System.out.println("Number of words: " + feat.getNumWords());
 		// contains "?"
 		feat.setContainsQuestionMark(containsSymbol("?"));
-		System.out.println("Contains question mark "
-				+ feat.getContainsQuestionMark());
+		//System.out.println("Contains question mark "+ feat.getContainsQuestionMark());
 		// contains "!"
 		feat.setContainsExclamationMark(containsSymbol("!"));
-		System.out.println("Contains exclamation mark "
-				+ feat.getContainsExclamationMark());
+		//System.out.println("Contains exclamation mark "	+ feat.getContainsExclamationMark());
 		// num of "!"
 		feat.setNumExclamationMark(getNumSymbol("!"));
-		System.out.println("Number of exclamation marks: "
-				+ feat.getNumExclamationMark());
+		//System.out.println("Number of exclamation marks: "	+ feat.getNumExclamationMark());
 		// num of "?"
 		feat.setNumQuestionMark(getNumSymbol("?"));
-		System.out.println("Number of question marks: "
-				+ feat.getNumQuestionMark());
+		//System.out.println("Number of question marks: "	+ feat.getNumQuestionMark());
 
 		// contains happy emoticon
-		feat.setContainsHappyEmo(containsEmo(AgreementBasedClassification.prop.getProperty("HAPPY_EMO_PATH")));
-		System.out.println("Contains happy emoticon: "
-				+ feat.getContainsHappyEmo());
+		feat.setContainsHappyEmo(containsEmo(happy_emo_path));
+		//System.out.println("Contains happy emoticon: "+ feat.getContainsHappyEmo());
 		// contains sad emoticon
-		feat.setContainsSadEmo(containsEmo(AgreementBasedClassification.prop.getProperty("SAD_EMO_PATH")));
-		System.out
-				.println("Contains sad emoticon: " + feat.getContainsSadEmo());
+		feat.setContainsSadEmo(containsEmo(sad_emo_path));
+		//System.out.println("Contains sad emoticon: " + feat.getContainsSadEmo());
 
 		// num of uppercase chars
 		feat.setNumUppercaseChars(getNumUppercaseChars());
-		System.out.println("Number of uppercase characters: "
-				+ feat.getNumUppercaseChars());
+		//System.out.println("Number of uppercase characters: "+ feat.getNumUppercaseChars());
 		// num of mentions
-		int numMentions = json.getJSONObject("entities")
-				.getJSONArray("user_mentions").length();
+		int numMentions = json.getJSONObject("entities").getJSONArray("user_mentions").length();
 		feat.setNumMentions(numMentions);
-		System.out.println("Number of mentions: " + numMentions);
+		//System.out.println("Number of mentions: " + numMentions);
 		// num of hashtags
-		int numHashtags = json.getJSONObject("entities")
-				.getJSONArray("hashtags").length();
+		int numHashtags = json.getJSONObject("entities").getJSONArray("hashtags").length();
 		feat.setNumHashtags(numHashtags);
-		System.out.println("Number of hashtags: " + numHashtags);
+		//System.out.println("Number of hashtags: " + numHashtags);
 
 		// num of urls
 		int numURLs = json.getJSONObject("entities").getJSONArray("urls")
@@ -158,44 +176,42 @@ public class ItemFeaturesExtractorJSON {
 			numURLs2 = 0;
 		}
 		feat.setNumURLs(numURLs + numURLs2);
-		System.out.println("Number of urls " + (numURLs + numURLs2));
+		//System.out.println("Number of urls " + (numURLs + numURLs2));
 
 		// num of retweets
 		Long retweetCount = json.getLong("retweet_count");
 		feat.setRetweetCount(retweetCount);
-		System.out.println("Retweet count: " + retweetCount);
+		//System.out.println("Retweet count: " + retweetCount);
 		// has colon
 		feat.setHasColon(containsSymbol(":"));
-		System.out.println("Has ':' symbol: " + feat.getHasColon());
+		//System.out.println("Has ':' symbol: " + feat.getHasColon());
 		// has please
 		feat.setHasPlease(containsSymbol("please"));
-		System.out.println("Has 'please' word: " + feat.getHasPlease());
+		//System.out.println("Has 'please' word: " + feat.getHasPlease());
 		// external links (except for the image link)
 
 		HashSet<String> extLinks = checkForExternalLinks(json);
 		feat.setHasExternalLink(!(extLinks.isEmpty()));
-		System.out.println("Number of external links: "
-				+ feat.getHasExternalLink());
-		System.out.println("External links: " + extLinks);
+		//System.out.println("Number of external links: "	+ feat.getHasExternalLink());
+		//System.out.println("External links: " + extLinks);
 
 		// variables used inside for loop
 		WebOfTrustManager wot = new WebOfTrustManager();
 
 		for (String extLink : extLinks) {
 
-			Integer[] values = wot.getWotValues(extLink);
+			Integer value = wot.getWotTrustValue(extLink);
 
-			if (values[0] != 0 && values[1] != 0) {
-				feat.setWotTrust(values[0]);
+			if (value != 0 ) {
+				feat.setWotTrust(value);
 				// feat.setWotSafe(values[1]);
 			}
 			// info
-			System.out.println("For " + extLink + ": ");
-			System.out.println("WOT trust value: " + feat.getWotTrust());
+			//System.out.println("For " + extLink + ": ");
+			//System.out.println("WOT trust value: " + feat.getWotTrust());
 
 			// some necessary preprocessing
-			extLink = URLProcessing.getInstance()
-					.processUrlForRunnable(extLink);
+			extLink = URLProcessing.getInstance().processUrlForRunnable(extLink);
 
 			// UserFeatures
 			/*Float indegree = organizeRunRank("indegree-" + currentTweetId,
@@ -223,103 +239,85 @@ public class ItemFeaturesExtractorJSON {
 			feat.setAlexaDeltaRank(alexaRankings[2]);
 			feat.setAlexaCountryRank(alexaRankings[3]);
 
-			System.out
-					.println("Alexa Popularity: " + feat.getAlexaPopularity());
-			System.out.println("Alexa Reach Rank: " + feat.getAlexaReachRank());
-			System.out.println("Alexa Delta Rank: " + feat.getAlexaDeltaRank());
-			System.out.println("Alexa Country Rank: "
-					+ feat.getAlexaCountryRank());
+			//System.out.println("Alexa Popularity: " + feat.getAlexaPopularity());
+			//System.out.println("Alexa Reach Rank: " + feat.getAlexaReachRank());
+			//System.out.println("Alexa Delta Rank: " + feat.getAlexaDeltaRank());
+			//System.out.println("Alexa Country Rank: " + feat.getAlexaCountryRank());
 
 		}
 
 		/** Additional features depending on the Tweet's language **/
 
-		String lang = TextProcessing.getInstance().getLanguage(str);
+		String lang = TextProcessing.getInstance().getLanguage(preprocessedText);
 
 		// english
 		if (lang.equals("en")) {
 			// num of positive sentiment words
-			feat.setNumPosSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("POS_WORDS_ENG_PATH")));
-			System.out.println("Number of positive sentiment words: "
-					+ feat.getNumPosSentiWords());
+			feat.setNumPosSentiWords(getNumSentiWords(pos_words_eng_path));
+			//System.out.println("Number of positive sentiment words: "+ feat.getNumPosSentiWords());
 			// num of negative sentiment words
-			feat.setNumNegSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("NEG_WORDS_ENG_PATH")));
-			System.out.println("Number of negative words: "
-					+ feat.getNumNegSentiWords());
+			feat.setNumNegSentiWords(getNumSentiWords(neg_words_eng_path));
+			//System.out.println("Number of negative words: "	+ feat.getNumNegSentiWords());
 
 			// contains first,second and third order pronoun
-			feat.setContainsFirstOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("FIRST_PRON_PATH")));
-			System.out.println("Contains 1st person pronoun: "
-					+ feat.getContainsFirstOrderPron());
-			feat.setContainsSecondOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("SECOND_PRON_PATH")));
-			System.out.println("Contains 2nd person pronoun: "
-					+ feat.getContainsSecondOrderPron());
-			feat.setContainsThirdOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("THIRD_PRON_PATH")));
-			System.out.println("Contains 3rd person pronoun: "
-					+ feat.getContainsThirdOrderPron());
+			feat.setContainsFirstOrderPron(containsPronoun(first_pron_path));
+			//System.out.println("Contains 1st person pronoun: "+ feat.getContainsFirstOrderPron());
+			feat.setContainsSecondOrderPron(containsPronoun(second_pron_path));
+			//System.out.println("Contains 2nd person pronoun: "	+ feat.getContainsSecondOrderPron());
+			feat.setContainsThirdOrderPron(containsPronoun(third_pron_path));
+			//System.out.println("Contains 3rd person pronoun: "	+ feat.getContainsThirdOrderPron());
 
 			// Features only available in english
 			// num of slang words
-			feat.setNumSlangs(getNumSlangs(AgreementBasedClassification.prop.getProperty("SLANG_ENG_PATH"), "en"));
-			System.out.println("Number of slang words: " + feat.getNumSlangs());
+			feat.setNumSlangs(getNumSlangs(slang_eng_path, "en"));
+			//System.out.println("Number of slang words: " + feat.getNumSlangs());
 			// number of nouns
 			feat.setNumNouns(getNumNouns());
-			System.out.println("Number of nouns: " + feat.getNumNouns());
+			//System.out.println("Number of nouns: " + feat.getNumNouns());
 
 			// redability score
 			Double readability = getReadability();
 			if (readability != null) {
 				feat.setReadability(readability);
 			}
-			System.out.println("Readability score: " + feat.getReadability());
+			//System.out.println("Readability score: " + feat.getReadability());
 
 			// spanish
 		} else if (lang.equals("es")) {
-			feat.setNumPosSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("POS_WORDS_ES_PATH")));
-			System.out.println("Number of positive sentiment words: "
-					+ feat.getNumPosSentiWords());
-			feat.setNumNegSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("NEG_WORDS_ES_PATH")));
-			System.out.println("Number of negative words: "
-					+ feat.getNumNegSentiWords());
+			feat.setNumPosSentiWords(getNumSentiWords(pos_words_es_path));
+			//System.out.println("Number of positive sentiment words: "	+ feat.getNumPosSentiWords());
+			feat.setNumNegSentiWords(getNumSentiWords(neg_words_es_path));
+			//System.out.println("Number of negative words: "  			+ feat.getNumNegSentiWords());
 
-			feat.setContainsFirstOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("FIRST_PRON_ES_PATH")));
-			System.out.println("Contains 1st person pronoun: "
-					+ feat.getContainsFirstOrderPron());
+			feat.setContainsFirstOrderPron(containsPronoun(first_pron_es_path));
+			//System.out.println("Contains 1st person pronoun: "		+ feat.getContainsFirstOrderPron());
 
-			feat.setContainsSecondOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("SECOND_PRON_ES_PATH")));
-			System.out.println("Contains 2nd person pronoun: "
-					+ feat.getContainsSecondOrderPron());
+			feat.setContainsSecondOrderPron(containsPronoun(second_pron_es_path));
+			//System.out.println("Contains 2nd person pronoun: "		+ feat.getContainsSecondOrderPron());
 
-			feat.setContainsThirdOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("THIRD_PRON_ES_PATH")));
-			System.out.println("Contains 3rd person pronoun: "
-					+ feat.getContainsThirdOrderPron());
+			feat.setContainsThirdOrderPron(containsPronoun(third_pron_es_path));
+			//System.out.println("Contains 3rd person pronoun: "		+ feat.getContainsThirdOrderPron());
 
-			feat.setNumSlangs(getNumSlangs(AgreementBasedClassification.prop.getProperty("SLANG_ES_PATH"), "es"));
-			System.out.println("Number of slang words: " + feat.getNumSlangs());
+			feat.setNumSlangs(getNumSlangs(slang_es_path, "es"));
+			//System.out.println("Number of slang words: " + feat.getNumSlangs());
 
 			// german
 		} else if (lang.equals("de")) {
-			feat.setNumPosSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("POS_WORDS_DE_PATH")));
-			System.out.println("Number of positive sentiment words: "
-					+ feat.getNumPosSentiWords());
+			feat.setNumPosSentiWords(getNumSentiWords(pos_words_de_path));
+			//System.out.println("Number of positive sentiment words: "+ feat.getNumPosSentiWords());
 
-			feat.setNumNegSentiWords(getNumSentiWords(AgreementBasedClassification.prop.getProperty("NEG_WORDS_DE_PATH")));
-			System.out.println("Number of negative words: "
-					+ feat.getNumNegSentiWords());
+			feat.setNumNegSentiWords(getNumSentiWords(neg_words_de_path));
+			//System.out.println("Number of negative words: "		+ feat.getNumNegSentiWords());
 
-			feat.setContainsFirstOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("FIRST_PRON_DE_PATH")));
-			System.out.println("Contains 1st person pronoun: "
-					+ feat.getContainsFirstOrderPron());
-			feat.setContainsSecondOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("SECOND_PRON_DE_PATH")));
-			System.out.println("Contains 2nd person pronoun: "
-					+ feat.getContainsSecondOrderPron());
-			feat.setContainsThirdOrderPron(containsPronoun(AgreementBasedClassification.prop.getProperty("THIRD_PRON_DE_PATH")));
-			System.out.println("Contains 3rd person pronoun: "
-					+ feat.getContainsThirdOrderPron());
+			feat.setContainsFirstOrderPron(containsPronoun(first_pron_de_path));
+			//System.out.println("Contains 1st person pronoun: "	+ feat.getContainsFirstOrderPron());
+			feat.setContainsSecondOrderPron(containsPronoun(second_pron_de_path));
+			//System.out.println("Contains 2nd person pronoun: "	+ feat.getContainsSecondOrderPron());
+			feat.setContainsThirdOrderPron(containsPronoun(third_pron_de_path));
+			//System.out.println("Contains 3rd person pronoun: "	+ feat.getContainsThirdOrderPron());
 
 		}
 
-		System.out.println("-");
 		return feat;
 	}
 
@@ -407,7 +405,7 @@ public class ItemFeaturesExtractorJSON {
 			br.close();
 
 			// print info
-			System.out.println("Contains emoticon: " + containsEmo);
+			//System.out.println("Contains emoticon: " + containsEmo);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -424,20 +422,16 @@ public class ItemFeaturesExtractorJSON {
 		// uppercase
 		// chars on them
 
-		String str = text.replaceAll("http://[^ ]+", "")
-				.replaceAll("@ [^ ]+ ", "").replaceAll("@[^ ]+", "")
-				.replaceAll("#[^ ]+", "");
+		
 
 		// count the uppercase chars
-		for (int i = 0; i < str.length(); i++) {
-			ch = str.charAt(i);
+		for (int i = 0; i < preprocessedText.length(); i++) {
+			ch = preprocessedText.charAt(i);
 			if (Character.isUpperCase(ch)) {
 				numUppercaseChars++;
 			}
 		}
-		if (text.contains("RT ") && numUppercaseChars > 1) {
-			numUppercaseChars = numUppercaseChars - 2;
-		}
+		
 		// print info
 		// System.out.println("Num of uppercase chars: " + numUppercaseChars);
 
@@ -552,7 +546,7 @@ public class ItemFeaturesExtractorJSON {
 			}
 
 			// print info
-			System.out.println("Number of senti words: " + numSentiWords);
+			//System.out.println("Number of senti words: " + numSentiWords);
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -747,9 +741,7 @@ public class ItemFeaturesExtractorJSON {
 					numSlangs++;
 					// System.out.println("num slangs " + numSlangs+
 					// " for phrase ");
-					for (String p : words) {
-						// System.out.println("- " + p);
-					}
+					
 				}
 
 			}
@@ -761,19 +753,7 @@ public class ItemFeaturesExtractorJSON {
 		return numSlangs;
 	}
 
-	/*
-	 * public static Long getTimeFromStart(Item item) {
-	 * 
-	 * Long timeFromStart = 0L; timeFromStart = item.getPublicationTime() -
-	 * startTime;
-	 * 
-	 * String date = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
-	 * .format(new java.util.Date(item.getPublicationTime() * 1000)); //
-	 * System.out.println(item.getId()); // System.out.println(timeFromStart +
-	 * " "+ date);
-	 * 
-	 * return timeFromStart; }
-	 */
+	
 
 	public static Integer getNumNouns() {
 		Integer numNouns = 0;
@@ -823,16 +803,6 @@ public class ItemFeaturesExtractorJSON {
 
 	}
 
-	public static String getUrl() {
-
-		String str;
-
-		int index = itemTitle.indexOf("http");
-		str = itemTitle.substring(index);
-		str = str.split(" ")[0];
-
-		return str;
-	}
 
 	/**
 	 * Expands the given shortened url
@@ -1004,18 +974,15 @@ public class ItemFeaturesExtractorJSON {
 
 		// define the external links list
 		HashSet<String> extLinks = new HashSet<String>();
-		Image image = null;
 
 		for (String url : urls) {
 
 			boolean isAnImage = URLProcessing.getInstance().isAnImage(url);
 			// checking each url if it is an Image or not
 
-			if (isAnImage) {
-				System.out.println(url + " is an Image!");
-			} else {
+			if (!isAnImage) {
 				// handle instagram
-				System.out.println("Checking " + url+ " for external link possibility...");
+				//System.out.println("Checking " + url+ " for external link possibility...");
 				
 				//instagram
 				url = WebOfTrustManager.getInstance().handleInstagram(url);
@@ -1035,7 +1002,7 @@ public class ItemFeaturesExtractorJSON {
 		}
 
 		// info
-		 System.out.println("External links found: " + extLinks);
+		// System.out.println("External links found: " + extLinks);
 
 		return extLinks;
 	}
@@ -1066,8 +1033,7 @@ public class ItemFeaturesExtractorJSON {
 		Double readability = null;
 
 		String str = text.replaceAll("http+s*+://[^ ]+", "")
-				.replaceAll("#[^ ]+ ", "").replaceAll("@[^ ]+", "");
-		str = str.replaceAll("  ", " ");
+				.replaceAll("#[^ ]+ ", "").replaceAll("@[^ ]+", "").replaceAll("  ", " ");
 
 		if (!str.isEmpty()) {
 			Readability r = new Readability(str);
@@ -1153,86 +1119,4 @@ public class ItemFeaturesExtractorJSON {
 		}
 	}
 
-	
-	/*public List<ItemFeatures> getLatestItems(String dbString,
-			String collection, int n) {
-
-		List<ItemFeatures> results = new ArrayList<ItemFeatures>();
-		Mongo mongo;
-		try {
-			mongo = new MongoClient(Vars.LOCALHOST_IP);
-			DB db = mongo.getDB(dbString);
-			DBCollection coll = db.getCollection(collection);
-			System.out.println("Fetching items from " + db + " " + collection
-					+ "...");
-
-			List<String> jsonStrings = new ArrayList<String>();
-			DBCursor cursor = coll.find();
-			while (cursor.hasNext()) {
-				String s = JSON.serialize(cursor.next());
-				jsonStrings.add(s);
-			}
-
-			for (String json : jsonStrings) {
-				results.add(create(json));
-			}
-
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return results;
-
-	}*/
-
-	/*public List<String> getExistingTweetsIds(String dbString, String coll,
-			String idFieldName) throws UnknownHostException {
-
-		List<String> ids = new ArrayList<String>();
-
-		Mongo mongo = new MongoClient(Vars.LOCALHOST_IP);
-		DB db = mongo.getDB(dbString);
-
-		// get a single collection
-		DBCollection collection = db.getCollection(coll);
-
-		DBCursor cursor = collection.find();
-
-		while (cursor.hasNext()) {
-			String s = JSON.serialize(cursor.next());
-			JSONObject json = new JSONObject(s);
-
-			String id = json.getString(idFieldName).replaceAll("[^\\d.]", "");
-			ids.add(id);
-
-		}
-
-		return ids;
-	}*/
-	
-	/*public static void main(String[] args) throws Exception {
-		
-		MongoHandler mh = null;
-		try {
-			mh = new MongoHandler(Vars.LOCALHOST_IP, "TestSetFeaturesAll");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		List<JSONObject> jsons = DBHandler.getInstance().getExistingTweets("TestSet", "GarissaAttackFakes");
-
-		List<String> idsexist = DBHandler.getInstance().getExistingTweetsIds("TestSetFeaturesAll", "GarissaAttack_fake_Item", "id");
-		
-		for (JSONObject json : jsons) {
-			if (!idsexist.contains(json.getString("id_str"))) {
-				ItemFeatures ifeats = extractFeatures(json);
-				mh.insert(ifeats, "GarissaAttack_fake_Item");
-			}
-		}
-		
-
-		
-
-	}*/
-
-}
+	}

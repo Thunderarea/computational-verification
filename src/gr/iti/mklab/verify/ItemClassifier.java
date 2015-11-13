@@ -331,7 +331,7 @@ public class ItemClassifier {
 	 * @param listFeaturesAnnot the MediaItem's annotation details
 	 * @return Instances that form the testing set
 	 */
-	public static Instances createTestingSet(ItemFeatures listItemFeatures,ItemFeaturesAnnotation listFeaturesAnnot){
+	public static Instances createTestingSet(ItemFeatures listItemFeatures){
 		
 		// Create an empty training set
 		Instances isTestSet = new Instances("ItemFeatureClassification", fvAttributes, 1);           
@@ -340,7 +340,7 @@ public class ItemClassifier {
 	
 		Instance inst = createInstance(listItemFeatures);
 			
-		inst.setValue((Attribute)fvAttributes.get(ItemClassifier.getFvAttributes().size()-1), listFeaturesAnnot.getReliability());
+		inst.setValue((Attribute)fvAttributes.get(ItemClassifier.getFvAttributes().size()-1), "fake");
 		
 		isTestSet.add(inst);
 		
@@ -358,12 +358,6 @@ public class ItemClassifier {
 	 */
 	public static Instances createTrainingSet(List<ItemFeatures> listItemFeatures, List<ItemFeaturesAnnotation> itemFeaturesAnnot){
 		
-		//auxiliary variable
-		Integer index=0;
-		
-		if (ItemClassifier.getFvAttributes().size()==0){
-			fvAttributes = (ArrayList<Attribute>) declareAttributes();
-		}
 		
 		// Create an empty training set
 		Instances isTrainingSet = new Instances("TrainingContentFeatures",  ItemClassifier.getFvAttributes(), listItemFeatures.size());           
@@ -374,19 +368,11 @@ public class ItemClassifier {
 		for (int i=0;i<listItemFeatures.size();i++){
 			
 			Instance inst  = createInstance(listItemFeatures.get(i));
-			
-			for (int j=0;j<itemFeaturesAnnot.size();j++){
-				if ((listItemFeatures.get(i).getId()).equals(itemFeaturesAnnot.get(j).getId())){
-					index = j;
-				}
-			}
-			
-			inst.setValue((Attribute)fvAttributes.get(fvAttributes.size()-1), itemFeaturesAnnot.get(index).getReliability());
+						
+			inst.setValue((Attribute)fvAttributes.get(fvAttributes.size()-1), itemFeaturesAnnot.get(i).getReliability());
 			isTrainingSet.add(inst);
 		}
 		
-		//System.out.println("-----TRAINING SET-------");
-		//System.out.println(isTrainingSet);
 		
 		return isTrainingSet;
 	}
@@ -396,7 +382,7 @@ public class ItemClassifier {
 	
 	public static Instances reformatInstances(Instances instances) {
 		
-		ItemClassifier.declareAttributes();
+		//ItemClassifier.declareAttributes();
 		
 		Instances newInstances = new Instances("data", ItemClassifier.getFvAttributes(), instances.size());
 		
@@ -452,22 +438,12 @@ public class ItemClassifier {
 	
 	public static Instances formTestingSet(ItemFeatures itemFeats){
 
-		if (ItemClassifier.getFvAttributes().size()==0){
-			fvAttributes = (ArrayList<Attribute>) declareAttributes();
-		}
-		
+
 		Instances testingSet = null;
-		//ItemFeatures itemFeats;
 		
 		try {
-			//compute and get the Item features of the current JSON object
-			//itemFeats = ItemFeaturesExtractorJSON.extractFeatures(json);
-			//create the Item annotation instance
-			ItemFeaturesAnnotation itemAnnot = new ItemFeaturesAnnotation();
-			itemAnnot.setId(itemFeats.getId());
-			itemAnnot.setReliability("fake");
-			//create the testing set using the above data
-			testingSet = createTestingSet(itemFeats, itemAnnot);
+			
+			testingSet = createTestingSet(itemFeats);
 			
 		} catch (Exception e) {
 			System.out.println("Error on forming the Item features testing set...!");

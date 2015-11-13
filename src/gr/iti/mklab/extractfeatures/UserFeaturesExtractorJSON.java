@@ -1,23 +1,11 @@
 package gr.iti.mklab.extractfeatures;
 
-import eu.socialsensor.framework.client.mongo.MongoHandler;
-import eu.socialsensor.geo.Countrycoder;
-import gr.iti.mklab.utils.AlexaRankingManager;
-import gr.iti.mklab.utils.RunnableRank;
-import gr.iti.mklab.utils.StringProcessing;
-import gr.iti.mklab.utils.TextProcessing;
-import gr.iti.mklab.utils.URLProcessing;
-import gr.iti.mklab.utils.Vars;
-import gr.iti.mklab.utils.WebOfTrustManager;
-import gr.iti.mklab.verify.AgreementBasedClassification;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,28 +28,38 @@ import org.jsoup.select.Elements;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
-import com.mongodb.util.JSON;
+
+import eu.socialsensor.geo.Countrycoder;
+import gr.iti.mklab.utils.AlexaRankingManager;
+import gr.iti.mklab.utils.RunnableRank;
+import gr.iti.mklab.utils.StringProcessing;
+import gr.iti.mklab.utils.TextProcessing;
+import gr.iti.mklab.utils.URLProcessing;
+import gr.iti.mklab.utils.WebOfTrustManager;
+import gr.iti.mklab.verify.AgreementBasedClassification;
 
 public class UserFeaturesExtractorJSON {
 
-	// latitude and longitude of event's location (New York)
-	static double[] coordinates = { 40.7143528, -74.00597309999999 };
-
 	// geo-files
-	static String rootGeonamesDir = "";
-	static String citiesFile = "";
-	static String countryInfoFile = "";
-	static String adminNamesFile = "";
-
+	static String rootGeonamesDir;
+	static String citiesFile;
+	static String countryInfoFile;
+	static String adminNamesFile;
+	static Countrycoder countrycodingService;
 	// centralities
-	public static List<String> indegreeLines = new ArrayList<String>();
-	public static List<String> harmonicLines = new ArrayList<String>();
+	//public static List<String> indegreeLines = new ArrayList<String>();
+	//public static List<String> harmonicLines = new ArrayList<String>();
 
+	public static void initializeFiles() {
+
+		citiesFile = AgreementBasedClassification.prop.getProperty("CITIES_PATH");
+		countryInfoFile = AgreementBasedClassification.prop.getProperty("COUNTRY_INFO_PATH");
+		adminNamesFile = AgreementBasedClassification.prop.getProperty("ADMIN_NAMES_PATH");
+		countrycodingService = new Countrycoder(citiesFile,countryInfoFile, adminNamesFile);
+
+	}
+	
+	
 	/**
 	 * Function that finds the number of friends of a Twitter account
 	 * 
@@ -71,8 +69,7 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static Long getNumFriends(JSONObject json) {
 
-		Long numFriends = Long.parseLong(json.getJSONObject("user")
-				.get("friends_count").toString());
+		Long numFriends = Long.parseLong(json.getJSONObject("user").get("friends_count").toString());
 		return numFriends;
 	}
 
@@ -85,8 +82,7 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static Long getNumFollowers(JSONObject json) {
 
-		Long numFollowers = Long.parseLong(json.getJSONObject("user")
-				.get("followers_count").toString());
+		Long numFollowers = Long.parseLong(json.getJSONObject("user").get("followers_count").toString());
 
 		return numFollowers;
 	}
@@ -120,10 +116,7 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static Long getTimesListed(JSONObject json) {
 
-		Long times = Long.parseLong(json.getJSONObject("user")
-				.get("listed_count").toString());
-
-		return times;
+		return Long.parseLong(json.getJSONObject("user").get("listed_count").toString());
 	}
 
 	/**
@@ -156,14 +149,12 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static String getUserUrl(JSONObject json) {
 
-		Object urlObj = json.getJSONObject("user").get("url");
+		Object urlObj = json.getJSONObject("user").get("url").toString();
 
-		if (urlObj != null) {
+		if (urlObj != null) 
 			return urlObj.toString();
-		} else {
-			String nothing = "";
-			return nothing;
-		}
+		
+		return "";
 	}
 
 	/**
@@ -179,8 +170,7 @@ public class UserFeaturesExtractorJSON {
 
 		JSONObject user = json.getJSONObject("user");
 
-		if (user.get("description") != null
-				&& !user.get("description").equals("null")) {
+		if (user.get("description") != null && !user.get("description").equals("null")) {
 			return true;
 		}
 
@@ -197,10 +187,8 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static Boolean isVerifiedUser(JSONObject json) {
 
-		Boolean isVerified = (Boolean) json.getJSONObject("user").get(
-				"verified");
+		return (Boolean) json.getJSONObject("user").get("verified");
 
-		return isVerified;
 	}
 
 	/**
@@ -213,10 +201,8 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static Long getNumTweets(JSONObject json) {
 
-		Long numTweets = Long.parseLong(json.getJSONObject("user")
-				.get("statuses_count").toString());
+		return Long.parseLong(json.getJSONObject("user").get("statuses_count").toString());
 
-		return numTweets;
 	}
 
 	/**
@@ -231,13 +217,13 @@ public class UserFeaturesExtractorJSON {
 	public static Long getNumMediaContent(Document doc) {
 
 		Long numMediaContent = 0L;
-		String media = null;
+		String media;
 		Elements numMediaHtml = null;
 
 		numMediaHtml = doc.select(".PhotoRail .PhotoRail-headingWithCount");
 
 		media = numMediaHtml.text().split(" ")[0];
-		if (!media.equals("")) {
+		if (!(media.length()==0)) {
 			media = StringProcessing.getInstance().removeUnit(media);
 			numMediaContent = Long.parseLong(media);
 		} else {
@@ -254,9 +240,7 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static Long getNumFavorites(JSONObject json) {
 
-		Long numFavorites = Long.parseLong(json.getJSONObject("user")
-				.get("favourites_count").toString());
-		return numFavorites;
+		return Long.parseLong(json.getJSONObject("user").get("favourites_count").toString());
 	}
 
 	/**
@@ -269,10 +253,7 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static String getLocation(JSONObject json) {
 
-		String location = json.getJSONObject("user").getString("location");
-
-		return location;
-
+		return json.getJSONObject("user").get("location").toString();
 	}
 
 	/**
@@ -294,23 +275,15 @@ public class UserFeaturesExtractorJSON {
 
 		Boolean hasLoc = false;
 
-		System.out.println("Location " + location);
+		//System.out.println("Location " + location);
 		// double[] geos = new double[2];
-
-		// location in case of using google maps api
-		/*
-		 * if (!location.equals("Worldwide trends")){ if
-		 * (location.contains(" ")){ location = location.replaceAll(" ", "%20");
-		 * } geos = getGeos(location); if(geos[0]!=0 || geos[1]!=0){ hasLoc =
-		 * true; } }
-		 */
 
 		// location in case of using location as String only
 		if (!location.equals("Worldwide trends") && (location.length() != 0)) {
 			hasLoc = true;
 		}
 
-		System.out.println("has location " + hasLoc);
+		//System.out.println("has location " + hasLoc);
 
 		return hasLoc;
 	}
@@ -354,12 +327,10 @@ public class UserFeaturesExtractorJSON {
 
 		String age = json.getJSONObject("user").getString("created_at");
 
-		DateFormat dateFormat = new SimpleDateFormat(
-				"EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
+		DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
 		Date date = dateFormat.parse(age);
-		Long accountAge = date.getTime() / 1000;
-		System.out.println("age " + accountAge);
-		return accountAge;
+		//System.out.println("age " + accountAge);
+		return date.getTime() / 1000;
 	}
 
 	/**
@@ -373,8 +344,7 @@ public class UserFeaturesExtractorJSON {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	public static Float getRank(String url, String filePath)
-			throws IOException, Exception {
+	public static Float getRank(String url, String filePath) throws IOException, Exception {
 
 		long start = System.currentTimeMillis();
 
@@ -390,8 +360,8 @@ public class UserFeaturesExtractorJSON {
 		host0 = url;
 
 		System.out.println("Ranking the: " + host0);
-		host0 = host0.replaceAll(
-				"(http://|https://|http://www\\.|https://www\\.|www\\.)", "");
+		host0 = host0.replaceAll("(http://|https://|http://www\\.|https://www\\.|www\\.)", "");
+		
 		String host;
 		if (host0.contains("/")) {
 			host = host0.split("/")[0];
@@ -438,16 +408,14 @@ public class UserFeaturesExtractorJSON {
 
 	public static Boolean hasProfileImg(JSONObject json) {
 
-		Boolean profileImg = (Boolean) json.getJSONObject("user").get(
-				"default_profile_image");
+		Boolean profileImg = (Boolean) json.getJSONObject("user").get("default_profile_image");
 
 		return profileImg;
 	}
 
 	public static Boolean hasHeaderImg(JSONObject json) {
 
-		Boolean headerImg = (Boolean) json.getJSONObject("user").get(
-				"profile_use_background_image");
+		Boolean headerImg = (Boolean) json.getJSONObject("user").get("profile_use_background_image");
 
 		return headerImg;
 	}
@@ -457,13 +425,12 @@ public class UserFeaturesExtractorJSON {
 
 		String currentTweetId = json.getString("id_str");
 		//info
-		System.out.println("Extracting User features for " + currentTweetId + "...");
+		System.out.println("Extracting User features for the tweet with ID: " + currentTweetId + "...");
 		
 		
-		initializeFiles();
+		//initializeFiles();
 
-		String permalink = "http://twitter.com/"
-				+ json.getJSONObject("user").getString("screen_name");
+		String permalink = "http://twitter.com/"+ json.getJSONObject("user").getString("screen_name");
 		
 		Document doc = null;
 		try {
@@ -478,72 +445,76 @@ public class UserFeaturesExtractorJSON {
 		UserFeatures uf = null;
 
 		Long numFriends = getNumFriends(json);
-		System.out.println("Number of friends: " + numFriends);
+		//System.out.println("Number of friends: " + numFriends);
 		Long numFollowers = getNumFollowers(json);
-		System.out.println("Number of followers: " + numFollowers);
+		//System.out.println("Number of followers: " + numFollowers);
 		Float FolFrieRatio = getFollowerFriendRatio(numFriends, numFollowers);
-		System.out.println("Follower/Friend ratio: " + FolFrieRatio);
+		//System.out.println("Follower/Friend ratio: " + FolFrieRatio);
 		
 		Long timesListed = getTimesListed(json);
-		System.out.println("Times listed: " + timesListed);
+		//System.out.println("Times listed: " + timesListed);
 		Boolean hasURL = hasUrl(json);
-		System.out.println("Has url in his profile description: " + hasURL);
+		//System.out.println("Has url in his profile description: " + hasURL);
 		Boolean hasBio = hasBio(json);
-		System.out.println("Has bio description: " + hasBio);
+		//System.out.println("Has bio description: " + hasBio);
 		Boolean isVerified = isVerifiedUser(json);
-		System.out.println("Is verified by Twitter: " + isVerified);
+		//System.out.println("Is verified by Twitter: " + isVerified);
 		Long numTweets = getNumTweets(json);
-		System.out.println("Number of tweets shared: " + numTweets);
+		//System.out.println("Number of tweets shared: " + numTweets);
 
 		Long numMediaContent = 0L;
 		if (doc != null) {
 			numMediaContent = getNumMediaContent(doc);
-			System.out.println("Number of media content shared: " + numMediaContent);
+			//System.out.println("Number of media content shared: " + numMediaContent);
 		}
 		Long numFavorites = getNumFavorites(json);
-		System.out.println("Number of favorites: " + numFavorites);
+		//System.out.println("Number of favorites: " + numFavorites);
 		
 		String location = getLocation(json);
 		Boolean hasLocation = hasLocation(location);
-		System.out.println("Has location the profile: " + hasLocation);
+		//System.out.println("Has location the profile: " + hasLocation);
 		
 		Long accountAge = getAccountAge(json);
-		System.out.println("Age of the account (timestamp): " + accountAge);
+		//System.out.println("Age of the account (timestamp): " + accountAge);
 		
-		Float tweetRatio;
-		long epoch = System.currentTimeMillis() / 1000;
+		float tweetRatio = 0;
+		//long epoch = System.currentTimeMillis() / 1000;
+		
+		String timeCreated = json.getString("created_at");
+		DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
+		long time = dateFormat.parse(timeCreated).getTime()/1000;
 		if (accountAge != null) {
-			tweetRatio = (((float) numTweets / (float) (epoch - accountAge)) * 86400L);
-			System.out.println("Tweet ratio (number of tweets/accountAge): " + tweetRatio);
-		} else
-			tweetRatio = (float) 0;
+			tweetRatio = (( numTweets / (float) (time - accountAge)) * 86400L);
+			//System.out.println("Tweet ratio (number of tweets/accountAge): " + tweetRatio);
+		} 
 
-		Float indegree = null;
-		Float harmonic = null;
+		/*Float indegree = null;
+		Float harmonic = null;*/
 
 		
 		String jsonUrl = getUserUrl(json);
 
 		Integer wotTrustUser = null;
-		Integer wotSafeUser = null;
-		Integer[] values = { 0, 0 };
+		//Integer wotSafeUser = null;
+		Integer value = 0;
 
 		
 		int[] alexaRankings = new int[4];
 		if (hasURL) {
 			if (URLProcessing.getInstance().isAppropriateUrl(jsonUrl)) {
+				
+				WebOfTrustManager wot = new WebOfTrustManager();
+				value = wot.getWotTrustValue(jsonUrl);
 
-				values = WebOfTrustManager.getInstance().getWotValues(jsonUrl);
-
-				if (values[0] != 0 && values[1] != 0) {
-					wotTrustUser = values[0];
-					wotSafeUser = values[1];
+				if (value != 0) {
+					wotTrustUser = value;
+					//wotSafeUser = values[1];
 				}
-				System.out.println("For user's url: " + jsonUrl);
-				System.out.println("WOT trust value: " + wotTrustUser);
+				//System.out.println("For user's url: " + jsonUrl);
+				//System.out.println("WOT trust value: " + wotTrustUser);
 				
 				//preprocess
-				jsonUrl = URLProcessing.getInstance().processUrlForRunnable(jsonUrl);
+				//jsonUrl = URLProcessing.getInstance().processUrlForRunnable(jsonUrl);
 
 				/*indegree = organizeRunRank("indegree-" + currentTweetId, jsonUrl,Vars.INDEGREE_FILE);
 				if (indegree != null)
@@ -555,30 +526,28 @@ public class UserFeaturesExtractorJSON {
 				AlexaRankingManager arm = new AlexaRankingManager();
 				alexaRankings = arm.getAlexaRanking(jsonUrl);
 				
-				System.out.println("Alexa Popularity: "		+ alexaRankings[0]);
-				System.out.println("Alexa Reach Rank: " 	+ alexaRankings[1]);
-				System.out.println("Alexa Delta Rank: " 	+ alexaRankings[2]);
-				System.out.println("Alexa Country Rank: " 	+ alexaRankings[3]);
+				//System.out.println("Alexa Popularity: "		+ alexaRankings[0]);
+				//System.out.println("Alexa Reach Rank: " 	+ alexaRankings[1]);
+				//System.out.println("Alexa Delta Rank: " 	+ alexaRankings[2]);
+				//System.out.println("Alexa Country Rank: " 	+ alexaRankings[3]);
 			}
 		}
 
-		Boolean hasExistingLocation = null;
-		if (!hasLocation) {
-			hasExistingLocation = false;
-		} else {
+		Boolean hasExistingLocation = false;
+		if (hasLocation) {
 			hasExistingLocation = hasExistingLocation(location);
 		}
-		System.out.println("Has existing location: " + hasExistingLocation);
+		//System.out.println("Has existing location: " + hasExistingLocation);
 
 		Boolean hasProfileImg = hasProfileImg(json);
-		System.out.println("Has profile Image in the profile: " + hasProfileImg);
+		//System.out.println("Has profile Image in the profile: " + hasProfileImg);
 		Boolean hasHeaderImg = hasHeaderImg(json);
-		System.out.println("Has header Image in the profile: " + hasHeaderImg);
+		//System.out.println("Has header Image in the profile: " + hasHeaderImg);
 		
 		
 		String username = json.getJSONObject("user").getString("screen_name");
 
-		System.out.println("-");
+		
 	
 		uf = new UserFeatures.Builder(currentTweetId, username).numFriends(numFriends)
 				.numFollowers(numFollowers).FolFrieRatio(FolFrieRatio)
@@ -588,10 +557,8 @@ public class UserFeaturesExtractorJSON {
 				.hasLocation(hasLocation)
 				.hasExistingLocation(hasExistingLocation)
 				.wotTrustUser(wotTrustUser).accountAge(accountAge)
-				.indegree(indegree).harmonic(harmonic)
 				.hasProfileImg(hasProfileImg).hasHeaderImg(hasHeaderImg)
-				.wotSafeUser(wotSafeUser).tweetRatio(tweetRatio)
-				.indegree(indegree).harmonic(harmonic)
+				.tweetRatio(tweetRatio)
 				.alexaPopularity(alexaRankings[0])
 				.alexaReachRank(alexaRankings[1])
 				.alexaDeltaRank(alexaRankings[2])
@@ -601,13 +568,7 @@ public class UserFeaturesExtractorJSON {
 		
 	}
 
-	public static void initializeFiles() {
 
-		citiesFile = AgreementBasedClassification.prop.getProperty("CITIES_PATH");
-		countryInfoFile = AgreementBasedClassification.prop.getProperty("COUNTRY_INFO_PATH");
-		adminNamesFile = AgreementBasedClassification.prop.getProperty("ADMIN_NAMES_PATH");
-
-	}
 
 	public static Float organizeRunRank(String caseRank, String url,
 			String filePath) throws InterruptedException, ExecutionException {
@@ -673,7 +634,6 @@ public class UserFeaturesExtractorJSON {
 
 			in.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -682,32 +642,28 @@ public class UserFeaturesExtractorJSON {
 
 	public static boolean hasExistingLocation(String locationName) {
 
-		Countrycoder countrycodingService = new Countrycoder(citiesFile,
-				countryInfoFile, adminNamesFile);
 		String[] locParts = null;
 		boolean hasExistingLocation = false;
 
-		System.out.println("Location name " + locationName);
+		//System.out.println("Location name " + locationName);
 		// System.out.println(StringUtils.isAlphanumeric(locationName)+" "+!locationName.contains("."));
 
 		locParts = locationName.split(",");
 
 		int i = 0;
 		String[] countries = new String[locParts.length];
+		
 		for (String locPart : locParts) {
-			String newlocPart = TextProcessing.getInstance()
-					.eraseAllCharacters(locPart);
+			String newlocPart = TextProcessing.getInstance().eraseAllCharacters(locPart);
 
-			countries[i] = countrycodingService
-					.getCountryByLocationName(newlocPart);
-			System.out.println("For " + locPart + " found: " + countries[i]);
+			countries[i] = countrycodingService.getCountryByLocationName(newlocPart);
+			//System.out.println("For " + locPart + " found: " + countries[i]);
 			i++;
 		}
 
 		for (String country : countries) {
 			if (country != "unknown") {
-				System.out.println("Country for location " + locationName
-						+ ": " + country);
+				//System.out.println("Country for location " + locationName	+ ": " + country);
 				hasExistingLocation = true;
 			}
 		}

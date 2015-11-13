@@ -1,5 +1,7 @@
 package gr.iti.mklab.verifyutils;
 
+import gr.iti.mklab.verify.AgreementBasedClassification;
+import gr.iti.mklab.verify.Bagging;
 import gr.iti.mklab.verify.ItemClassifier;
 import gr.iti.mklab.verify.UserClassifier;
 
@@ -17,7 +19,6 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.Remove;
-import weka.filters.unsupervised.attribute.Standardize;
 
 /**
  * The DataHandler class provides solutions for handling the data used on the
@@ -93,6 +94,8 @@ public class DataHandler {
 		usermodel7 = new FilteredClassifier();
 		usermodel8 = new FilteredClassifier();
 		usermodel9 = new FilteredClassifier();
+		normFilter = new Normalize();
+		normFilterUser = new Normalize();
 	}
 	
 	public double round(double value, int places) {
@@ -158,18 +161,8 @@ public class DataHandler {
 	public Instances applyRegressionModel(Instances data, ArrayList<Attribute> fvAttributes, Classifier model)
 			throws Exception {
 
-
-		// declare the new training set
-		int size = data.size();
-
-		Instances newData = new Instances("Rel", fvAttributes, size);
-
-		//System.out.println(data);
-		// change the class index
-		// isTrainingSet.setClassIndex(index);
+		Instances newData = new Instances("Rel", fvAttributes, data.size());
 		int index = data.classIndex();
-
-		// System.out.println(model);
 
 		for (int i = 0; i < data.numInstances(); i++) {
 
@@ -218,8 +211,7 @@ public class DataHandler {
 
 		initializeModels();
 		ArrayList<Attribute> fvAttributes = ItemClassifier.getFvAttributes();
-		
-		
+				
 		Remove rm = new Remove();
 		rm.setAttributeIndices("1");
 		Remove rm1 = new Remove();
@@ -246,18 +238,15 @@ public class DataHandler {
 		rm11.setAttributeIndices("1");
 		Remove rm12 = new Remove();
 		rm12.setAttributeIndices("1");
-		Remove rm13 = new Remove();
-		rm13.setAttributeIndices("1");
-		Remove rm14 = new Remove();
-		rm14.setAttributeIndices("1");
 		
+		int innerCounter = 0;
 		
 		// REGRESSION
 		// wotTrust
 		trainingSet.setClass(fvAttributes.get(22));
 				
 		LinearRegression lr = new LinearRegression();
-		Instances training_regr = null;
+		Instances training_regr;
 		model.setFilter(rm);
 		model.setClassifier(lr);
 
@@ -268,12 +257,13 @@ public class DataHandler {
 			training_regr = trainingSet;
 		}
 		
-		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model);
+		innerCounter++;
 		
 		// readability
 		training_regr.setClass(fvAttributes.get(25));
 		LinearRegression lr2 = new LinearRegression();
-		Instances training_regr2 = null;
+		Instances training_regr2;
 
 		model2.setFilter(rm1);
 		model2.setClassifier(lr2);
@@ -286,10 +276,13 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model2);
+		innerCounter++;
+		
 		// alexa popularity
 		training_regr2.setClass(fvAttributes.get(28));
 		LinearRegression lr3 = new LinearRegression();
-		Instances training_regr3 = null;
+		Instances training_regr3;
 
 		model3.setFilter(rm2);
 		model3.setClassifier(lr3);
@@ -302,10 +295,13 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model3);
+		innerCounter++;
+		
 		// alexa delta rank
 		training_regr3.setClass(fvAttributes.get(27));
 		LinearRegression lr4 = new LinearRegression();
-		Instances training_regr4 = null;
+		Instances training_regr4;
 		model4.setFilter(rm3);
 		model4.setClassifier(lr4);
 		try {
@@ -316,11 +312,14 @@ public class DataHandler {
 			training_regr4 = training_regr3;
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
+		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model4);
+		innerCounter++;
 
 		// getNumNegSentiWords
 		training_regr4.setClass(fvAttributes.get(14));
 		LinearRegression lr5 = new LinearRegression();
-		Instances training_regr5 = null;
+		Instances training_regr5;
 		model5.setFilter(rm4);
 		model5.setClassifier(lr5);
 
@@ -333,10 +332,13 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model5);
+		innerCounter++;
+		
 		// num slangs
 		training_regr5.setClass(fvAttributes.get(19));
 		LinearRegression lr6 = new LinearRegression();
-		Instances training_regr6 = null;
+		Instances training_regr6;
 		model6.setFilter(rm5);
 		model6.setClassifier(lr6);
 		try {
@@ -347,10 +349,13 @@ public class DataHandler {
 			training_regr6 = training_regr5;
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model6);
+		innerCounter++;
+		
 		// alexa country rank 
 		training_regr6.setClass(fvAttributes.get(26));
 		LinearRegression lr7 = new LinearRegression();
-		Instances training_regr7 = null;
+		Instances training_regr7;
 		model7.setFilter(rm6);
 		model7.setClassifier(lr7);
 		try {
@@ -360,13 +365,16 @@ public class DataHandler {
 		} catch (Exception e) {
 			training_regr7 = training_regr6;
 		}
+		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model7);
+		innerCounter++;
 
 		// System.out.println(model7);
 
 		// getNumPosSentiWords 
 		training_regr7.setClass(fvAttributes.get(13));
 		LinearRegression lr8 = new LinearRegression();
-		Instances training_regr8 = null;
+		Instances training_regr8;
 		model8.setFilter(rm7);
 		model8.setClassifier(lr8);
 		try {
@@ -377,10 +385,13 @@ public class DataHandler {
 			training_regr8 = training_regr7;
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model8);
+		innerCounter++;
+		
 		//alexa reach rank
 		training_regr8.setClass(fvAttributes.get(29));
 		LinearRegression lr9 = new LinearRegression();
-		Instances training_regr9 = null;
+		Instances training_regr9;
 		model9.setFilter(rm8);
 		model9.setClassifier(lr9);
 		try {
@@ -391,10 +402,13 @@ public class DataHandler {
 			training_regr9 = training_regr8;
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model9);
+		innerCounter++;
+		
 		//getNumNouns
 		training_regr9.setClass(fvAttributes.get(6));
 		LinearRegression lr10 = new LinearRegression();
-		Instances training_regr10 = null;
+		Instances training_regr10;
 		model10.setFilter(rm9);
 		model10.setClassifier(lr10);
 		try {
@@ -405,10 +419,13 @@ public class DataHandler {
 			training_regr10 = training_regr9;
 		}
 		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model10);
+		innerCounter++;
+		
 		//1st pron
 		training_regr10.setClass(fvAttributes.get(9));
 		LinearRegression lr11 = new LinearRegression();
-		Instances training_regr11 = null;
+		Instances training_regr11;
 		model11.setFilter(rm10);
 		model11.setClassifier(lr11);
 		try {
@@ -419,10 +436,13 @@ public class DataHandler {
 			training_regr11 = training_regr10;
 		}
 		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model11);
+		innerCounter++;
+		
 		//2nd pron
 		training_regr11.setClass(fvAttributes.get(10));
 		LinearRegression lr12 = new LinearRegression();
-		Instances training_regr12 = null;
+		Instances training_regr12;
 		model12.setFilter(rm11);
 		model12.setClassifier(lr12);
 		try {
@@ -433,11 +453,13 @@ public class DataHandler {
 			training_regr12 = training_regr11;
 		}
 		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model12);
+		innerCounter++;
 		
 		//3rd pron
 		training_regr12.setClass(fvAttributes.get(11));
 		LinearRegression lr13 = new LinearRegression();
-		Instances training_regr13 = null;
+		Instances training_regr13;
 		model13.setFilter(rm12);
 		model13.setClassifier(lr13);
 		try {
@@ -447,7 +469,8 @@ public class DataHandler {
 			training_regr13 = training_regr12;
 		}
 		
-
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_model_"+Bagging.counter+"_"+innerCounter+".model", model13);
+		innerCounter++;
 		
 		// normalization part
 		String[] options = { "-S", "1.0", "-T", "0.0" };
@@ -458,14 +481,19 @@ public class DataHandler {
 		Instances trainingSet_normed = DataHandler.getInstance().normalizeData(training_regr13, fvAttributes.size() - 1, normFilter);
 		trainingSet_normed.setClassIndex(fvAttributes.size()-1);
 		
-		for (int i=0; i<trainingSet_normed.size(); i++) {
-			for (int j=0; j<trainingSet_normed.get(i).numAttributes();j++) {
+		//weka.core.SerializationHelper.write("resources/models/norm/norm_model_"+Bagging.counter+".model", normFilter);
+		
+		int size = trainingSet_normed.numInstances();
+		int atts = trainingSet_normed.get(0).numAttributes();
+		
+		for (int i=0; i<size; i++) {
+			for (int j=0; j<atts;j++) {
 				if (!trainingSet_normed.get(i).attribute(j).isNominal())
 				trainingSet_normed.get(i).setValue(j, round(trainingSet_normed.get(i).value(j), 6) );
 			}
 		}
 		
-		trainingSet_normed = getTrimmedInstances(trainingSet_normed);
+		//trainingSet_normed = getTrimmedInstances(trainingSet_normed);
 		
 		return trainingSet_normed;
 
@@ -480,12 +508,11 @@ public class DataHandler {
 	 * @return Instances the transformed training set
 	 * @throws Exception
 	 */
-	public Instances getTransformedTrainingUserOverall(Instances trainingSet) {
+	public Instances getTransformedTrainingUserOverall(Instances trainingSet) throws Exception {
 
 		initializeModels();
 
 		ArrayList<Attribute> fvAttributes = UserClassifier.getFvAttributes();
-		
 		
 		// remove filter in order to remove the id attribute
 		Remove rm = new Remove();
@@ -502,15 +529,13 @@ public class DataHandler {
 		rm5.setAttributeIndices("1");
 		Remove rm6 = new Remove();
 		rm6.setAttributeIndices("1");
-		Remove rm7 = new Remove();
-		rm7.setAttributeIndices("1");
-		Remove rm8 = new Remove();
-		rm8.setAttributeIndices("1");
+		
+		int innerCounter = 0;
 
 		// wot trust
 		trainingSet.setClass(fvAttributes.get(11));
 		LinearRegression lr = new LinearRegression();
-		Instances training_regr = null;
+		Instances training_regr;
 		usermodel.setFilter(rm);
 		usermodel.setClassifier(lr);
 
@@ -523,10 +548,13 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_user_model_"+Bagging.counter+"_"+innerCounter+".model", usermodel);
+		innerCounter++;
+		
 		//num media content
 		training_regr.setClass(fvAttributes.get(12));
 		LinearRegression lr2 = new LinearRegression();
-		Instances training_regr2 = null;
+		Instances training_regr2;
 		usermodel2.setFilter(rm1);
 		usermodel2.setClassifier(lr2);
 		try {
@@ -538,10 +566,13 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_user_model_"+Bagging.counter+"_"+innerCounter+".model", usermodel2);
+		innerCounter++;
+		
 		//account age
 		training_regr2.setClass(fvAttributes.get(13));
 		LinearRegression lr3 = new LinearRegression();
-		Instances training_regr3 = null;
+		Instances training_regr3;
 		usermodel3.setFilter(rm2);
 		usermodel3.setClassifier(lr3);
 		try {
@@ -553,10 +584,13 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_user_model_"+Bagging.counter+"_"+innerCounter+".model", usermodel3);
+		innerCounter++;
+		
 		//tweet ratio
 		training_regr3.setClass(fvAttributes.get(16));
 		LinearRegression lr4 = new LinearRegression();
-		Instances training_regr4 = null;
+		Instances training_regr4;
 		usermodel4.setFilter(rm3);
 		usermodel4.setClassifier(lr4);
 		try {
@@ -568,10 +602,13 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_user_model_"+Bagging.counter+"_"+innerCounter+".model", usermodel4);
+		innerCounter++;
+		
 		//alexa country rank
 		training_regr4.setClass(fvAttributes.get(17));
 		LinearRegression lr5 = new LinearRegression();
-		Instances training_regr5 = null;
+		Instances training_regr5;
 		usermodel5.setFilter(rm4);
 		usermodel5.setClassifier(lr5);
 		try {
@@ -583,9 +620,12 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_user_model_"+Bagging.counter+"_"+innerCounter+".model", usermodel5);
+		innerCounter++;
+		
 		training_regr5.setClass(fvAttributes.get(18));
 		LinearRegression lr6 = new LinearRegression();
-		Instances training_regr6 = null;
+		Instances training_regr6;
 		usermodel6.setFilter(rm5);
 		usermodel6.setClassifier(lr6);
 		try {
@@ -597,9 +637,12 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_user_model_"+Bagging.counter+"_"+innerCounter+".model", usermodel6);
+		innerCounter++;
+		
 		training_regr6.setClass(fvAttributes.get(19));
 		LinearRegression lr7 = new LinearRegression();
-		Instances training_regr7 = null;
+		Instances training_regr7;
 		usermodel7.setFilter(rm6);
 		usermodel7.setClassifier(lr7);
 		try {
@@ -611,9 +654,12 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 		
-		training_regr6.setClass(fvAttributes.get(20));
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_user_model_"+Bagging.counter+"_"+innerCounter+".model", usermodel7);
+		innerCounter++;
+		
+		training_regr7.setClass(fvAttributes.get(20));
 		LinearRegression lr8 = new LinearRegression();
-		Instances training_regr8 = null;
+		Instances training_regr8;
 		usermodel8.setFilter(rm6);
 		usermodel8.setClassifier(lr8);
 		try {
@@ -625,24 +671,34 @@ public class DataHandler {
 			// System.out.println("not enough training instances. Linear Regression not performed!");
 		}
 		
+		//weka.core.SerializationHelper.write("resources/models/lr/lr_user_model_"+Bagging.counter+"_"+innerCounter+".model", usermodel8);
+		innerCounter++;
 		//System.out.println(training_regr9.get(0));
 		
 		// normalization
 		normFilterUser = DataHandler.getInstance().createNormalizationFilter(training_regr8);
+		
+		
+		
 		Instances trainingSet_normed = DataHandler.getInstance().normalizeData(training_regr8, fvAttributes.size() - 1, normFilterUser);
 		trainingSet_normed.setClassIndex(fvAttributes.size()-1);
 		
+		//weka.core.SerializationHelper.write("resources/models/norm/norm_user_model_"+Bagging.counter+".model", normFilterUser);
 		
-		for (int i=0; i<trainingSet_normed.size(); i++) {
+		int size = trainingSet_normed.numInstances();
+		int atts = trainingSet_normed.get(0).numAttributes();
+		
+		for (int i=0; i<size; i++) {
 			
-			for (int j=0; j<trainingSet_normed.get(i).numAttributes();j++) {
-				if (!trainingSet_normed.get(i).attribute(j).isNominal())
-				trainingSet_normed.get(i).setValue(j, round(trainingSet_normed.get(i).value(j), 6) );
+			for (int j=0; j<atts;j++) {
+				if (!trainingSet_normed.get(i).attribute(j).isNominal()) {
+					trainingSet_normed.get(i).setValue(j, round(trainingSet_normed.get(i).value(j), 6) );
+				}
 			}
 			
 		}
 		
-		trainingSet_normed = getTrimmedInstances(trainingSet_normed);
+		//trainingSet_normed = getTrimmedInstances(trainingSet_normed);
 		
 		return trainingSet_normed;
 	}
@@ -660,10 +716,13 @@ public class DataHandler {
 	public Instances getTransformedTestingOverall(Instances testing) throws Exception {
 
 		ArrayList<Attribute> fvAttributes = ItemClassifier.getFvAttributes();
-		Instances testing_regr = null, testing_regr2 = null, testing_regr3 = null, testing_regr4 = null, testing_regr5 = null, 
-				testing_regr6 = null, testing_regr7 = null, testing_regr8 = null, testing_regr9 = null, testing_regr10 = null,
-						testing_regr11 = null, testing_regr12 = null, testing_regr13 = null, testing_regr14 = null, testing_regr15 = null;
+		Instances testing_regr, testing_regr2, testing_regr3 , testing_regr4, testing_regr5, 
+				testing_regr6, testing_regr7, testing_regr8, testing_regr9, testing_regr10,
+						testing_regr11, testing_regr12, testing_regr13;
 		
+		int innerCount = 0;
+		
+		model = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		// regression
 		if (!model.toString().contains("No model built yet.")) {
 			testing.setClass(fvAttributes.get(22));
@@ -673,6 +732,8 @@ public class DataHandler {
 			testing_regr = testing;
 		}
 
+		innerCount++;
+		model2 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model2.toString().contains("No model built yet.")) {
 			testing_regr.setClass(fvAttributes.get(25));
 			testing_regr2 = DataHandler.getInstance().applyRegressionModel(
@@ -681,6 +742,8 @@ public class DataHandler {
 			testing_regr2 = testing_regr;
 		}
 
+		innerCount++;
+		model3 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model3.toString().contains("No model built yet.")) {
 			testing_regr2.setClass(fvAttributes.get(28));
 			testing_regr3 = DataHandler.getInstance().applyRegressionModel(
@@ -689,6 +752,8 @@ public class DataHandler {
 			testing_regr3 = testing_regr2;
 		}
 
+		innerCount++;
+		model4 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model4.toString().contains("No model built yet.")) {
 			testing_regr3.setClass(fvAttributes.get(27));
 			testing_regr4 = DataHandler.getInstance().applyRegressionModel(
@@ -697,6 +762,8 @@ public class DataHandler {
 			testing_regr4 = testing_regr3;
 		}
 
+		innerCount++;
+		model5 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model5.toString().contains("No model built yet.")) {
 			testing_regr4.setClass(fvAttributes.get(14));
 			testing_regr5 = DataHandler.getInstance().applyRegressionModel(
@@ -705,6 +772,8 @@ public class DataHandler {
 			testing_regr5 = testing_regr4;
 		}
 
+		innerCount++;
+		model6 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model6.toString().contains("No model built yet.")) {
 			testing_regr5.setClass(fvAttributes.get(19));
 			testing_regr6 = DataHandler.getInstance().applyRegressionModel(
@@ -713,6 +782,8 @@ public class DataHandler {
 			testing_regr6 = testing_regr5;
 		}
 
+		innerCount++;
+		model7 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model7.toString().contains("No model built yet.")) {
 			testing_regr6.setClass(fvAttributes.get(26));
 			testing_regr7 = DataHandler.getInstance().applyRegressionModel(
@@ -721,6 +792,8 @@ public class DataHandler {
 			testing_regr7 = testing_regr6;
 		}
 
+		innerCount++;
+		model8 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model8.toString().contains("No model built yet.")) {
 			testing_regr7.setClass(fvAttributes.get(13));
 			testing_regr8 = DataHandler.getInstance().applyRegressionModel(
@@ -729,6 +802,8 @@ public class DataHandler {
 			testing_regr8 = testing_regr7;
 		}
 
+		innerCount++;
+		model9 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model9.toString().contains("No model built yet.")) {
 			testing_regr8.setClass(fvAttributes.get(29));
 			testing_regr9 = DataHandler.getInstance().applyRegressionModel(
@@ -737,6 +812,8 @@ public class DataHandler {
 			testing_regr9 = testing_regr8;
 		}
 		
+		innerCount++;
+		model10 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model10.toString().contains("No model built yet.")) {
 			testing_regr9.setClass(fvAttributes.get(6));
 			testing_regr10 = DataHandler.getInstance().applyRegressionModel(
@@ -745,6 +822,8 @@ public class DataHandler {
 			testing_regr10 = testing_regr9;
 		}
 		
+		innerCount++;
+		model11 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model11.toString().contains("No model built yet.")) {
 			testing_regr10.setClass(fvAttributes.get(9));
 			testing_regr11 = DataHandler.getInstance().applyRegressionModel(
@@ -753,6 +832,8 @@ public class DataHandler {
 			testing_regr11 = testing_regr10;
 		}
 		
+		innerCount++;
+		model12 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model12.toString().contains("No model built yet.")) {
 			testing_regr11.setClass(fvAttributes.get(10));
 			testing_regr12 = DataHandler.getInstance().applyRegressionModel(
@@ -761,6 +842,8 @@ public class DataHandler {
 			testing_regr12 = testing_regr11;
 		}
 		
+		innerCount++;
+		model13 = (FilteredClassifier) AgreementBasedClassification.lr_models_tweet[Bagging.counter][innerCount];
 		if (!model13.toString().contains("No model built yet.")) {
 			testing_regr12.setClass(fvAttributes.get(11));
 			testing_regr13 = DataHandler.getInstance().applyRegressionModel(
@@ -769,21 +852,24 @@ public class DataHandler {
 			testing_regr13 = testing_regr12;
 		}
 		
-		
+		normFilter = (Normalize) AgreementBasedClassification.norm_models_tweet[Bagging.counter];
 		
 		// normalization
 		Instances testingSet_normed = DataHandler.getInstance().normalizeData(testing_regr13, fvAttributes.size() - 1, normFilter);
 		testingSet_normed.setClassIndex(fvAttributes.size()-1);
 		
-		// testingSet_normed = getTrimmedInstances(testingSet_normed);
-		for (int i=0; i<testingSet_normed.size(); i++) {
-			for (int j=0; j<testingSet_normed.get(i).numAttributes();j++) {
-				if (!testingSet_normed.get(i).attribute(j).isNominal())
-				testingSet_normed.get(i).setValue(j, round(testingSet_normed.get(i).value(j), 6) );
+		int size = testingSet_normed.numInstances();
+		int atts = testingSet_normed.get(0).numAttributes();
+		
+		for (int i=0; i<size; i++) {
+			for (int j=0; j<atts;j++) {
+				if (!testingSet_normed.get(i).attribute(j).isNominal()) {
+					testingSet_normed.get(i).setValue(j, round(testingSet_normed.get(i).value(j), 6) );
+				}
 			}
 		}
 		
-		testingSet_normed = getTrimmedInstances(testingSet_normed);
+		//testingSet_normed = getTrimmedInstances(testingSet_normed);
 		
 		
 		return testingSet_normed;
@@ -804,11 +890,13 @@ public class DataHandler {
 			throws Exception {
 
 		ArrayList<Attribute> fvAttributes = UserClassifier.getFvAttributes();
-		Instances testing_regr = null, testing_regr2 = null, testing_regr3 = null, testing_regr4 = null, testing_regr5 = null,
-				testing_regr6 = null, testing_regr7 = null, testing_regr8 = null;
+		Instances testing_regr, testing_regr2, testing_regr3, testing_regr4, testing_regr5,
+				testing_regr6, testing_regr7, testing_regr8;
 
 		// testing_regr3 = testing;
-
+		int innerCount = 0;
+		
+		usermodel = (FilteredClassifier) AgreementBasedClassification.lr_models_user[Bagging.counter][innerCount];
 		if (!usermodel.toString().contains("No model built yet.")) {
 			testing.setClass(fvAttributes.get(11));
 			testing_regr = DataHandler.getInstance().applyRegressionModel(
@@ -816,6 +904,9 @@ public class DataHandler {
 		} else {
 			testing_regr = testing;
 		}
+		
+		innerCount++;
+		usermodel2 = (FilteredClassifier) AgreementBasedClassification.lr_models_user[Bagging.counter][innerCount];
 		if (!usermodel2.toString().contains("No model built yet.")) {
 			testing_regr.setClass(fvAttributes.get(12));
 			testing_regr2 = DataHandler.getInstance().applyRegressionModel(
@@ -823,6 +914,9 @@ public class DataHandler {
 		} else {
 			testing_regr2 = testing_regr;
 		}
+		
+		innerCount++;
+		usermodel3 = (FilteredClassifier) AgreementBasedClassification.lr_models_user[Bagging.counter][innerCount];
 		if (!usermodel3.toString().contains("No model built yet.")) {
 			testing_regr2.setClass(fvAttributes.get(13));
 			testing_regr3 = DataHandler.getInstance().applyRegressionModel(
@@ -831,6 +925,8 @@ public class DataHandler {
 			testing_regr3 = testing_regr2;
 		}
 
+		innerCount++;
+		usermodel4 = (FilteredClassifier) AgreementBasedClassification.lr_models_user[Bagging.counter][innerCount];
 		if (!usermodel4.toString().contains("No model built yet.")) {
 			testing_regr3.setClass(fvAttributes.get(16));
 			testing_regr4 = DataHandler.getInstance().applyRegressionModel(
@@ -839,6 +935,8 @@ public class DataHandler {
 			testing_regr4 = testing_regr3;
 		}
 
+		innerCount++;
+		usermodel5 = (FilteredClassifier) AgreementBasedClassification.lr_models_user[Bagging.counter][innerCount];
 		if (!usermodel5.toString().contains("No model built yet.")) {
 			testing_regr4.setClass(fvAttributes.get(17));
 			testing_regr5 = DataHandler.getInstance().applyRegressionModel(
@@ -847,6 +945,8 @@ public class DataHandler {
 			testing_regr5 = testing_regr4;
 		}
 		
+		innerCount++;
+		usermodel6 = (FilteredClassifier) AgreementBasedClassification.lr_models_user[Bagging.counter][innerCount];
 		if (!usermodel6.toString().contains("No model built yet.")) {
 			testing_regr5.setClass(fvAttributes.get(18));
 			testing_regr6 = DataHandler.getInstance().applyRegressionModel(
@@ -855,6 +955,8 @@ public class DataHandler {
 			testing_regr6 = testing_regr5;
 		}
 
+		innerCount++;
+		usermodel7 = (FilteredClassifier) AgreementBasedClassification.lr_models_user[Bagging.counter][innerCount];
 		if (!usermodel7.toString().contains("No model built yet.")) {
 			testing_regr6.setClass(fvAttributes.get(19));
 			testing_regr7 = DataHandler.getInstance().applyRegressionModel(
@@ -863,6 +965,8 @@ public class DataHandler {
 			testing_regr7 = testing_regr6;
 		}
 		
+		innerCount++;
+		usermodel8 = (FilteredClassifier) AgreementBasedClassification.lr_models_user[Bagging.counter][innerCount];
 		if (!usermodel8.toString().contains("No model built yet.")) {
 			testing_regr7.setClass(fvAttributes.get(20));
 			testing_regr8 = DataHandler.getInstance().applyRegressionModel(
@@ -871,22 +975,23 @@ public class DataHandler {
 			testing_regr8 = testing_regr7;
 		}
 		
-		
+		normFilterUser = (Normalize) AgreementBasedClassification.norm_models_user[Bagging.counter];
 		// normalization
-		Instances testingSet_normed = DataHandler.getInstance().normalizeData(
-				testing_regr8, fvAttributes.size() - 1, normFilterUser);
+		Instances testingSet_normed = DataHandler.getInstance().normalizeData(testing_regr8, fvAttributes.size() - 1, normFilterUser);
 		testingSet_normed.setClassIndex(fvAttributes.size()-1);
 
-		for (int i=0; i<testingSet_normed.size(); i++) {
-			//System.out.println(testingSet_normed.get(i));
-			for (int j=0; j<testingSet_normed.get(i).numAttributes();j++) {
-				if (!testingSet_normed.get(i).attribute(j).isNominal())
-				testingSet_normed.get(i).setValue(j, round(testingSet_normed.get(i).value(j), 6) );
+		int size = testingSet_normed.numInstances();
+		int atts = testingSet_normed.get(0).numAttributes();
+		
+		for (int i=0; i<size; i++) {
+			for (int j=0; j<atts;j++) {
+				if (!testingSet_normed.get(i).attribute(j).isNominal()) {
+					testingSet_normed.get(i).setValue(j, round(testingSet_normed.get(i).value(j), 6) );
+				}
 			}
-			//System.out.println(testingSet_normed.get(i));
 		}
 		
-		testingSet_normed = getTrimmedInstances(testingSet_normed);
+		//testingSet_normed = getTrimmedInstances(testingSet_normed);
 		
 		return testingSet_normed;
 	}
@@ -905,7 +1010,8 @@ public class DataHandler {
 				}
 			}
 		}
+		
 		return data;
-		}
+	}
 
 }

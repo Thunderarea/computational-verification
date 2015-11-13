@@ -13,45 +13,111 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.RandomForest;
-import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.Remove;
 
 /**
  * Main class that organizes the verification by using the agreement-based classification.
- * 1.Training sets are formed based on the text files provided by the program. Tweet features and User features are provided in two different files.
- * 2.Testing sets are formed based on the json files provided by the users.
- * 3.Cross validation on Tweet features data and User features data. Keep the scores.
- * 4.Train two bagging classifiers (one for each features; type) for classifying the test data.
- * 5.Compare the results of the above two classifiers; if agreed keep the result; if disagreed decide the result based on their confidence along with their CV scores.
+ * 1.Call the initialization function initializeParameters()
+ * 2.Call the verifyTweet() method to classify each tweet
  * @author Christina Boididou
  * updated 11.11.2015
  */
 public class AgreementBasedClassification {
 
-	static Instances[] trainDatasets = new Instances[2];
+	//static final long serialVersionUID = 1116839470751428698L;
+	
+	//static Instances[] trainDatasets = new Instances[2];
 	static Instances[] testDatasets = new Instances[2];
-	static Instances[] sets = new Instances[2];
 
 	static Double itemScore, userScore;
 
+	public static Classifier[] classifiersTweet = new Classifier[Bagging.randomVals.length];
+	public static Classifier[] classifiersUser = new Classifier[Bagging.randomVals.length];
+	
+	public static Classifier[][] lr_models_tweet = new Classifier[Bagging.randomVals.length][13];
+	public static Classifier[][] lr_models_user = new Classifier[Bagging.randomVals.length][8];
+
+	public static Normalize[] norm_models_tweet = new Normalize[Bagging.randomVals.length];
+	public static Normalize[] norm_models_user  = new Normalize[Bagging.randomVals.length];
+	
 	/**
 	 * initialize the parameters
+	 * @throws Exception 
 	 */
-	public static void initializeParameters() {
-		iter = 0;
-		// Bagging.internal = 0;
+	public static void initializeParameters() throws Exception {
+		
+		System.out.println("Initializing the values...");
+		//initialize CV values
+		itemScore = 0.8264854614412137;
+		userScore = 0.6350189633375474;
+		Bagging.randomVals = Bagging.initializeRandomVals();
+		ItemClassifier.declareAttributes();
+		UserClassifier.declareAttributes();
+		
+		
+		System.out.println("Reading properties file...");
+		//get the properties that have been defined in the config.properties file
+		defineProperties();
+		
+		System.out.println("Initializing files...");
+		UserFeaturesExtractorJSON.initializeFiles();
+		ItemFeaturesExtractorJSON.initializeFiles();
+		
+		System.out.println("Reading the training data...");
+		/** TRAINING SET **/
+		// get the training datasets (based on the Item(Tweet) and User features) 
+		//trainDatasets = AgreementBasedClassification.getTrainDatasets();
+		
+				
+		System.out.println("Loading the models...");
+		try {
+		//load the models
+			int size = classifiersTweet.length;
+			for (int j=0; j<size; j++) {
+				
+				Classifier cls = (Classifier) weka.core.SerializationHelper.read("resources/models/tweetModel"+j+".model");
+				classifiersTweet[j] = cls;
+				
+				Classifier cls2 = (Classifier) weka.core.SerializationHelper.read("resources/models/userModel"+j+".model");
+				classifiersUser[j]  = cls2;
+			}
+			int size2 = Bagging.randomVals.length;
+			
+			for (int i=0; i<size2;i++) {
+
+				for (int j=0; j<13; j++) {
+					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read("resources/models/lr/lr_model_"+i+"_"+j+".model");
+					lr_models_tweet[i][j] = cls;
+				}
+				for (int j=0; j<8; j++) {
+					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read("resources/models/lr/lr_user_model_"+i+"_"+j+".model");
+					lr_models_user[i][j] = cls;
+				}
+				
+				Normalize cls = (Normalize) weka.core.SerializationHelper.read("resources/models/norm/norm_model_"+i+".model");
+				norm_models_tweet[i] = cls;
+				
+				Normalize cls2 = (Normalize) weka.core.SerializationHelper.read("resources/models/norm/norm_user_model_"+i+".model");
+				norm_models_user[i] = cls2;
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
@@ -59,7 +125,7 @@ public class AgreementBasedClassification {
 	 * features
 	 * @return Instances[] the training datasets for Item and User training
 	 */
-	public Instances[] getTrainDatasets() {
+	public static Instances[] getTrainDatasets() {
 
 		Instances trainDatasets[] = new Instances[2];
 		try {
@@ -68,12 +134,13 @@ public class AgreementBasedClassification {
 			Instances temp = ds.getDataSet();			
 			temp.setClassIndex(temp.numAttributes() - 1);
 			trainDatasets[0] = ItemClassifier.reformatInstances(temp);
-			
+			trainDatasets[0].setClassIndex(trainDatasets[0].numAttributes() - 1);
 			
 			DataSource ds1 = new DataSource(prop.getProperty("TRAININGDATA_USER_FEATURES"));
 			Instances temp1 = ds1.getDataSet();	
 			temp1.setClassIndex(temp1.numAttributes() - 1);
 			trainDatasets[1] = UserClassifier.reformatInstances(temp1);
+			trainDatasets[1].setClassIndex(trainDatasets[1].numAttributes() - 1);
 
 		} catch (Exception e) {
 			System.out.println("Error! Cannot fetch datasets...");
@@ -87,106 +154,14 @@ public class AgreementBasedClassification {
 			
 		try {
 			
-			testDatasets[0] = ItemClassifier.formTestingSet(itemFeats);
-			testDatasets[1] = UserClassifier.formTestingSet(userFeats);
+			testDatasets[0] = ItemClassifier.createTestingSet(itemFeats);
+			testDatasets[1] = UserClassifier.createTestingSet(userFeats);
 		} catch (Exception e) {
 			System.out.println("Error! Cannot fetch datasets...");
 			e.printStackTrace();
 		}
 			
 		return testDatasets;
-	}
-
-	static int iter = 0;
-
-	/**
-	 * Auxiliary recursive method to find the common ids among different set of
-	 * Instances
-	 * 
-	 * @param currentSet
-	 *            the set compared on every iteration
-	 * @param ids
-	 *            List<String> the common ids of the previous iteration
-	 * @return List<String> the final list of the common ids
-	 */
-	public List<String> findCommon(Instances currentSet, List<String> ids) {
-
-		iter++;
-		// declare the list of common ids
-		List<String> commonIds = new ArrayList<String>();
-
-		// iterate through the set
-		// compare with the previous list of ids
-		for (Instance inst : currentSet) {
-			if (ids.contains(inst.stringValue(0))) {
-				commonIds.add(inst.stringValue(0));
-			}
-		}
-
-		if (iter < testDatasets.length) {
-			commonIds = findCommon(testDatasets[iter], commonIds);
-		}
-
-		return commonIds;
-	}
-
-	/**
-	 * Finds the common items among the two testDatasets according to their id
-	 * 
-	 * @param datasets
-	 *            the Item and User testing sets
-	 * @return Instances[] the two sets containing the common items
-	 */
-	public Instances[] findCommonSets(Instances[] datasets) {
-
-		// initialize the Item and User sets that will keep the common Item and
-		// User Instances will be found below
-		sets[0] = new Instances("Rel1", ItemClassifier.getFvAttributes(), datasets[0].size());
-		sets[1] = new Instances("Rel2", UserClassifier.getFvAttributes(), datasets[1].size());
-
-		sets[0].setClassIndex(ItemClassifier.getFvAttributes().size() - 1);
-		sets[1].setClassIndex(UserClassifier.getFvAttributes().size() - 1);
-
-		// save the ids of the datasets[0] set...
-		List<String> ids = new ArrayList<String>();
-		for (int i = 0; i < datasets[0].size(); i++) {
-			ids.add(datasets[0].get(i).stringValue(0));
-		}
-		// ..and call the findCommon to find the common ids among the
-		// datasets[0] and datasets[1]
-		List<String> commonIds = findCommon(datasets[0], ids);
-
-		// iterate through the commonIds list found exactly before
-		// method that makes sure that the order of instances in the two sets
-		// will be same
-		for (int i = 0; i < commonIds.size(); i++) {
-			// search for the instance with each id for the first test set
-			for (int j = 0; j < datasets[0].size(); j++) {
-				if (commonIds.get(i).equals(datasets[0].get(j).stringValue(0))) {
-					sets[0].add(datasets[0].get(j));
-				}
-			}
-			// search for the instance with each id for the second test set
-			for (int j = 0; j < datasets[1].size(); j++) {
-				if (commonIds.get(i).equals(datasets[1].get(j).stringValue(0))) {
-					sets[1].add(datasets[1].get(j));
-				}
-			}
-		}
-
-		int countFake = 0, countReal = 0;
-		// count the number of fake and real items the sets[0] contains. sets[1]
-		// has the same number of fake and real as the sets[0].
-		for (int i = 0; i < sets[0].size(); i++) {
-			if (sets[0].classAttribute()
-					.value((int) sets[0].get(i).classValue()).equals("fake")) {
-				countFake++;
-			} else {
-				countReal++;
-			}
-		}
-
-		return sets;
 	}
 
 	/**
@@ -199,12 +174,9 @@ public class AgreementBasedClassification {
 		return cls;
 	}
 
-	public static TweetVerificationResult getElemAnnotation(Instance inst1, VerificationResult verif1, VerificationResult verif2) {
+	public static TweetVerificationResult getElemAnnotation(VerificationResult verif1, VerificationResult verif2) {
 
 		TweetVerificationResult tvr = new TweetVerificationResult();
-		
-		// set id of the element
-		tvr.setId(inst1.stringValue(0));
 		
 		if (verif1.getPrediction().equals(verif2.getPrediction())) {
 			tvr.setPredicted(verif1.getPrediction());
@@ -214,9 +186,11 @@ public class AgreementBasedClassification {
 			
 			if (itemScore*verif1.getProb() > userScore*verif2.getProb()) {
 				tvr.setConfidenceValue(verif1.getProb());
+				tvr.setPredicted(verif1.getPrediction());
 			}
 			else {
 				tvr.setConfidenceValue(verif2.getProb());
+				tvr.setPredicted(verif2.getPrediction());
 			}
 			tvr.setAgreed(false);
 		}
@@ -236,7 +210,7 @@ public class AgreementBasedClassification {
 	 *         agreed, classifiers disagreed).
 	 * @throws Exception
 	 */
-	public TweetVerificationResult classifyItems(Classifier[] itemCls, Classifier[] userCls) throws Exception {
+	public TweetVerificationResult classifyItem(Classifier[] itemCls, Classifier[] userCls) throws Exception {
 
 		/*
 		 * define the TweetVerificationResult that holds information about
@@ -245,34 +219,17 @@ public class AgreementBasedClassification {
 		
 		TweetVerificationResult tvr = new TweetVerificationResult();
 		
-		int instaSize = sets[0].size();
-
 		// applies bagging technique for the item and user case and gets the
 		// predictions for the testing instances
-		VerificationResult[] itemClsPreds = Bagging.classifyItems(itemCls, Bagging.getTestingSets());
+		VerificationResult tweetPred = Bagging.classifyItems(itemCls, Bagging.getTestingSets());
+		VerificationResult userPred  = Bagging.classifyItems(userCls, Bagging.getTestingSetsUser());
 		
-		VerificationResult[] userClsPreds = Bagging.classifyItems(userCls, Bagging.getTestingSetsUser());
-
-		Remove rm = new Remove();
-		rm.setAttributeIndices("1");
-
-
-		// iterate through the predictions
-		for (int i = 0; i < itemClsPreds.length; i++) {
-
-			for (int j = 0; j < userClsPreds.length; j++) {
-
-				//compare ids to find the same item in both arrays
-				if (itemClsPreds[i].getId().equals(userClsPreds[j].getId())) {
-
-					Instance inst1 = sets[0].get(i);
-					
-					// find the details of the TweetVerificationResult object
-					tvr = getElemAnnotation(inst1, itemClsPreds[i], userClsPreds[i]);
-
-				}
-			}
-		}
+		String id = testDatasets[0].get(0).stringValue(0);
+		
+		// find the details of the TweetVerificationResult object
+		tvr = getElemAnnotation(tweetPred, userPred);
+		tvr.setId(id);
+		
 		return tvr;
 	}
 
@@ -355,95 +312,47 @@ public class AgreementBasedClassification {
 	 * *calls the functions to compute the verification result for the tweets
 	 * @return List<JSONObject> a list with the resulted JSON objects, one for each of the tweets given as input
 	 */
-	public static List<JSONObject> verifyTweets() {
+	public static JSONObject verifyTweet(JSONObject jsonObject) {
 
 		
-		List<JSONObject> resultedJSONObjects = new ArrayList<JSONObject>();
+		JSONObject resultedJSONObject =  new JSONObject();
 		
-		//get the properties that have been defined in the config.properties file
-		defineProperties();
-		
-		// define a set of random values used to shuffle data during the trials.
-		//Bagging.randomVals = Bagging.initializeRandomVals();
-		
-		// create a DoubleVerifyBagging object
-		AgreementBasedClassification abr = new AgreementBasedClassification();
-
-		/** TRAINING SET **/
-		// get the training datasets (based on the Item(Tweet) and User features) 
-		trainDatasets = abr.getTrainDatasets();
-	
-		//cross validate the training datasets to get the scores based on the item and user features respectively
-		itemScore = abr.getCrossValidationScore(trainDatasets[0], 0);
-		userScore = abr.getCrossValidationScore(trainDatasets[1], 1);
-
 		/** TESTING SET **/
 		//get the file that contains the testing set from the path defined in config file
-		BufferedReader br = null;
+								
+		ItemFeatures itemFeats;
+		UserFeatures userFeats;
+		
 		try {
-			br = new BufferedReader (new FileReader(prop.getProperty("TESTINGDATA_JSON")) );
+			itemFeats = ItemFeaturesExtractorJSON.extractFeatures(jsonObject);
+			userFeats = UserFeaturesExtractorJSON.extractFeatures(jsonObject);
 			
-			String obj;
-			while ( (obj = br.readLine()) != null ) {		
-						
-				JSONObject jsonObject = new JSONObject(obj);
-				ItemFeatures itemFeats = ItemFeaturesExtractorJSON.extractFeatures(jsonObject);
-				UserFeatures userFeats = UserFeaturesExtractorJSON.extractFeatures(jsonObject);
-				
-				// call method to create the testing sets with the lists given above
-				testDatasets = abr.getTestDatasets(itemFeats, userFeats);
+			AgreementBasedClassification abc = new AgreementBasedClassification();
+			
+			// call method to create the testing sets with the lists given above
+			testDatasets = abc.getTestDatasets(itemFeats, userFeats);
+			//sets = abc.findCommonSets(testDatasets);
+			
 
-				// values initialization before each trial execution
-				initializeParameters();
-		
-				// call method to find the common sets among the testing sets
-				sets = abr.findCommonSets(testDatasets);
-				/* * Even if we define one set of testing items, feature extraction
-				 * may not be performed for some of them, i.e a user's account may
-				 * be suspended, so there will be no user features for this one, but
-				 * only item features. So, we aim to find those items that co-exist
-				 * in the two sets and have both item and user features.*/
-				 
-				
-				// define the set of classifiers for each case
-				Classifier[] itemCls;
-				Classifier[] userCls;
-		
-				try {
-		
-					Bagging bg = new Bagging();
-		
-					// call method to create the bagging classifiers with the
-					// trainDatasets and sets for item and user case
-					int trainingSize = trainDatasets[0].size() / 3;
-					itemCls = bg.createClassifiers(trainDatasets[0], sets[0], trainingSize);
-					trainingSize = trainDatasets[1].size() / 3;
-					userCls = bg.createClassifiersUser(trainDatasets[1], sets[1], trainingSize);
-		
-					// classify testing sets using the classifiers created above
-					TweetVerificationResult tvr = abr.classifyItems(itemCls, userCls);
-					
-					JSONObject resultedJSONObject = createResultJSONObject(itemFeats, userFeats, tvr);
-					
-					resultedJSONObjects.add(resultedJSONObject);
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+			Bagging bg = new Bagging();
 
-			}
-			br.close();
-		} catch (FileNotFoundException e1) {
+			// call method to create the bagging classifiers with the
+			// trainDatasets and sets for item and user case
+			
+			bg.generateRespectiveTestingSetsTweet(testDatasets[0]);
+			
+			bg.generateRespectiveTestingSetsUser(testDatasets[1]);
+
+			// classify testing sets using the classifiers created above
+			TweetVerificationResult tvr = abc.classifyItem(classifiersTweet, classifiersUser);
+
+			resultedJSONObject = createResultJSONObject(itemFeats, userFeats, tvr);
+					
+		} catch (Exception e1) {
 			e1.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		
-		return resultedJSONObjects;
+		return resultedJSONObject;
 
 	}
 
@@ -465,20 +374,37 @@ public class AgreementBasedClassification {
 	}
 
 	/**
-	 * Main method that triggers the verification process by calling the verifyTweets() method
+	 * Main method
 	 * @param args
 	 * @throws Exception
 	 */
 	/*START FROM HERE*/
 	public static void main(String[] args) throws Exception {
 
-		List<JSONObject> resultedJSONObjects = verifyTweets();
+		/**STEP 1: call the initialization function**/
+		initializeParameters();
 		
-		for (JSONObject json:resultedJSONObjects) {
-			System.out.println("Tweet ID: "+json.getString("id"));
-			System.out.println("Resulted json: "+ json);
+		
+		BufferedReader br = null;
+		//get a JSON from a file or from another location 
+		br = new BufferedReader (new FileReader( prop.getProperty("TESTINGDATA_JSON")));
+		//convert to JSONObject
+		String line;
+		
+		while ((line=br.readLine())!=null) {
+			
+			JSONObject json = new JSONObject(line);
+			
+			/**STEP 2: call the verifyTweet(json) function**/
+			JSONObject resultedJson = verifyTweet(json);
+			System.out.println("Resulted JSON: ");
+			System.out.println(resultedJson);
+			System.out.println("===");
+			
 		}
-
+		
+		
+		br.close();
 	}
 
 }

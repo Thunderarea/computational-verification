@@ -216,9 +216,9 @@ public class UserClassifier {
 
 		int index = 0;
 
-		if (UserClassifier.getFvAttributes().size() == 0) {
+		/*if (UserClassifier.getFvAttributes().size() == 0) {
 			fvAttributes = (ArrayList<Attribute>) declareAttributes();
-		}
+		}*/
 
 		// create an empty training set and then keep the instances
 		Instances isTestingSet = new Instances("Rel", fvAttributes,	listUserFeatures.size());
@@ -252,8 +252,7 @@ public class UserClassifier {
 	 * @return Instances that form the testing set
 	 * @throws Exception
 	 */
-	public static Instances createTestingSet(UserFeatures listUserFeatures,
-			UserFeaturesAnnotation listFeaturesAnnot) throws Exception {
+	public static Instances createTestingSet(UserFeatures listUserFeatures) throws Exception {
 
 		// create an empty training set and then keep the instances
 		Instances isTestingSet = new Instances("Rel", fvAttributes, 1);
@@ -262,8 +261,7 @@ public class UserClassifier {
 
 		// declare instance and define its values
 		Instance inst = createInstance(listUserFeatures);
-		inst.setValue((Attribute) fvAttributes.get(fvAttributes.size() - 1),
-				listFeaturesAnnot.getReliability());
+		inst.setValue((Attribute) fvAttributes.get(fvAttributes.size() - 1), "fake");
 
 		// add the instance to the testing set
 		isTestingSet.add(inst);
@@ -280,7 +278,7 @@ public class UserClassifier {
 
 	public static Instances reformatInstances(Instances instances) {
 		
-		UserClassifier.declareAttributes();
+		//UserClassifier.declareAttributes();
 		
 		Instances newInstances = new Instances("data", UserClassifier.getFvAttributes(), instances.size());
 		
@@ -288,7 +286,7 @@ public class UserClassifier {
 			
 			Instance inst = new DenseInstance(UserClassifier.getFvAttributes().size());
 			
-			inst.setValue((Attribute) fvAttributes.get(0), instances.instance(0).stringValue(0));
+			inst.setValue((Attribute) fvAttributes.get(0), instances.instance(i).stringValue(0));
 			inst.setValue((Attribute) fvAttributes.get(1), instances.instance(i).value(1));
 			inst.setValue((Attribute) fvAttributes.get(2), instances.instance(i).value(2));
 			inst.setValue((Attribute) fvAttributes.get(3), instances.instance(i).value(3));
@@ -316,7 +314,6 @@ public class UserClassifier {
 			inst.setDataset(newInstances);
 			newInstances.add(inst);
 			
-
 		}
 		
 		return newInstances;
@@ -325,9 +322,6 @@ public class UserClassifier {
 	
 	public static Instances formTestingSet(UserFeatures userFeats) throws Exception {
 
-		if (UserClassifier.getFvAttributes().size()==0){
-			fvAttributes = (ArrayList<Attribute>) declareAttributes();
-		}
 		
 		Instances testingSet = null;
 		//UserFeatures userFeats;
@@ -336,11 +330,11 @@ public class UserClassifier {
 			// compute and get the Item features of the current JSON object
 			//userFeats = UserFeaturesExtractorJSON.extractFeatures(json);
 			// create the Item annotation instance
-			UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
+			/*UserFeaturesAnnotation userAnnot = new UserFeaturesAnnotation();
 			userAnnot.setId(userFeats.getId());
-			userAnnot.setReliability("fake");
+			userAnnot.setReliability("fake");*/
 			// create the testing set using the above data
-			testingSet = createTestingSet(userFeats, userAnnot);
+			testingSet = createTestingSet(userFeats);
 
 		} catch (Exception e) {
 			System.out.println("Error on forming the User features testing set...!");

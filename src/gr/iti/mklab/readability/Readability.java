@@ -191,7 +191,6 @@ public class Readability {
     	Double roundVar = null;
     	if (words!=0){
     		score = 206.835 - 1.015*words/sentences - 84.6*syllables/words;
-    		System.out.println("score" + score);
     		roundVar = Utilities.round(score, 3);
     	}
     	

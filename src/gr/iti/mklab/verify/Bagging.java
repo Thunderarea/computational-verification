@@ -1,86 +1,47 @@
 package gr.iti.mklab.verify;
 
-import gr.iti.mklab.extractfeatures.ItemFeatures;
-import gr.iti.mklab.extractfeatures.ItemFeaturesAnnotation;
-import gr.iti.mklab.extractfeatures.UserFeatures;
-import gr.iti.mklab.extractfeatures.UserFeaturesAnnotation;
 import gr.iti.mklab.verifyutils.DataHandler;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-
 import weka.classifiers.Classifier;
-import weka.classifiers.meta.FilteredClassifier;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.filters.unsupervised.attribute.Normalize;
-import weka.filters.unsupervised.attribute.Remove;
 
 public class Bagging {
 	
-	static List<ItemFeatures> itemfeatsfake = new ArrayList <ItemFeatures>();
-	static List<ItemFeatures> itemfeatsreal = new ArrayList <ItemFeatures>();
-	static List<UserFeatures> userfeatsfake = new ArrayList <UserFeatures>();
-	static List<UserFeatures> userfeatsreal = new ArrayList <UserFeatures>();
-	static List<ItemFeaturesAnnotation> itemFeaturesAnnot  = new ArrayList<ItemFeaturesAnnotation>();
-	static List<ItemFeaturesAnnotation> itemFeaturesAnnot2 = new ArrayList<ItemFeaturesAnnotation>();
-	static List<UserFeaturesAnnotation> userFeaturesAnnot  = new ArrayList<UserFeaturesAnnotation>();
-	static List<UserFeaturesAnnotation> userFeaturesAnnot2 = new ArrayList<UserFeaturesAnnotation>();
-	
-	static Normalize normFilter = new Normalize();
-	static Normalize normFilterUser = new Normalize();
-	static HashMap<Double,List<Double>> ranksItem = new HashMap<Double,List<Double>>();
-	static HashMap<Double,List<Double>> ranksUser = new HashMap<Double,List<Double>>();
+	static int[] randomVals = new int[7];
+	static Instances[] testingSets = new Instances[randomVals.length];
+	static Instances[] testingSetsUser = new Instances[randomVals.length];
 
-	public static HashMap<Double,List<Double>> getRankedItemMap() {
-		return ranksItem;
-	}
-	public static HashMap<Double,List<Double>> getRankedUserMap() {
-		return ranksUser;
-	}
-	
-
-
-	
-	static Instances[] testingSets = new Instances[5];
 	
 	public static Instances[] getTestingSets() {
 		return testingSets;
 	}
-	
 	public static void setTestingSets(Instances[] testingSets) {
 		Bagging.testingSets = testingSets;
+	}	
+	public static Instances[] getTestingSetsUser() {
+		return testingSetsUser;
 	}
-	
+	public static void setTestingSetsUser(Instances[] testingSetsUser) {
+		Bagging.testingSetsUser = testingSetsUser;
+	}
 	public static int[] initializeRandomVals() {
 		
-		int[] random = new int[] {6,7,8,90,32};
+		//int[] random = new int[] {6,7,8,90,32,34,56,9,10};
+		int[] random = new int[] {6,7,8,90,32,34,56};
 			
 		return random;
 	}
 	
-	static int[] randomVals = new int[10];
-	
-	
-	//static int trainingSize = 3174;
-	
-	public Classifier[] createClassifiers(Instances training2, Instances testing2, int trainingSize) throws Exception {
-		
-		Bagging.randomVals = Bagging.initializeRandomVals();
+	/*public static void generateTrainingSetsGroupsTweet(Instances training2, int trainingSize) throws Exception {
 		
 		Instances training = new Instances(training2);
-		Instances testing  = new Instances(testing2);
-		
-		int countFake=0, countReal=0;
-		Classifier[] classifiers = new Classifier[randomVals.length];
-		
+		int countFake=0;
+		int countReal=0;
 		
 		for (int j=0; j<randomVals.length; j++) {
 			
 			Instances currentTrain = new Instances("rel", ItemClassifier.getFvAttributes(), trainingSize);
+			
 			
 			Collections.shuffle(training, new Random(randomVals[j]));
 			countFake = 0; 
@@ -88,17 +49,17 @@ public class Bagging {
 			
 			
 			for (int i=0; i<training.size(); i++) {
-				if (countFake<(trainingSize/2)) {
+				if ( countFake < (trainingSize >> 1) ) {
 					if (training.classAttribute().value((int) training.get(i).classValue()).equals("fake")) {
-						countFake++;
 						currentTrain.add(training.get(i));
+						countFake++;
 					}
 				}
 							
 			}
 
 			for (int i=0; i<training.size(); i++) {
-				if ( countReal < (trainingSize/2) ) {
+				if ( countReal < (trainingSize >> 1) ) {
 					if (training.classAttribute().value((int) training.get(i).classValue()).equals("real")) {
 						currentTrain.add(training.get(i));
 						countReal++;
@@ -106,60 +67,47 @@ public class Bagging {
 				}
 			}
 		
-			//Linear Regression approach
-			currentTrain = DataHandler.getInstance().getTransformedTrainingOverall(currentTrain);				
-			testingSets[j] = DataHandler.getInstance().getTransformedTestingOverall(testing);
-
+			//System.out.println(countFake+" "+countReal);
+			currentTrainInstancesTweet[j] = currentTrain;	
+			//System.out.println(currentTrainInstancesTweet[j].size());
+			//System.out.println(currentTrainInstancesTweet[j].get(0));
 			
-		
-			
-			//classifier details
-			FilteredClassifier fc = new FilteredClassifier();
-			AgreementBasedClassification dvb = new AgreementBasedClassification();
-			Classifier tree = dvb.getCurrentClassifier();
-			Remove rm = new Remove();
-			rm.setAttributeIndices("1");
-						
-
-			
-			try {
-				fc.setFilter(rm);
-				fc.setClassifier(tree);				
-				fc.buildClassifier(currentTrain);
-				classifiers[j] = fc;
-				
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 		}
 		
-		return classifiers;
-	}
-	
-	
-	
-	static Instances[] testingSetsUser = new Instances[5];
-	
-	public static Instances[] getTestingSetsUser() {
-		return testingSetsUser;
-	}
-	
-	public static void setTestingSetsUser(Instances[] testingSetsUser) {
-		Bagging.testingSetsUser = testingSetsUser;
-	}
-	
-	public Classifier[] createClassifiersUser(Instances training2, Instances testing2, int trainingSize) throws Exception {
-		
-		Bagging.randomVals = Bagging.initializeRandomVals();
-		
-		Instances training = new Instances(training2);
+	}*/
+	static public int counter = 0;
+	public void generateRespectiveTestingSetsTweet(Instances testing2) throws Exception {
+				
 		Instances testing  = new Instances(testing2);
 		
-		int countFake=0, countReal=0;
-		Classifier[] classifiers = new Classifier[randomVals.length];
+		for (int j=0; j<randomVals.length; j++) {
+			counter = j;
+			//Linear Regression approach
+			//currentTrainInstancesTweet[j] = DataHandler.getInstance().getTransformedTrainingOverall(currentTrainInstancesTweet[j]);				
+			testingSets[j] = DataHandler.getInstance().getTransformedTestingOverall(testing);
+			
+			
+			//System.out.println("currentTrainInstancesTweet: "+currentTrainInstancesTweet[j].size());
+			//System.out.println(currentTrainInstancesTweet[j].get(0));
+			
+			/*FilteredClassifier fc = new FilteredClassifier();
+			Remove rm = new Remove();
+			rm.setAttributeIndices("1");
+			fc.setFilter(rm);
+			fc.setClassifier(new RandomForest());
+			fc.buildClassifier(currentTrainInstancesTweet[j]);
+			weka.core.SerializationHelper.write("resources/models/tweetModel"+j+".model", fc);
+			AgreementBasedClassification.classifiersTweet[j] = fc;*/
+		}
 		
-		//System.out.println("CREATE CLASSIFIERS: USER");
+	}
+	
+	
+	/*public static void generateTrainingSetsGroupsUser(Instances training2, int trainingSize) {
+		
+		Instances training = new Instances(training2);
+		int countFake=0;
+		int countReal=0;
 		
 		for (int j=0; j<randomVals.length; j++) {
 			
@@ -169,7 +117,7 @@ public class Bagging {
 			countReal = 0;
 			
 			for (int i=0; i<training.size(); i++) {
-				if (countFake<(trainingSize/2)) {
+				if (countFake < (trainingSize >> 1)) {
 					if (training.classAttribute().value((int) training.get(i).classValue()).equals("fake")) {
 						countFake++;
 						currentTrain.add(training.get(i));
@@ -177,11 +125,9 @@ public class Bagging {
 				}
 							
 			}
-			//System.out.println("training size "+training.size());
-			//System.out.println(trainingSize+" "+countFake);
-			
+						
 			for (int i=0; i<training.size(); i++) {
-				if ( countReal < (trainingSize/2) ) {
+				if ( countReal < (trainingSize >> 1) ) {
 					if (training.classAttribute().value((int) training.get(i).classValue()).equals("real")) {
 						currentTrain.add(training.get(i));
 						countReal++;
@@ -190,34 +136,40 @@ public class Bagging {
 			}
 			//System.out.println("fake "+countFake+" real "+countReal+" all "+currentTrain.size());
 			
+			currentTrainInstancesUser[j] = currentTrain;
+			//System.out.println(currentTrainInstancesUser[j].size());
+			//System.out.println(currentTrainInstancesUser[j].get(10));
+		}
+
+	}*/
+	
+	
+	public void generateRespectiveTestingSetsUser(Instances testing2) throws Exception {
+		
+		Instances testing  = new Instances(testing2);
+			
+		for (int j=0; j<randomVals.length; j++) {
+			
+			counter = j;
 			//Linear Regression approach
-			currentTrain = DataHandler.getInstance().getTransformedTrainingUserOverall(currentTrain);
+			//long st = System.currentTimeMillis();
+			//currentTrainInstancesUser[j] = DataHandler.getInstance().getTransformedTrainingUserOverall(currentTrainInstancesUser[j]);
+			//long end = System.currentTimeMillis();
 			testingSetsUser[j] = DataHandler.getInstance().getTransformedTestingUserOverall(testing);
 			
-				
-			
-			
-			//classifier details
-			FilteredClassifier fc = new FilteredClassifier();
-			AgreementBasedClassification dvb = new AgreementBasedClassification();
-			Classifier tree = dvb.getCurrentClassifier();
+			/*FilteredClassifier fc = new FilteredClassifier();
 			Remove rm = new Remove();
 			rm.setAttributeIndices("1");
-							
+			fc.setFilter(rm);
+			fc.setClassifier(new RandomForest());
+			System.out.println("currentTrainInstancesUser: "+ currentTrainInstancesUser[j].size());
+			fc.buildClassifier(currentTrainInstancesUser[j]);
+			weka.core.SerializationHelper.write("resources/models/userModel"+j+".model", fc);
+			AgreementBasedClassification.classifiersUser[j] = fc;*/
 			
-			try {
-				fc.setClassifier(tree);
-				fc.setFilter(rm);				
-				fc.buildClassifier(currentTrain);
-				classifiers[j] = fc;
-				
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			//System.out.println("transform "+(double)(end-st)/1000+"sec");
 		}
 		
-		return classifiers;
 	}
 	
 	public static VerificationResult classifyItem(Classifier cls,Instance inst) {
@@ -254,7 +206,6 @@ public class Bagging {
 		double sumScores = 0.0;
 		
 		for (int j=0; j<predicted.length; j++) {
-			
 			//if fake add the probability of being fake prob(fake) to the sum 
 			if (predicted[j].getPrediction().equals("fake")) {
 				sumScores += predicted[j].getProb();
@@ -278,68 +229,35 @@ public class Bagging {
 			overallRes.setProb(avgProb);
 		}
 			
-		
 		return overallRes;
 	}
 	
 	
 	
-	public static VerificationResult[] classifyItems(Classifier[] classifiers,Instances[] testingSets) {
+	public static VerificationResult classifyItems(Classifier[] classifiers,Instances[] testingSets) {
 		
-		int sizeTest = testingSets[0].size();
-		VerificationResult[] finalPredictions = new VerificationResult[sizeTest];
+		VerificationResult finalPrediction = new VerificationResult();
 		VerificationResult[] predicted = new VerificationResult[classifiers.length];
 		
-		String actual = "";
-		
-		HashMap<String,String> idsLabels = new HashMap<String, String>();
 		
 		String id="";
-		for (int j=0; j<sizeTest; j++) {
+		//for (int j=0; j<sizeTest; j++) {
 			
 			for (int i=0; i<testingSets.length; i++) {
 				//System.out.println("instance "+testingSets[i].get(j));
-				predicted[i] = classifyItem(classifiers[i], testingSets[i].get(j));
-				actual = testingSets[i].classAttribute().value((int) testingSets[i].get(j).classValue());
-				id = testingSets[i].get(j).stringValue(0);
+				predicted[i] = classifyItem(classifiers[i], testingSets[i].get(0));
+				//actual = testingSets[i].classAttribute().value((int) testingSets[i].get(j).classValue());
+				id = testingSets[i].get(0).stringValue(0);
 			}
 			
 			
-			VerificationResult predict = getMajorityPred(predicted);
-			predict.setId(id);
-			idsLabels.put(id, predict.getPrediction());
+			finalPrediction = getMajorityPred(predicted);
+			finalPrediction.setId(id);
 			
-			finalPredictions[j] = predict;
 		
-			/*//System.out.println("actual "+actual);
-			//System.out.println("prediction "+predict);
-			if (predict.getPrediction().equals(actual)) {
-				count++;
-			}
-			if (actual == "fake" && actual.equals(predict.getPrediction())) {
-				countFake++;
-			} else if (actual == "real" && actual.equals(predict.getPrediction())) {
-				countReal++;
-			}
-			if (actual == "fake") fake++;
-			else real++;
-		*/
-		}
-		
-		/*System.out.println("Total items " + sizeTest);
-		System.out.println("Items classified correctly:" + count);
-		System.out.println("Fake items classified correctly: " + countFake	+ ". Percentage: " + ((double) countFake / fake)* 100);
-		System.out.println("Real items classified correctly: " + countReal	+ ". Percentage: " + ((double) countReal / real)* 100);
-		System.out.println("Percentage " + ((double) count / sizeTest) * 100);*/
-		
-		return finalPredictions;
+		return finalPrediction;
 	}
 	
 	
-	
-	public static void main(String[] args) throws Exception {
-		
-		
-	}
 
 }
