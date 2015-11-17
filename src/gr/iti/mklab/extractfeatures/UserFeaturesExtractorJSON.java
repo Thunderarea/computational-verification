@@ -129,12 +129,14 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static Boolean hasUrl(JSONObject json) {
 
-		String url = json.getJSONObject("user").get("url").toString();
-
-		if (url != null && !url.equals("null"))
+		try{
+			String url = json.getJSONObject("user").getString("url");
 			return true;
+		}
+		catch(Exception e) {
+			return false;
+		}
 
-		return false;
 	}
 
 	/**
@@ -149,12 +151,12 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static String getUserUrl(JSONObject json) {
 
-		Object urlObj = json.getJSONObject("user").get("url").toString();
-
-		if (urlObj != null) 
-			return urlObj.toString();
-		
-		return "";
+		try {
+			return json.getJSONObject("user").get("url").toString();
+		}catch(Exception e) {
+			return "";
+		}
+				
 	}
 
 	/**
@@ -410,7 +412,7 @@ public class UserFeaturesExtractorJSON {
 
 		Boolean profileImg = (Boolean) json.getJSONObject("user").get("default_profile_image");
 
-		return profileImg;
+		return !profileImg;
 	}
 
 	public static Boolean hasHeaderImg(JSONObject json) {

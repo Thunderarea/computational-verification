@@ -156,26 +156,17 @@ public class ItemFeaturesExtractorJSON {
 		// num of uppercase chars
 		feat.setNumUppercaseChars(getNumUppercaseChars());
 		//System.out.println("Number of uppercase characters: "+ feat.getNumUppercaseChars());
+		
 		// num of mentions
-		int numMentions = json.getJSONObject("entities").getJSONArray("user_mentions").length();
-		feat.setNumMentions(numMentions);
+		feat.setNumMentions(getNumMentions(json));
 		//System.out.println("Number of mentions: " + numMentions);
-		// num of hashtags
-		int numHashtags = json.getJSONObject("entities").getJSONArray("hashtags").length();
-		feat.setNumHashtags(numHashtags);
+		
+		// num of hashtags		
+		feat.setNumHashtags(getNumHashtags(json));
 		//System.out.println("Number of hashtags: " + numHashtags);
 
 		// num of urls
-		int numURLs = json.getJSONObject("entities").getJSONArray("urls")
-				.length();
-		int numURLs2;
-		try {
-			numURLs2 = json.getJSONObject("entities").getJSONArray("media")
-					.length();
-		} catch (Exception e) {
-			numURLs2 = 0;
-		}
-		feat.setNumURLs(numURLs + numURLs2);
+		feat.setNumURLs(getNumURLs(json));
 		//System.out.println("Number of urls " + (numURLs + numURLs2));
 
 		// num of retweets
@@ -422,11 +413,12 @@ public class ItemFeaturesExtractorJSON {
 		// uppercase
 		// chars on them
 
-		
+		String preprocess = text.replaceAll("http+s*+://[^ ]+", "").replaceAll("@[^ ]+", "").replaceAll("@ [^ ]+", "").replaceAll("#[^ ]+ ", "")
+				.replaceAll("RT", "").trim();
 
 		// count the uppercase chars
-		for (int i = 0; i < preprocessedText.length(); i++) {
-			ch = preprocessedText.charAt(i);
+		for (int i = 0; i < preprocess.length(); i++) {
+			ch = preprocess.charAt(i);
 			if (Character.isUpperCase(ch)) {
 				numUppercaseChars++;
 			}
@@ -474,44 +466,45 @@ public class ItemFeaturesExtractorJSON {
 		return containsPron;
 	}
 
-	public static Integer getNumMentions() {
-		Integer numMentions = 0;
-
-		// check if any token is a mention, so if it starts with @
-		for (int i = 0; i < tokens.length; i++) {
-			if (tokens[i].startsWith("@")) {
-				numMentions++;
-			}
+	public static Integer getNumMentions(JSONObject json) {
+		
+		int numMentions =0;
+		try{
+			numMentions = json.getJSONObject("entities").getJSONArray("user_mentions").length();
+		}catch(Exception e) {
+			numMentions = json.getJSONObject("entities").getJSONObject("user_mentions").length();
 		}
-		// print info
-		// System.out.println("Num of mentions: " + numMentions);
 		return numMentions;
 	}
 
-	public static Integer getNumHashtags() {
-		Integer numHashtags = 0;
-		// check if any token is a hashtag, so if it starts with #
-		for (int i = 0; i < tokens.length; i++) {
-			if (tokens[i].startsWith("#")) {
-				numHashtags++;
-			}
+	public static Integer getNumHashtags(JSONObject json) {
+		
+		int numHashtags = 0;
+		try{
+			numHashtags = json.getJSONObject("entities").getJSONArray("hashtags").length();
+		}catch(Exception e) {
+			numHashtags = json.getJSONObject("entities").getJSONObject("hashtags").length();
 		}
-		// print info
-		// System.out.println("Num of hashtags: " + numHashtags);
 		return numHashtags;
 	}
 
-	public static Integer getNumURLs() {
-		Integer numURLs = 0;
-		// String itemTitle = item.getTitle().toString();
-
-		// count the urls by checking if text contains "http" string
-		if (text.contains("http://")) {
-			numURLs++;
+	public static Integer getNumURLs(JSONObject json) {
+		
+		
+		int numURLs;
+		try{
+			numURLs = json.getJSONObject("entities").getJSONArray("urls").length();
+		}catch(Exception e) {
+			numURLs = json.getJSONObject("entities").getJSONObject("urls").length();
 		}
-		// print info
-		// System.out.println("Num of URLs:" + numURLs);
-		return numURLs;
+		int numURLs2;
+		try {
+			numURLs2 = json.getJSONObject("entities").getJSONArray("media").length();
+		} catch (Exception e) {
+			numURLs2 = 0;
+		}
+		
+		return numURLs + numURLs2;
 	}
 
 	public static Integer getNumSentiWords(String filePath) {

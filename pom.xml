@@ -4,6 +4,7 @@
 	<groupId>twitter-image-verification</groupId>
 	<artifactId>twitter-image-verification</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -13,10 +14,28 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
+					<archive>
+						<manifest>
+							<mainClass>gr.iti.mklab.verify.AgreementBasedClassification</mainClass>
+						</manifest>
+					</archive>
+					<executions>
+						<execution>
+							<goals>
+								<goal>one-jar</goal>
+							</goals>
+						</execution>
+					</executions>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>onejar-maven-plugin.googlecode.com</id>
+			<url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
+		</pluginRepository>
+	</pluginRepositories>
 	<dependencies>
 		<!-- Weka -->
 		<dependency>

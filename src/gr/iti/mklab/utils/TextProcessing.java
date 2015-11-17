@@ -1,5 +1,7 @@
 package gr.iti.mklab.utils;
 
+import java.util.Arrays;
+
 import me.champeau.ld.UberLanguageDetector;
 
 /**
@@ -52,7 +54,7 @@ public class TextProcessing {
 		str = str.replaceAll("\\.+", " ");
 		//str = str.replaceAll("[^a-zA-Z&#@_\\d+; ]", " "); // drop
 															// non-alphanumeric
-		str = str.replaceAll("[^a-zA-Z&'#@\\_d+ ]", " ");
+		str = str.replaceAll("[^0-9a-zA-Z&'#@\\_d+ ]", " ");
 		// str = str.replaceAll("RT ",""); //clear retweet
 		// str = str.replaceAll("@", ""); // Clear @'s (optional)
 		// str = str.replaceAll("&#\\d+;", " "); //change &#[digits]; to space
@@ -63,7 +65,7 @@ public class TextProcessing {
 
 		// split the result string by space
 		String tokens[] = str.split(" ");
-
+		
 		return tokens;
 	}
 	
