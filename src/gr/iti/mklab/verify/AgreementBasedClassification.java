@@ -8,9 +8,11 @@ import gr.iti.mklab.verifyutils.DataHandler;
 import gr.iti.mklab.verifyutils.VerifHandler;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -57,18 +59,19 @@ public class AgreementBasedClassification {
 	 */
 	public static void initializeParameters() throws Exception {
 		
+		System.out.println("Reading properties file...");
+		//get the properties that have been defined in the config.properties file
+		defineProperties();
+		
 		System.out.println("Initializing the values...");
 		//initialize CV values
-		itemScore = 0.8264854614412137;
-		userScore = 0.6350189633375474;
+		itemScore = Double.valueOf(prop.getProperty("ITEM_SCORE"));
+		userScore = Double.valueOf(prop.getProperty("USER_SCORE"));
+		
 		Bagging.randomVals = Bagging.initializeRandomVals();
 		ItemClassifier.declareAttributes();
 		UserClassifier.declareAttributes();
 		
-		
-		System.out.println("Reading properties file...");
-		//get the properties that have been defined in the config.properties file
-		defineProperties();
 		
 		System.out.println("Initializing files...");
 		UserFeaturesExtractorJSON.initializeFiles();
@@ -86,10 +89,10 @@ public class AgreementBasedClassification {
 			int size = classifiersTweet.length;
 			for (int j=0; j<size; j++) {
 				
-				Classifier cls = (Classifier) weka.core.SerializationHelper.read("resources/models/tweetModel"+j+".model");
+				Classifier cls = (Classifier) weka.core.SerializationHelper.read(prop.getProperty("TWEET_MODELS_FOLDER")+"tweetModel"+j+".model");
 				classifiersTweet[j] = cls;
 				
-				Classifier cls2 = (Classifier) weka.core.SerializationHelper.read("resources/models/userModel"+j+".model");
+				Classifier cls2 = (Classifier) weka.core.SerializationHelper.read(prop.getProperty("USER_MODELS_FOLDER")+"userModel"+j+".model");
 				classifiersUser[j]  = cls2;
 			}
 			int size2 = Bagging.randomVals.length;
@@ -97,18 +100,18 @@ public class AgreementBasedClassification {
 			for (int i=0; i<size2;i++) {
 
 				for (int j=0; j<13; j++) {
-					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read("resources/models/lr/lr_model_"+i+"_"+j+".model");
+					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read(prop.getProperty("TWEET_LR_MODELS_FOLDER")+"lr_model_"+i+"_"+j+".model");
 					lr_models_tweet[i][j] = cls;
 				}
 				for (int j=0; j<8; j++) {
-					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read("resources/models/lr/lr_user_model_"+i+"_"+j+".model");
+					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read(prop.getProperty("TWEET_LR_MODELS_FOLDER")+"lr_user_model_"+i+"_"+j+".model");
 					lr_models_user[i][j] = cls;
 				}
 				
-				Normalize cls = (Normalize) weka.core.SerializationHelper.read("resources/models/norm/norm_model_"+i+".model");
+				Normalize cls = (Normalize) weka.core.SerializationHelper.read(prop.getProperty("TWEET_NORM_MODELS_FOLDER")+"norm_model_"+i+".model");
 				norm_models_tweet[i] = cls;
 				
-				Normalize cls2 = (Normalize) weka.core.SerializationHelper.read("resources/models/norm/norm_user_model_"+i+".model");
+				Normalize cls2 = (Normalize) weka.core.SerializationHelper.read(prop.getProperty("USER_NORM_MODELS_FOLDER")+"norm_user_model_"+i+".model");
 				norm_models_user[i] = cls2;
 			}
 			
@@ -384,7 +387,7 @@ public class AgreementBasedClassification {
 		/**STEP 1: call the initialization function**/
 		initializeParameters();
 		
-		
+		BufferedWriter bw = new BufferedWriter(new FileWriter("results.json",true));
 		BufferedReader br = null;
 		//get a JSON from a file or from another location 
 		br = new BufferedReader (new FileReader( prop.getProperty("TESTINGDATA_JSON")));
@@ -397,12 +400,16 @@ public class AgreementBasedClassification {
 			
 			/**STEP 2: call the verifyTweet(json) function**/
 			JSONObject resultedJson = verifyTweet(json);
+			bw.write(resultedJson.toString());
+			bw.newLine();
+			bw.flush();
 			System.out.println("Resulted JSON: ");
 			System.out.println(resultedJson);
 			System.out.println("===");
 			
 		}
 		
+		bw.close();
 		
 		br.close();
 	}

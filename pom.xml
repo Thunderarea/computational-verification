@@ -19,62 +19,41 @@
 							<mainClass>gr.iti.mklab.verify.AgreementBasedClassification</mainClass>
 						</manifest>
 					</archive>
-					<executions>
-						<execution>
-							<goals>
-								<goal>one-jar</goal>
-							</goals>
-						</execution>
-					</executions>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>onejar-maven-plugin.googlecode.com</id>
-			<url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
-		</pluginRepository>
-	</pluginRepositories>
 	<dependencies>
-		<!-- Weka -->
-		<dependency>
-			<groupId>com.thoughtworks.xstream</groupId>
-			<artifactId>xstream</artifactId>
-			<version>1.4.4</version>
-		</dependency>
+		<!-- WEKA machine learning package -->
 		<dependency>
 			<groupId>nz.ac.waikato.cms.weka</groupId>
 			<artifactId>weka-dev</artifactId>
 			<version>3.7.13</version>
 		</dependency>
-		<!-- Weka -->
-
-
+		<!-- geolocation detector -->
 		<dependency>
 			<groupId>eu.socialsensor</groupId>
 			<artifactId>geo-util</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.1</version>
 		</dependency>
+		<!-- auxiliary dependency to avoid StaticLoggerBinder error -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.13</version>
+		</dependency>
+		<!-- language detection -->
 		<dependency>
 			<groupId>me.champeau.jlangdetect</groupId>
 			<artifactId>jlangdetect-extra</artifactId>
-			<version>0.3</version>
+			<version>0.4</version>
 		</dependency>
+		<!-- Jsoup web scraping -->
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 			<version>1.7.2</version>
 		</dependency>
-
-
-		<!-- stemmer -->
-		<dependency>
-			<groupId>libstemmer_java</groupId>
-			<artifactId>libstemmer_java</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-
 		<!-- stanford nlp -->
 		<dependency>
 			<groupId>edu.stanford.nlp</groupId>
@@ -87,18 +66,23 @@
 			<version>3.3.1</version>
 			<classifier>models</classifier>
 		</dependency>
-
 		<!-- json -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20140107</version>
 		</dependency>
-
+		<!-- gson -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.4</version>
+		</dependency>
+		<!-- libstemmer -->
+		<dependency>
+			<groupId>org.tartarus.snowball</groupId>
+			<artifactId>libstemmer</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 
@@ -117,6 +101,13 @@
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>org.raisercostin.public.releases</id>
+			<url>http://raisercostin.googlecode.com/svn/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
