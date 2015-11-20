@@ -29,17 +29,11 @@ import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.Remove;
 
 /**
- * Main class that organizes the verification by using the agreement-based classification.
- * 1.Call the initialization function initializeParameters()
- * 2.Call the verifyTweet() method to classify each tweet
  * @author Christina Boididou
- * updated 11.11.2015
+ * updated 20.11.2015
  */
 public class AgreementBasedClassification {
 
-	//static final long serialVersionUID = 1116839470751428698L;
-	
-	//static Instances[] trainDatasets = new Instances[2];
 	static Instances[] testDatasets = new Instances[2];
 
 	static Double itemScore, userScore;
@@ -53,20 +47,30 @@ public class AgreementBasedClassification {
 	public static Normalize[] norm_models_tweet = new Normalize[Bagging.randomVals.length];
 	public static Normalize[] norm_models_user  = new Normalize[Bagging.randomVals.length];
 	
+	private static Properties prop = new Properties();
+	
+	public static Properties getProperties() {
+		return prop;
+	}
+
+	public void setProperties(Properties prop) {
+		AgreementBasedClassification.prop = prop;
+	}
+
 	/**
 	 * initialize the parameters
 	 * @throws Exception 
 	 */
-	public static void initializeParameters() throws Exception {
+	public static void initializeParameters(String configFilePath) throws Exception {
 		
 		System.out.println("Reading properties file...");
 		//get the properties that have been defined in the config.properties file
-		defineProperties();
+		defineProperties(configFilePath);
 		
 		System.out.println("Initializing the values...");
 		//initialize CV values
-		itemScore = Double.valueOf(prop.getProperty("ITEM_SCORE"));
-		userScore = Double.valueOf(prop.getProperty("USER_SCORE"));
+		itemScore = Double.valueOf(getProperties().getProperty("ITEM_SCORE"));
+		userScore = Double.valueOf(getProperties().getProperty("USER_SCORE"));
 		
 		Bagging.randomVals = Bagging.initializeRandomVals();
 		ItemClassifier.declareAttributes();
@@ -89,10 +93,10 @@ public class AgreementBasedClassification {
 			int size = classifiersTweet.length;
 			for (int j=0; j<size; j++) {
 				
-				Classifier cls = (Classifier) weka.core.SerializationHelper.read(prop.getProperty("TWEET_MODELS_FOLDER")+"tweetModel"+j+".model");
+				Classifier cls = (Classifier) weka.core.SerializationHelper.read(getProperties().getProperty("TWEET_MODELS_FOLDER")+"tweetModel"+j+".model");
 				classifiersTweet[j] = cls;
 				
-				Classifier cls2 = (Classifier) weka.core.SerializationHelper.read(prop.getProperty("USER_MODELS_FOLDER")+"userModel"+j+".model");
+				Classifier cls2 = (Classifier) weka.core.SerializationHelper.read(getProperties().getProperty("USER_MODELS_FOLDER")+"userModel"+j+".model");
 				classifiersUser[j]  = cls2;
 			}
 			int size2 = Bagging.randomVals.length;
@@ -100,18 +104,18 @@ public class AgreementBasedClassification {
 			for (int i=0; i<size2;i++) {
 
 				for (int j=0; j<13; j++) {
-					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read(prop.getProperty("TWEET_LR_MODELS_FOLDER")+"lr_model_"+i+"_"+j+".model");
+					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read(getProperties().getProperty("TWEET_LR_MODELS_FOLDER")+"lr_model_"+i+"_"+j+".model");
 					lr_models_tweet[i][j] = cls;
 				}
 				for (int j=0; j<8; j++) {
-					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read(prop.getProperty("TWEET_LR_MODELS_FOLDER")+"lr_user_model_"+i+"_"+j+".model");
+					FilteredClassifier cls = (FilteredClassifier) weka.core.SerializationHelper.read(getProperties().getProperty("TWEET_LR_MODELS_FOLDER")+"lr_user_model_"+i+"_"+j+".model");
 					lr_models_user[i][j] = cls;
 				}
 				
-				Normalize cls = (Normalize) weka.core.SerializationHelper.read(prop.getProperty("TWEET_NORM_MODELS_FOLDER")+"norm_model_"+i+".model");
+				Normalize cls = (Normalize) weka.core.SerializationHelper.read(getProperties().getProperty("TWEET_NORM_MODELS_FOLDER")+"norm_model_"+i+".model");
 				norm_models_tweet[i] = cls;
 				
-				Normalize cls2 = (Normalize) weka.core.SerializationHelper.read(prop.getProperty("USER_NORM_MODELS_FOLDER")+"norm_user_model_"+i+".model");
+				Normalize cls2 = (Normalize) weka.core.SerializationHelper.read(getProperties().getProperty("USER_NORM_MODELS_FOLDER")+"norm_user_model_"+i+".model");
 				norm_models_user[i] = cls2;
 			}
 			
@@ -133,13 +137,13 @@ public class AgreementBasedClassification {
 		Instances trainDatasets[] = new Instances[2];
 		try {
 			
-			DataSource ds = new DataSource(prop.getProperty("TRAININGDATA_ITEM_FEATURES"));
+			DataSource ds = new DataSource(getProperties().getProperty("TRAININGDATA_ITEM_FEATURES"));
 			Instances temp = ds.getDataSet();			
 			temp.setClassIndex(temp.numAttributes() - 1);
 			trainDatasets[0] = ItemClassifier.reformatInstances(temp);
 			trainDatasets[0].setClassIndex(trainDatasets[0].numAttributes() - 1);
 			
-			DataSource ds1 = new DataSource(prop.getProperty("TRAININGDATA_USER_FEATURES"));
+			DataSource ds1 = new DataSource(getProperties().getProperty("TRAININGDATA_USER_FEATURES"));
 			Instances temp1 = ds1.getDataSet();	
 			temp1.setClassIndex(temp1.numAttributes() - 1);
 			trainDatasets[1] = UserClassifier.reformatInstances(temp1);
@@ -315,7 +319,7 @@ public class AgreementBasedClassification {
 	 * *calls the functions to compute the verification result for the tweets
 	 * @return List<JSONObject> a list with the resulted JSON objects, one for each of the tweets given as input
 	 */
-	public static JSONObject verifyTweet(JSONObject jsonObject) {
+	public JSONObject verifyTweet(JSONObject jsonObject) {
 
 		
 		JSONObject resultedJSONObject =  new JSONObject();
@@ -359,15 +363,15 @@ public class AgreementBasedClassification {
 
 	}
 
-	static public Properties prop = new Properties();
+	
 
-	public static void defineProperties() {
+	public static void defineProperties(String configFilePath) {
 
 		InputStream input = null;
 
 		try {
-			input = new FileInputStream("conf/config.properties");
-			prop.load(input);
+			input = new FileInputStream(configFilePath);
+			getProperties().load(input);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -376,42 +380,5 @@ public class AgreementBasedClassification {
 
 	}
 
-	/**
-	 * Main method
-	 * @param args
-	 * @throws Exception
-	 */
-	/*START FROM HERE*/
-	public static void main(String[] args) throws Exception {
-
-		/**STEP 1: call the initialization function**/
-		initializeParameters();
-		
-		BufferedWriter bw = new BufferedWriter(new FileWriter("results.json",true));
-		BufferedReader br = null;
-		//get a JSON from a file or from another location 
-		br = new BufferedReader (new FileReader( prop.getProperty("TESTINGDATA_JSON")));
-		//convert to JSONObject
-		String line;
-		
-		while ((line=br.readLine())!=null) {
-			
-			JSONObject json = new JSONObject(line);
-			
-			/**STEP 2: call the verifyTweet(json) function**/
-			JSONObject resultedJson = verifyTweet(json);
-			bw.write(resultedJson.toString());
-			bw.newLine();
-			bw.flush();
-			System.out.println("Resulted JSON: ");
-			System.out.println(resultedJson);
-			System.out.println("===");
-			
-		}
-		
-		bw.close();
-		
-		br.close();
-	}
-
+	
 }

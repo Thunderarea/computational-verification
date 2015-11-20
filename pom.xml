@@ -84,9 +84,23 @@
 			<artifactId>libstemmer</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+            <groupId>eu.reveal</groupId>
+            <artifactId>lingpipe</artifactId>
+            <version>4.1.0</version>
+        </dependency>
 	</dependencies>
 
 	<repositories>
+		<repository>
+            <id>reveal-maven-repo</id>
+            <name>reveal-maven-repo</name>
+            <url>http://prometheus.atc.gr:8080/nexus/content/repositories/releases</url>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
 		<repository>
 			<id>jlangdetect-googlecode</id>
 			<name>JLangDetect Maven repository</name>

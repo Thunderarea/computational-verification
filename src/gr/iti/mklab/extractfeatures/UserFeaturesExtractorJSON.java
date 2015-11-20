@@ -52,9 +52,9 @@ public class UserFeaturesExtractorJSON {
 
 	public static void initializeFiles() {
 
-		citiesFile = AgreementBasedClassification.prop.getProperty("CITIES_PATH");
-		countryInfoFile = AgreementBasedClassification.prop.getProperty("COUNTRY_INFO_PATH");
-		adminNamesFile = AgreementBasedClassification.prop.getProperty("ADMIN_NAMES_PATH");
+		citiesFile = AgreementBasedClassification.getProperties().getProperty("CITIES_PATH");
+		countryInfoFile = AgreementBasedClassification.getProperties().getProperty("COUNTRY_INFO_PATH");
+		adminNamesFile = AgreementBasedClassification.getProperties().getProperty("ADMIN_NAMES_PATH");
 		countrycodingService = new Countrycoder(citiesFile,countryInfoFile, adminNamesFile);
 
 	}

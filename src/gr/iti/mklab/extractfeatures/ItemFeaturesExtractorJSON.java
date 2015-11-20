@@ -77,26 +77,26 @@ public class ItemFeaturesExtractorJSON {
 
 	
 	public static void initializeFiles() {		
-		lp = LexicalizedParser.loadModel(AgreementBasedClassification.prop.getProperty("MODEL_PARSER"));
-		happy_emo_path = AgreementBasedClassification.prop.getProperty("HAPPY_EMO_PATH");
-		sad_emo_path = AgreementBasedClassification.prop.getProperty("SAD_EMO_PATH");
-		pos_words_eng_path = AgreementBasedClassification.prop.getProperty("POS_WORDS_ENG_PATH");
-		neg_words_eng_path = AgreementBasedClassification.prop.getProperty("NEG_WORDS_ENG_PATH");
-		first_pron_path = AgreementBasedClassification.prop.getProperty("FIRST_PRON_PATH");
-		second_pron_path = AgreementBasedClassification.prop.getProperty("SECOND_PRON_PATH");
-		third_pron_path = AgreementBasedClassification.prop.getProperty("THIRD_PRON_PATH");
-		slang_eng_path = AgreementBasedClassification.prop.getProperty("SLANG_ENG_PATH");
-		pos_words_es_path = AgreementBasedClassification.prop.getProperty("POS_WORDS_ES_PATH");
-		neg_words_es_path = AgreementBasedClassification.prop.getProperty("NEG_WORDS_ES_PATH");
-		first_pron_es_path = AgreementBasedClassification.prop.getProperty("FIRST_PRON_ES_PATH");
-		second_pron_es_path = AgreementBasedClassification.prop.getProperty("SECOND_PRON_ES_PATH");
-		third_pron_es_path = AgreementBasedClassification.prop.getProperty("THIRD_PRON_ES_PATH");
-		slang_es_path = AgreementBasedClassification.prop.getProperty("SLANG_ES_PATH");
-		pos_words_de_path = AgreementBasedClassification.prop.getProperty("POS_WORDS_DE_PATH");
-		neg_words_de_path = AgreementBasedClassification.prop.getProperty("NEG_WORDS_DE_PATH");
-		first_pron_de_path = AgreementBasedClassification.prop.getProperty("FIRST_PRON_DE_PATH");
-		second_pron_de_path = AgreementBasedClassification.prop.getProperty("SECOND_PRON_DE_PATH");
-		third_pron_de_path = AgreementBasedClassification.prop.getProperty("THIRD_PRON_DE_PATH");
+		lp = LexicalizedParser.loadModel(AgreementBasedClassification.getProperties().getProperty("MODEL_PARSER"));
+		happy_emo_path = AgreementBasedClassification.getProperties().getProperty("HAPPY_EMO_PATH");
+		sad_emo_path = AgreementBasedClassification.getProperties().getProperty("SAD_EMO_PATH");
+		pos_words_eng_path = AgreementBasedClassification.getProperties().getProperty("POS_WORDS_ENG_PATH");
+		neg_words_eng_path = AgreementBasedClassification.getProperties().getProperty("NEG_WORDS_ENG_PATH");
+		first_pron_path = AgreementBasedClassification.getProperties().getProperty("FIRST_PRON_PATH");
+		second_pron_path = AgreementBasedClassification.getProperties().getProperty("SECOND_PRON_PATH");
+		third_pron_path = AgreementBasedClassification.getProperties().getProperty("THIRD_PRON_PATH");
+		slang_eng_path = AgreementBasedClassification.getProperties().getProperty("SLANG_ENG_PATH");
+		pos_words_es_path = AgreementBasedClassification.getProperties().getProperty("POS_WORDS_ES_PATH");
+		neg_words_es_path = AgreementBasedClassification.getProperties().getProperty("NEG_WORDS_ES_PATH");
+		first_pron_es_path = AgreementBasedClassification.getProperties().getProperty("FIRST_PRON_ES_PATH");
+		second_pron_es_path = AgreementBasedClassification.getProperties().getProperty("SECOND_PRON_ES_PATH");
+		third_pron_es_path = AgreementBasedClassification.getProperties().getProperty("THIRD_PRON_ES_PATH");
+		slang_es_path = AgreementBasedClassification.getProperties().getProperty("SLANG_ES_PATH");
+		pos_words_de_path = AgreementBasedClassification.getProperties().getProperty("POS_WORDS_DE_PATH");
+		neg_words_de_path = AgreementBasedClassification.getProperties().getProperty("NEG_WORDS_DE_PATH");
+		first_pron_de_path = AgreementBasedClassification.getProperties().getProperty("FIRST_PRON_DE_PATH");
+		second_pron_de_path = AgreementBasedClassification.getProperties().getProperty("SECOND_PRON_DE_PATH");
+		third_pron_de_path = AgreementBasedClassification.getProperties().getProperty("THIRD_PRON_DE_PATH");
 	}
 	
 	
