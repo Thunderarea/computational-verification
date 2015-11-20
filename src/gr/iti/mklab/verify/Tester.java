@@ -12,17 +12,17 @@ public class Tester {
 
 	public static void main(String[] args) {
 		
-		//set the configuration file's path and initialize the parameters
-		try {
-			AgreementBasedClassification.initializeParameters("conf/config.properties");
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
+		//create an object of the AgreementBasedClassification class to start the verification process 
+		//give as parameter the file path of the configuration file
+		AgreementBasedClassification tweetVerifier = new AgreementBasedClassification("conf/config.properties");
+				
 		//(optional) define the buffered reader to read the file that holds the tweets to be tested
 		BufferedReader br = null;
 		//(optional) define the buffered writer to write the verification results
 		BufferedWriter bw = null;
+		
+		
+		String outputFilePath = "resources/test_data/sample_output.json";
 		
 		String line;
 		try {
@@ -32,15 +32,13 @@ public class Tester {
 			//read each line of the file (each tweet in a single line)
 			while ((line=br.readLine())!=null) {
 
-				bw = new BufferedWriter(new FileWriter("resources/test_data/sample_output.json",true));
+				bw = new BufferedWriter(new FileWriter(outputFilePath,true));
 				
 				//get a tweet in JSON format from the file				
 				JSONObject tweet = new JSONObject(line);
 
-				//create object for AgreementBasedClassification class to start the verification process
-				AgreementBasedClassification agreemBasedClassificationObj = new AgreementBasedClassification();
 				//call the verifyTweet method
-				JSONObject verificationResult = agreemBasedClassificationObj.verifyTweet(tweet);
+				JSONObject verificationResult = tweetVerifier.verifyTweet(tweet);
 				//print result
 				System.out.println("Result: ");
 				System.out.println(verificationResult);

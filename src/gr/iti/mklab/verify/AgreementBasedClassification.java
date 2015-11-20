@@ -57,11 +57,22 @@ public class AgreementBasedClassification {
 		AgreementBasedClassification.prop = prop;
 	}
 
+	//constructor
+	public AgreementBasedClassification(String configFilePath) {
+		try {
+			initializeParameters(configFilePath);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public AgreementBasedClassification() {}
+	
 	/**
 	 * initialize the parameters
 	 * @throws Exception 
 	 */
-	public static void initializeParameters(String configFilePath) throws Exception {
+	public void initializeParameters(String configFilePath) throws Exception {
 		
 		System.out.println("Reading properties file...");
 		//get the properties that have been defined in the config.properties file
