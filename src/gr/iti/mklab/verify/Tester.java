@@ -32,7 +32,7 @@ public class Tester {
 			//read each line of the file (each tweet in a single line)
 			while ((line=br.readLine())!=null) {
 
-				bw = new BufferedWriter(new FileWriter("results.json",true));
+				bw = new BufferedWriter(new FileWriter("resources/test_data/sample_output.json",true));
 				
 				//get a tweet in JSON format from the file				
 				JSONObject tweet = new JSONObject(line);
