@@ -100,7 +100,7 @@ public class DataHandler {
 	
 	public double round(double value, int places) {
 	    if (places < 0) throw new IllegalArgumentException();
-
+	   
 	    if (((Double)value).toString() != "NaN") {
 	    	BigDecimal bd = new BigDecimal(value);
 	    	bd = bd.setScale(places, RoundingMode.HALF_UP);

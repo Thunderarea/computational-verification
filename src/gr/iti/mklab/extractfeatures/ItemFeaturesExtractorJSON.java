@@ -170,7 +170,7 @@ public class ItemFeaturesExtractorJSON {
 		//System.out.println("Number of urls " + (numURLs + numURLs2));
 
 		// num of retweets
-		Long retweetCount = json.getLong("retweet_count");
+		Long retweetCount = Long.parseLong(json.get("retweet_count").toString());
 		feat.setRetweetCount(retweetCount);
 		//System.out.println("Retweet count: " + retweetCount);
 		// has colon
@@ -582,28 +582,7 @@ public class ItemFeaturesExtractorJSON {
 	 * return numRetweets; }
 	 */
 
-	public static HashSet<String> loadFakeWords(String filePath) {
-		BufferedReader br = null;
-		HashSet<String> hs = new HashSet<String>();
-		try {
-			String sCurrentLine;
-			br = new BufferedReader(new FileReader(filePath));
-			while ((sCurrentLine = br.readLine()) != null) {
-				hs.add(sCurrentLine);
-			}
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (br != null)
-					br.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
-		return hs;
-	}
 
 	public static Integer getNumSlangs(String filePath, String lang)
 			throws ClassNotFoundException, InstantiationException,
@@ -766,36 +745,6 @@ public class ItemFeaturesExtractorJSON {
 		// System.out.println("Nouns found " + numNouns);
 		return numNouns;
 	}
-
-	private static String getStringFromInputStream(InputStream is) {
-
-		BufferedReader br = null;
-		StringBuilder sb = new StringBuilder();
-
-		String line;
-		try {
-
-			br = new BufferedReader(new InputStreamReader(is));
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return sb.toString();
-
-	}
-
 
 	/**
 	 * Expands the given shortened url

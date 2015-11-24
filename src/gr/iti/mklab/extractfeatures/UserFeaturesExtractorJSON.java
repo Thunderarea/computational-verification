@@ -130,7 +130,7 @@ public class UserFeaturesExtractorJSON {
 	public static Boolean hasUrl(JSONObject json) {
 
 		try{
-			String url = json.getJSONObject("user").getString("url");
+			String url = json.getJSONObject("user").get("url").toString();
 			return true;
 		}
 		catch(Exception e) {
@@ -189,7 +189,7 @@ public class UserFeaturesExtractorJSON {
 	 */
 	public static Boolean isVerifiedUser(JSONObject json) {
 
-		return (Boolean) json.getJSONObject("user").get("verified");
+		return Boolean.valueOf(json.getJSONObject("user").get("verified").toString());
 
 	}
 
@@ -327,7 +327,7 @@ public class UserFeaturesExtractorJSON {
 
 	public static Long getAccountAge(JSONObject json) throws ParseException {
 
-		String age = json.getJSONObject("user").getString("created_at");
+		String age = json.getJSONObject("user").get("created_at").toString();
 
 		DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
 		Date date = dateFormat.parse(age);
@@ -410,15 +410,15 @@ public class UserFeaturesExtractorJSON {
 
 	public static Boolean hasProfileImg(JSONObject json) {
 
-		Boolean profileImg = (Boolean) json.getJSONObject("user").get("default_profile_image");
+		Boolean profileImg = Boolean.valueOf(json.getJSONObject("user").get("default_profile_image").toString());
 
 		return !profileImg;
 	}
 
 	public static Boolean hasHeaderImg(JSONObject json) {
 
-		Boolean headerImg = (Boolean) json.getJSONObject("user").get("profile_use_background_image");
-
+		Boolean headerImg = Boolean.valueOf(json.getJSONObject("user").get("profile_use_background_image").toString());
+		
 		return headerImg;
 	}
 
@@ -432,7 +432,7 @@ public class UserFeaturesExtractorJSON {
 		
 		//initializeFiles();
 
-		String permalink = "http://twitter.com/"+ json.getJSONObject("user").getString("screen_name");
+		String permalink = "http://twitter.com/"+ json.getJSONObject("user").get("screen_name").toString();
 		
 		Document doc = null;
 		try {

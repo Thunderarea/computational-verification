@@ -1,5 +1,6 @@
 package gr.iti.mklab.verify;
 
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -20,6 +21,7 @@ public class Tester {
 		BufferedReader br = null;
 		//(optional) define the buffered writer to write the verification results
 		BufferedWriter bw = null;
+		
 		
 		
 		String outputFilePath = "resources/test_data/sample_output.json";
