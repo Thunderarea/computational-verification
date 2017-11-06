@@ -26,7 +26,7 @@ Input arguments:
 
 Input arguments:
 
-	-v: whether to print detailed results or just the average
+	-v: whether to print detailed results. Skip it for printing just the average
 	trainMethod: (deafaut 5)
 		1 -- Classify disagreed on agreed without bagging
 		2 -- Classify disagreed on agreed with bagging
