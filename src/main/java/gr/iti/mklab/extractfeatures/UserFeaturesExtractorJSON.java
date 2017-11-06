@@ -483,8 +483,8 @@ public class UserFeaturesExtractorJSON {
 		
 		public static boolean hasExistingLocation(String locationName) {
 
-			Countrycoder countrycodingService = new Countrycoder(Configuration.RESOURCES_PATH + "/geo-util/cities1000_mod.txt",
-					Configuration.RESOURCES_PATH + "/geo-util/countryInfo.txt", Configuration.RESOURCES_PATH + "/geo-util/admin1CodesASCII_mod.txt");
+			Countrycoder countrycodingService = new Countrycoder(Configuration.RESOURCES_PATH + "/location/cities1000_mod.txt",
+					Configuration.RESOURCES_PATH + "/location/countryInfo.txt", Configuration.RESOURCES_PATH + "/location/admin1CodesASCII_mod.txt");
 			String[] locParts = null;
 			boolean hasExistingLocation = false;
 			locParts = locationName.split(",");
