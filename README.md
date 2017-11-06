@@ -34,10 +34,10 @@ Input arguments:
    		4 -- Classify disagreed on Updated existing model (initial training set + agreed) without bagging 
     		5 -- All above 	
 	trainLabels: A text file containing the labels of the training items. Read the instructions for the text file format.
-    	testLabels: A text file containing the labels of the testing items. Read the instructions for the text file format.
-    	feature_folder: (optional) Path of the folder where the extracted features are stored. Two files are stored into the folder:
+	testLabels: A text file containing the labels of the testing items. Read the instructions for the text file format.
+	feature_folder: (optional) Path of the folder where the extracted features are stored. Two files are stored into the folder:
 		1. tweetsFeats.txt: containing the extracted tweet-based features. One line per tweet.
 		2. userFeats.txt: containing the extracted user-based features. One line per tweet.
     		Default value of feature_folder current_directory + /Features/
-    	outputFolder: (optional) Path of the folder where the final evaluation results will be stored 
+	outputFolder: (optional) Path of the folder where the final evaluation results will be stored 
     		Default value of outputFolder current_directory + /Run/
