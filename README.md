@@ -127,6 +127,12 @@ Main class *TweetVerificationMain* in *gr.iti.mklab* package. Provide command li
 	
 		2. CL_ag_predictions.txt: tweet ID and fake/real label using CL_ag agreement-based retraining model.
 		3. CL_tot_predictions.txt: tweet ID and fake/real label using CL_tot agreement-based retraining model.
+		
+		
+## Contact for further details
+------------------
+	Olga Papadopoulou (<olgapapa@iti.gr>
+	Symeon Papadopoulos (<papadop@iti.gr>)
 
 	
 
