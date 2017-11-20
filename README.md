@@ -49,6 +49,7 @@ Features:
 Agreement-based retraining technique
 ------------------------------------
 CL1: classifier build with tweet-based features.
+
 CL2: classifier build with user-based features.
 CL_ag: Agreement-based model build with the agreed samples resulted using CL1 and CL2.
 CL_tot:  Agreement-based model build with the entire (total) set of initial training samples extending it with the set of agreed samples resulted using CL1 and CL2.
