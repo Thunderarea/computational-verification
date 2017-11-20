@@ -100,7 +100,8 @@ Main class *TweetVerificationMain* in *gr.iti.mklab* package. Provide command li
 		- tweetsFile: path of a text file containing the tweet objects as they are returned by the Twitter API in JSON format.
 
 	 	- feature_folder: (optional) Path of a folder where the extracted features will be stored. Default value: [current_directory + /Features/"].			
-			Output: (The feature files are created into the output folder:)
+		
+	Output: (The feature files are created into the output folder:)
     	- tweetsFeats.txt: containing the extracted tweet-based features. One line per tweet. 
 		- userFeats.txt: containing the extracted user-based features. One line per tweet.
 
