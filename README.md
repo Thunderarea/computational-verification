@@ -110,8 +110,6 @@ Main class *TweetVerificationMain* in *gr.iti.mklab* package. Provide command li
 	Input arguments:
 	
 		- trainLabels: A text file containing the labels of the training items. Annotation files should be in JSON format: {"id":"","label":"","event":""}. 
-<<<<<<< HEAD
-	
 	 	- testLabels: A text file containing the labels of the testing items. Annotation files should be in JSON format: {"id":"","label":"","event":""}.  
 	
 		- *feature_folder:* (optional) Path of the folder where the extracted features are stored. Two files are stored into the folder: 
@@ -129,30 +127,6 @@ Main class *TweetVerificationMain* in *gr.iti.mklab* package. Provide command li
 	
 		2. CL_ag_predictions.txt: tweet ID and fake/real label using CL_ag agreement-based retraining model.
 		3. CL_tot_predictions.txt: tweet ID and fake/real label using CL_tot agreement-based retraining model.
-=======
-	
-	 	- testLabels: A text file containing the labels of the testing items. Annotation files should be in JSON format: {"id":"","label":"","event":""}.  
-	
-		- *feature_folder:* (optional) Path of the folder where the extracted features are stored. Two files are stored into the folder: 
-			1. *tweetsFeats.txt:* containing the extracted tweet-based features. One line per tweet.  
-			2. *userFeats.txt:* containing the extracted user-based features. One line per tweet.  
-    			Default value of feature_folder current_directory + /Features/ 
-	
-		- outputFolder: (optional) Path of the folder where the final evaluation results will be stored. Default value: [current_directory + /Run/]
-
-	Output: <br />
-		1. AverageResults.txt: Average accuracy (ratio of correctly classified samples over total number of test samples) of 
-			CL: the selected classifier among CL1 and CL2.
-			CL_ag : the overall accuracy using CL_ag agreement-based retraining model.
-			CL_tot : the overall accuracy using CL_tot agreement-based retraining model.
-	
-		2. CL_ag_predictions.txt: tweet ID and fake/real label using CL_ag agreement-based retraining model.
-		3. CL_tot_predictions.txt: tweet ID and fake/real label using CL_tot agreement-based retraining model.
-	
-	
 
 	
-	
 
-	
->>>>>>> origin/master
