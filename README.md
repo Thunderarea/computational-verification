@@ -51,10 +51,18 @@ and 9,404 fake tweets posted by 5,895 and 9,025 unique users respectively. For d
 
 ### Agreement-based retraining technique ###
 ------------------------------------
+<<<<<<< HEAD
 **CL1:** classifier build with tweet-based features. <br />
 **CL2:** classifier build with user-based features. <br />
 **CL_ag:** Agreement-based model build with the agreed samples resulted using CL1 and CL2. <br />
 **CL_tot:**  Agreement-based model build with the entire (total) set of initial training samples extending it with the set of agreed samples resulted using CL1 and CL2.
+=======
+CL1: classifier build with tweet-based features.
+
+CL2: classifier build with user-based features.
+CL_ag: Agreement-based model build with the agreed samples resulted using CL1 and CL2.
+CL_tot:  Agreement-based model build with the entire (total) set of initial training samples extending it with the set of agreed samples resulted using CL1 and CL2.
+>>>>>>> 72fb130577efb67337cc731ed74a836b7d8d7156
 
 
 ## Input data ##
@@ -116,6 +124,7 @@ Main class TweetVerificationMain in gr.iti.mklab package. Provide command line a
 If verbose:
 	10 folders one per run are created containing intermediate detailed results about each run.
 	
+<<<<<<< HEAD
 	*Initialize parameters:* 
 		DoubleVerifyBagging dvb = new DoubleVerifyBagging(); <br />
 		setVerbose(boolean): false or real. Print just average results or also intermediate detailed results. <br />
@@ -128,3 +137,17 @@ If verbose:
 		setRunConcatenated(boolean): false or real. Perform classification using simple concatenation of the user-based and tweet-based feature vectors into a single-level classifier.<br />
 		setClassifier(String): RF for Random Forest or LG for Logistic regression.
 	
+=======
+Initialize parameters:
+	DoubleVerifyBagging dvb = new DoubleVerifyBagging();
+	setVerbose(boolean): false or real. Print just average results or also intermediate detailed results.
+	Agreement-based retraining technique: (default 5)
+		1 -- Classify disagreed on agreed samples without bagging
+		2 -- Classify disagreed on agreed samples with bagging
+		3 -- Classify disagreed on the entire (total) set of initial training samples extending it with the set of agreed samples with bagging 
+   		4 -- Classify disagreed on the entire (total) set of initial training samples extending it with the set of agreed samples without bagging 
+    	5 -- All above 	
+	setRunConcatenated(boolean): false or real. Perform classification using simple concatenation of the user-based and tweet-based feature vectors into a single-level classifier.
+	setClassifier(String): RF for Random Forest or LG for Logistic regression.
+	
+>>>>>>> 72fb130577efb67337cc731ed74a836b7d8d7156
