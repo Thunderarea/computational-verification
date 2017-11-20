@@ -78,59 +78,60 @@ and 9,404 fake tweets posted by 5,895 and 9,025 unique users respectively. For d
 ------------------
 The framework performs feature extraction on a new set of tweets and then classify each of them as truthful/reliable or not. 
 
+**Initialize parameters** <br />
+
+	DoubleVerifyBagging dvb = new DoubleVerifyBagging(); 
+	setVerbose(boolean): false or real. Print just average results or also intermediate detailed results.
+	Agreement-based retraining technique: (default 5)
+		- Classify disagreed on agreed samples without bagging 
+		- Classify disagreed on agreed samples with bagging
+		- Classify disagreed on the entire (total) set of initial training samples extending it with the set of agreed samples with bagging 
+		- Classify disagreed on the entire (total) set of initial training samples extending it with the set of agreed samples without bagging 
+		- All above 	
+	setRunConcatenated(boolean): false or real. Perform classification using simple concatenation of the user-based and tweet-based feature vectors into a single-level classifier.
+	setClassifier(String): RF for Random Forest or LG for Logistic regression.
+
 Main class *TweetVerificationMain* in *gr.iti.mklab* package. Provide command line arguments:
 
-1. Feature extraction
+**1. Feature extraction**
 
 	Input arguments:
 
-	tweetsFile: path of a text file containing the tweet objects as they are returned by the Twitter API in JSON format.
+		- tweetsFile: path of a text file containing the tweet objects as they are returned by the Twitter API in JSON format.
 
-	feature_folder: (optional) Path of a folder where the extracted features will be stored. Default value: [current_directory + /Features/"].
+	 	- feature_folder: (optional) Path of a folder where the extracted features will be stored. Default value: [current_directory + /Features/"].
 			
-	*Output:* (The feature files are created into the output folder:)<br />
-    	1. tweetsFeats.txt: containing the extracted tweet-based features. One line per tweet. <br />
-		2. userFeats.txt: containing the extracted user-based features. One line per tweet.
+	Output: (The feature files are created into the output folder:)
+    		- tweetsFeats.txt: containing the extracted tweet-based features. One line per tweet. 
+		- userFeats.txt: containing the extracted user-based features. One line per tweet.
 
-2. Training and Classification
+**2. Training and Classification**
 
 	Input arguments:
 	
-	*trainLabels:* A text file containing the labels of the training items. Annotation files should be in JSON format: {"id":"","label":"","event":""}.  <br />
+		- trainLabels: A text file containing the labels of the training items. Annotation files should be in JSON format: {"id":"","label":"","event":""}. 
 	
-	*testLabels:* A text file containing the labels of the testing items. Annotation files should be in JSON format: {"id":"","label":"","event":""}.  <br />
+	 	- testLabels: A text file containing the labels of the testing items. Annotation files should be in JSON format: {"id":"","label":"","event":""}.  
 	
-	feature_folder: (optional) Path of the folder where the extracted features are stored. Two files are stored into the folder:  <br />
-		1. tweetsFeats.txt: containing the extracted tweet-based features. One line per tweet.  <br />
-		2. userFeats.txt: containing the extracted user-based features. One line per tweet.  <br />
-    	Default value of feature_folder current_directory + /Features/  <br />
+		- *feature_folder:* (optional) Path of the folder where the extracted features are stored. Two files are stored into the folder: 
+			1. *tweetsFeats.txt:* containing the extracted tweet-based features. One line per tweet.  
+			2. *userFeats.txt:* containing the extracted user-based features. One line per tweet.  
+    			Default value of feature_folder current_directory + /Features/ 
 	
-	outputFolder: (optional) Path of the folder where the final evaluation results will be stored. Default value: [current_directory + /Run/]
+		- outputFolder: (optional) Path of the folder where the final evaluation results will be stored. Default value: [current_directory + /Run/]
 
-	**Output:** <br />
+	Output: <br />
 		1. AverageResults.txt: Average accuracy (ratio of correctly classified samples over total number of test samples) of 
-			*CL*: the selected classifier among CL1 and CL2.
-			*CL_ag* : the overall accuracy using CL_ag agreement-based retraining model.
-			*CL_tot* : the overall accuracy using CL_tot agreement-based retraining model.
+			CL: the selected classifier among CL1 and CL2.
+			CL_ag : the overall accuracy using CL_ag agreement-based retraining model.
+			CL_tot : the overall accuracy using CL_tot agreement-based retraining model.
 	
 		2. CL_ag_predictions.txt: tweet ID and fake/real label using CL_ag agreement-based retraining model.
 		3. CL_tot_predictions.txt: tweet ID and fake/real label using CL_tot agreement-based retraining model.
 	
-If verbose:
-	10 folders one per run are created containing intermediate detailed results about each run.
 	
 
-	**Initialize parameters:** 
-		DoubleVerifyBagging dvb = new DoubleVerifyBagging(); <br />
-		setVerbose(boolean): false or real. Print just average results or also intermediate detailed results. <br />
-		Agreement-based retraining technique: (default 5) <br />
-			* Classify disagreed on agreed samples without bagging 
-			* Classify disagreed on agreed samples with bagging
-			* Classify disagreed on the entire (total) set of initial training samples extending it with the set of agreed samples with bagging 
-			* Classify disagreed on the entire (total) set of initial training samples extending it with the set of agreed samples without bagging 
-			* All above 	
-		setRunConcatenated(boolean): false or real. Perform classification using simple concatenation of the user-based and tweet-based feature vectors into a single-level classifier.<br />
-		setClassifier(String): RF for Random Forest or LG for Logistic regression.
+	
 	
 
 	
