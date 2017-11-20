@@ -90,7 +90,7 @@ public class DoubleVerifyBagging {
 		/**
 		 * Value true for detailed results
 		 */
-		setVerbose(false);
+		setVerbose(true);
 		setRunConcatenated(false);
 		if (getRunConcatenated()){
 			setConcatRegressionClasses(concatRegressionClasses());
@@ -710,7 +710,6 @@ public static List<String> concatRegressionClasses(){
 				if (actual.equals("fake")) fakes++;
 				else	reals++;
 								
-				//FileManager.getInstance().writePlainDataToFile(testing.instance(i).stringValue(0)+" "+actual+" "+predicted+" "+probDistr[(int)pred], "C:\\Users\\boididou\\Desktop\\randompredictions.txt");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -789,83 +788,6 @@ public static List<String> concatRegressionClasses(){
 			ela.setAgreed(false);
 		}
 		return ela;
-	}
-	
-	public List<ElementAnnotation> classifyItems(VerificationResult[] tweetClsPreds, VerificationResult[] userClsPreds, String storeID) throws Exception {
-
-		List<ElementAnnotation> listEla = new ArrayList<ElementAnnotation>();
-
-		int instaSize = getSets()[0].size();
-
-		for (int i = 0; i < tweetClsPreds.length; i++) {
-			for (int j = 0; j < userClsPreds.length; j++) {
-				if (tweetClsPreds[i].getId().equals(userClsPreds[j].getId())) {
-					Instance inst1 = getSets()[0].get(i);
-					String predicted1 = tweetClsPreds[i].getPrediction();
-					String predicted2 = userClsPreds[i].getPrediction();
-					boolean decided = tweetClsPreds[i].isDecided() && userClsPreds[i].isDecided();					
-					// find the details of the ElementAnnotation object
-					ElementAnnotation ela = getElemAnnotation(inst1, predicted1, predicted2, decided);
-					// add the element to the list
-					listEla.add(ela);
-				}
-			}
-		}
-
-		int counter = 0, counterRightPred = 0;
-		int counterFake = 0, counterReal = 0, counterFakeDis = 0, counterRealDis = 0, counterRightFake = 0, counterRightReal = 0;
-
-		HashMap<String, String> idsLabels = new HashMap<String, String>();
-		
-		for (int i = 0; i < listEla.size(); i++) {
-			// agreed case
-			if (listEla.get(i).getAgreed()) {
-				// count the agreed ones
-				counter++;
-				idsLabels.put(listEla.get(i).getId(), listEla.get(i).getPredicted());
-				// count the agreed fake and real ones
-				if (listEla.get(i).getActual().equals("fake")) {
-					counterFake++;
-				} else {
-					counterReal++;
-				}
-
-				// count the agreed (fake and real) right-predicted ones
-				if (listEla.get(i).getActual().equals(listEla.get(i).getPredicted())) {
-					counterRightPred++;
-					if (listEla.get(i).getActual().equals("fake")) {
-						counterRightFake++;
-					} else {
-						counterRightReal++;
-					}
-				}
-			}
-			// disagreed case
-			else {
-				// count the disagreed fake and real ones
-				if (listEla.get(i).getActual().equals("fake")) {
-					counterFakeDis++;
-				} else {
-					counterRealDis++;
-				}
-			}
-		}		
-		  FileManager.getInstance().writeStringHashmapToFile(idsLabels,
-				  DoubleVerifyBagging.getOutputFolderPerRun() + "/" + "AgreedIDs.txt");
-
-		System.out.println("=== ENSEMBLE CLASSIFICATION ===");
-		System.out.println("== AGREED ==");
-		System.out.println("Number of agreed items " + counter + " (fake " + counterFake + ",real " + counterReal + ").");
-		System.out.println("Percentage of agreed items " + (double) counter	/ instaSize * 100);
-		System.out.println("Accuracy: Predicted right: " + counterRightPred);
-		System.out.println("Fake right predicted " + counterRightFake	+ " real right predicted " + counterRightReal);
-		System.out.println("Accuracy of the agreed percentage "	+ (double) counterRightPred / counter * 100);
-		
-		System.out.println("== DISAGREED ==");
-		System.out.println("Number of disagreed items " + (instaSize - counter)	+ "(fake " + counterFakeDis + ",real " + counterRealDis) ;
-		System.out.println("Percentage of disagreed items "+ (double) (instaSize - counter) / instaSize * 100);
-
-		return listEla;
 	}
 	
 	public List<ElementAnnotation> classifyItems(VerificationResult[] itemClsPreds,	VerificationResult[] userClsPreds) throws Exception {
@@ -974,7 +896,6 @@ public static List<String> concatRegressionClasses(){
 				FileManager.getInstance().writePlainDataToFile("Number of disagreed items " + (instaSize - counter)	+ "(fake " + counterFakeDis + ",real " + counterRealDis, DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 				FileManager.getInstance().writePlainDataToFile("Percentage of disagreed items "+ (double) (instaSize - counter) / instaSize * 100, DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 		}
-		//FileManager.getInstance().writePlainDataToFile(getExpNo() + "\t" + "Agreed" + "\t" + (double) counterRightPred / counter * 100, DoubleVerifyBagging.getOutputFolder() + "AverageResults.txt");
 
 		return listEla;
 	}
@@ -1049,13 +970,6 @@ public static List<String> concatRegressionClasses(){
 
 		System.out.println("Training size(agreed items) " + training.size());
 
-		if (getVerbose()){
-			FileManager.getInstance().writeListToFile(ids_agreed,
-					DoubleVerifyBagging.getOutputFolderPerRun() + "/" + getExpNo() + "/" + "AgreedIDs.txt");
-		 
-			FileManager.getInstance().writeListToFile(ids_disagreed,
-				 DoubleVerifyBagging.getOutputFolderPerRun() + "/" + getExpNo() + "/" + "DisAgreedIDs.txt");
-		}
 		returnedAgreedDisagreed[0] = training;
 		returnedAgreedDisagreed[1] = testing;
 		
@@ -1144,7 +1058,7 @@ public static List<String> concatRegressionClasses(){
 							actual + "\t" + 
 							predicted + "\t" +
 							(probDistr[(int)pred]),
-							DoubleVerifyBagging.getOutputFolderPerRun()  + "OnDisagreedWithoutBaggingPredictions.txt");
+							DoubleVerifyBagging.getOutputFolderPerRun()  + "CL_ag_WithoutBagging_Predictions.txt");
 					
 					
 				}else{
@@ -1152,7 +1066,7 @@ public static List<String> concatRegressionClasses(){
 							actual + "\t" + 
 							predicted + "\t" +
 							(1 - probDistr[(int)pred]),
-							DoubleVerifyBagging.getOutputFolderPerRun()  + "OnDisagreedWithoutBaggingPredictions.txt");
+							DoubleVerifyBagging.getOutputFolderPerRun()  + "CL_ag_WithoutBagging_Predictions.txt");
 					
 				}
 			}
@@ -1170,10 +1084,7 @@ public static List<String> concatRegressionClasses(){
 			FileManager.getInstance().writePlainDataToFile("Real items predicted right  " + counterReal  , DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 		}
 
-		if (getVerbose()){
-			FileManager.getInstance().writeDoubleDataToFile((double) counter2 / testing.size() * 100 ,  DoubleVerifyBagging.getOutputFolder() +  "Agreed_without_baggingAccuracy.txt");			
-		}
-
+		
 		/** end of classify disagreed building model on the agreed **/
 
 	}
@@ -1478,7 +1389,7 @@ public static List<String> concatRegressionClasses(){
 							actual + "\t" + 
 							predicted + "\t" +
 							(probDistr[(int)pred]),
-							DoubleVerifyBagging.getOutputFolderPerRun()  + "OnDisagreedUpdatedModelWithoutBaggingPredictions.txt");
+							DoubleVerifyBagging.getOutputFolderPerRun()  + "CL_tot_WithoutBagging_Predictions.txt");
 					
 					
 				}else{
@@ -1486,7 +1397,7 @@ public static List<String> concatRegressionClasses(){
 							actual + "\t" + 
 							predicted + "\t" +
 							(1 - probDistr[(int)pred]),
-							DoubleVerifyBagging.getOutputFolderPerRun()  + "OnDisagreedUpdatedModelWithoutBaggingPredictions.txt");
+							DoubleVerifyBagging.getOutputFolderPerRun()  + "CL_tot_WithoutBagging_Predictions.txt");
 					
 				}
 			}
@@ -1506,11 +1417,7 @@ public static List<String> concatRegressionClasses(){
 			FileManager.getInstance().writePlainDataToFile("Fake items predicted right " + counterFake , DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 			FileManager.getInstance().writePlainDataToFile("Real items predicted right  " + counterReal  , DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 		}
-		
 	
-		if (getVerbose()){
-			FileManager.getInstance().writeDoubleDataToFile((double) counter2 / testing.size() * 100 ,  getOutputFolder() + "Agreed_on_updated_model_without_baggingAccuracy.txt");
-		}
 	}
 	
 	
@@ -1667,9 +1574,9 @@ public static List<String> concatRegressionClasses(){
 		 *  This will be user to select the "stronger" classifier
 		 */
 		LOGGER.info("Apply Cross Validation to define the strongest feature type");
-		Double tweetScore = dvb.getScore(dvb.getTrainDatasets()[0], 0);//, dvb.getTweetRegressionClasses());
+		Double tweetScore = dvb.getScore(dvb.getTrainDatasets()[0], 0);
 		dvb.setItemScore(tweetScore);
-		Double userScore = dvb.getScore(dvb.getTrainDatasets()[1], 1);//, dvb.getUserRegressionClasses());
+		Double userScore = dvb.getScore(dvb.getTrainDatasets()[1], 1);
 		dvb.setUserScore(userScore);
 		
 		/**
@@ -1834,10 +1741,10 @@ public static List<String> concatRegressionClasses(){
 						if (verRes.getAgreed()){
 							cnt_agreed = cnt_agreed + 1;
 							FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPredicted(),
-									DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions.txt");
+									DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions_" + getExpNo() + ".txt");
 
 							FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPredicted(),
-									DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions.txt");
+									DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions_" + getExpNo() + ".txt");
 							if (verRes.getActual().equals(verRes.getPredicted())){
 								cnt_agreed_true =cnt_agreed_true + 1;
 							}
@@ -1850,13 +1757,13 @@ public static List<String> concatRegressionClasses(){
 							cnt_true_CLag =  cnt_true_CLag +1;
 						}
 						FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
-								DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions.txt");
+								DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions_" + getExpNo() + ".txt");
 					}
 					
 					for (int tw = 0; tw < totClsPreds.length; tw ++){
 						VerificationResult verRes = totClsPreds[tw];
 						FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
-								DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions.txt");
+								DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions_" + getExpNo() + ".txt");
 						if (verRes.getActual().equals(verRes.getPrediction())){
 							cnt_true_CLtot =  cnt_true_CLtot +1;
 						}
@@ -1890,10 +1797,10 @@ public static List<String> concatRegressionClasses(){
 						if (verRes.getAgreed()){
 							cnt_agreed = cnt_agreed + 1;
 							FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPredicted(),
-									DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions.txt");
+									DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions_" + getExpNo() + ".txt");
 
 							FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPredicted(),
-									DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions.txt");
+									DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions_" + getExpNo() + ".txt");
 							if (verRes.getActual().equals(verRes.getPredicted())){
 								cnt_agreed_true =cnt_agreed_true + 1;
 							}
@@ -1906,14 +1813,14 @@ public static List<String> concatRegressionClasses(){
 							cnt_true_CLag =  cnt_true_CLag +1;
 						}
 						FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
-								DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions.txt");
+								DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions_" + getExpNo() + ".txt");
 					}				
 					
 					
 					for (int tw = 0; tw < totClsPreds.length; tw ++){
 						VerificationResult verRes = totClsPreds[tw];
 						FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
-								DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions.txt");
+								DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions_" + getExpNo() + ".txt");
 						if (verRes.getActual().equals(verRes.getPrediction())){
 							cnt_true_CLtot =  cnt_true_CLtot +1;
 						}

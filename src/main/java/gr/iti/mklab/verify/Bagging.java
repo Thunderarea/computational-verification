@@ -148,7 +148,6 @@ public class Bagging {
 			 * Apply Linear Regression approach to fill missing values
 			 */
 			testingNew[j]  =  new Instances(testing);
-			//FileManager.getInstance().writeDataToFile("D:/TweetVerification/Reproducibility/Example/testingNewBefore_" + j + ".arff", testingNew[j] );
 			for (int i = 0; i < regressionClasses.size(); i++){
 
 				currentTrain = DataHandler.getInstance().getTransformedTrainingTweet(currentTrain, regressionClasses.get(i));				
@@ -676,7 +675,6 @@ public VerificationResult[] classifyItems(Classifier[] classifiers,Instances[] t
 			FileManager.getInstance().writePlainDataToFile("Fake items classified correctly " + countFake + " Percentage " + ((double) countFake / fake)* 100,  DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 			FileManager.getInstance().writePlainDataToFile("Real items classified correctly " + countReal + " Percentage " + ((double) countReal / real)* 100 ,  DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 			FileManager.getInstance().writePlainDataToFile("Accuracy " +  (double)count/testingSets[0].size() * 100,  DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
-			FileManager.getInstance().writeDoubleDataToFile((double)count/testingSets[0].size() * 100 ,  DoubleVerifyBagging.getOutputFolder() + StoreID + "Accuracy.txt");			
 
 		}
 		
