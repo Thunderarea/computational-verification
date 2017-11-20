@@ -263,6 +263,22 @@ public class FileManager {
 		}
 	}
 	
+	public void writePlainDataToFileNonl(String data, String filePath) {
+
+		File file = new File(filePath);// your file
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+
+			bw.write(data);
+			//bw.newLine();
+
+			bw.flush();
+			bw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void writeDoubleDataToFile(double data, String filePath) {
 
 		File file = new File(filePath);// your file

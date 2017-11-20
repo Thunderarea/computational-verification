@@ -32,6 +32,7 @@ import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import weka.classifiers.Classifier;
+import weka.classifiers.functions.Logistic;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
@@ -44,8 +45,6 @@ import weka.filters.unsupervised.attribute.Remove;
 
 public class DoubleVerifyBagging {
 	
-	public static String root_path = "D:/TweetVerification/Reproducibility/";
-	public static String output_files = "D:/TweetVerification/Reproducibility/TestNewFeatures/Output/";
 	private Instances[] trainDatasets = new Instances[2];
 	private Instances[] testDatasets = new Instances[2];
 	private Instances[] sets = new Instances[2];
@@ -56,13 +55,17 @@ public class DoubleVerifyBagging {
 	private ArrayList<int[]> randomValues = new ArrayList<int[]>();
 	List<String> tweetRegrClass = new LinkedList<String>();
 	List<String> userRegrClass = new LinkedList<String>();
+	List<String> concatRegrClass = new LinkedList<String>();
 	private int[] currentRandomValues = new int[9];
 	public static int expNo;
 	public static String experimentId;
 	private List<String> testIDS;
 	public static String outputFolder;
 	public static String outputFolderPerRun;
-	public static boolean verboseValue;
+	public static String method;
+	public static boolean verbose;
+	public static boolean runConcatenated;
+	public static String classifier;
 
 	private static final Logger LOGGER = Logger.getLogger("gr.iti.mklab.verify.DoubleVerifyBagging");
 
@@ -75,6 +78,41 @@ public class DoubleVerifyBagging {
 		setRandomValues(initializeRandomVals());
 		setTweetRegressionClasses(tweetRegressionClasses());
 		setUserRegressionClasses(userRegressionClasses());
+		/**
+		 * Select method
+		 * 	     1 -- Classify disagreed on agreed without bagging
+    	         2 -- Classify disagreed on agreed with bagging
+    	         3 -- Classify disagreed on Updated existing model (initial training set + agreed) with bagging
+    	         4 -- Classify disagreed on Updated existing model (initial training set + agreed) without bagging 
+    	         5 -- All above 
+		 */
+		setMethod("5");  
+		/**
+		 * Value true for detailed results
+		 */
+		setVerbose(false);
+		setRunConcatenated(false);
+		if (getRunConcatenated()){
+			setConcatRegressionClasses(concatRegressionClasses());
+		}
+
+		/**
+		 * Define classifier
+		 * RF: Random Forest
+		 * LG: Logistic regression
+		 */
+		setClassifier("LG");
+		
+	}
+
+	
+	
+	public static boolean getRunConcatenated() {
+		return runConcatenated;
+	}
+
+	public static void setRunConcatenated(boolean runConcatenated) {
+		DoubleVerifyBagging.runConcatenated = runConcatenated;
 	}
 
 	public Instances[] getSets() {
@@ -108,11 +146,29 @@ public class DoubleVerifyBagging {
 	public List<String> getFinalTestIDs() {
 		return testIDS;
 	}	
+	
+	
 
-	public Classifier getCurrentClassifier() {
-		return new RandomForest();
+	public static String getClassifier() {
+		return classifier;
+	}
+
+	public static void setClassifier(String classifier) {
+		DoubleVerifyBagging.classifier = classifier;
 	}
 	
+	public Classifier getCurrentClassifier(String classifierName){
+		if (classifierName.equalsIgnoreCase("RF")){
+			System.out.println("Random Forest classifier");
+			return new RandomForest();
+		}else if (classifierName.equalsIgnoreCase("LG")){
+			System.out.println("Logistic classifier");
+			return new Logistic();
+		}else{
+			return new RandomForest();
+		}
+	}
+
 	public Double getItemScore() {
 		return itemScore;
 	}
@@ -161,6 +217,14 @@ public class DoubleVerifyBagging {
 		this.userRegrClass = userRegrClass;
 	}
 	
+	public List<String> getConcatRegressionClasses() {
+		return concatRegrClass;
+	}
+
+	public void setConcatRegressionClasses(List<String> concatRegrClass) {
+		this.concatRegrClass = concatRegrClass;
+	}
+	
 	public int[] getCurrentRandomValues() {
 		return currentRandomValues;
 	}
@@ -175,6 +239,14 @@ public class DoubleVerifyBagging {
 
 	public static void setExpNo(int expNo) {
 		DoubleVerifyBagging.expNo = expNo;
+	}
+	
+
+	public static String getMethod(){
+		return method;
+	}
+	public static void setMethod(String method){
+		DoubleVerifyBagging.method = method;
 	}
 	
 	public static String getExperimentId() {
@@ -202,11 +274,11 @@ public class DoubleVerifyBagging {
 	}
 	
 	public static boolean getVerbose() {
-		return verboseValue;
+		return verbose;
 	}
 
-	public static void setVerbose(boolean verboseValue) {
-		DoubleVerifyBagging.verboseValue = verboseValue;
+	public static void setVerbose(boolean verbose) {
+		DoubleVerifyBagging.verbose = verbose;
 	}
 	
 	public static ArrayList<int[]> initializeRandomVals() {
@@ -295,6 +367,39 @@ public class DoubleVerifyBagging {
 
 			return regressionClass;	
 	}	
+	
+public static List<String> concatRegressionClasses(){
+		
+		List<String> regressionClass = new LinkedList<String>();
+		
+		regressionClass.add("wot_trust");
+		regressionClass.add("readability");
+		regressionClass.add("alexa_popularity");
+		regressionClass.add("alexa_delta_rank");
+		regressionClass.add("num_neg_sentiment_words");
+		regressionClass.add("num_slangs");
+		regressionClass.add("indegree");
+		regressionClass.add("alexa_country_rank");
+		regressionClass.add("harmonic");
+		regressionClass.add("num_pos_sentiment_words");
+		regressionClass.add("alexa_reach_rank");
+		regressionClass.add("num_nouns");
+		regressionClass.add("contains_first_order_pron");
+		regressionClass.add("contains_second_order_pron");
+		regressionClass.add("contains_third_order_pron");
+		regressionClass.add("wotTrustUser");
+		regressionClass.add("accountAge");
+		regressionClass.add("tweetRatio");
+		regressionClass.add("indegreeUser");
+		regressionClass.add("harmonicUser");
+		regressionClass.add("alexaCountryRankUser");
+		regressionClass.add("alexaDeltaRankUser");
+		regressionClass.add("alexaPopularityUser");
+		regressionClass.add("alexaReachRankUser");	
+	
+
+			return regressionClass;	
+	}	  
 
 	public static Instances loadTweetFeature(List<TweetFeatures> tweetFeatsList, List<FeaturesAnnotationItem> annotation) throws Exception{
 		Instances features = null;	
@@ -310,6 +415,14 @@ public class DoubleVerifyBagging {
 		
 		UserClassifier uc = new UserClassifier();
 		features = uc.createTrainingSet(userFeatsList, annotation);
+		return features;
+	}
+	
+	public static Instances loadConcatFeature(List<TweetFeatures> tweetFeatsList, List<UserFeatures> userFeatsList, List<FeaturesAnnotationItem> annotation) throws Exception{
+		Instances features = null;	
+		
+		ConcatClassifier uc = new ConcatClassifier();
+		features = uc.createTrainingSet(tweetFeatsList, userFeatsList, annotation);
 		return features;
 	}
 	
@@ -433,7 +546,8 @@ public class DoubleVerifyBagging {
 				currentCase = "USER";
 			}
 
-			Classifier tree = getCurrentClassifier();
+			
+			Classifier tree = getCurrentClassifier(getClassifier());
 
 			rm.setInputFormat(trainNew);
 			Instances trainNew2 = Filter.useFilter(trainNew, rm);
@@ -552,7 +666,7 @@ public class DoubleVerifyBagging {
 		
 		// classifier details
 		FilteredClassifier fc = new FilteredClassifier();
-		Classifier tree = getCurrentClassifier();
+		Classifier tree = getCurrentClassifier(getClassifier());
 		Remove rm = new Remove();
 		rm.setAttributeIndices("1");
 				
@@ -737,7 +851,7 @@ public class DoubleVerifyBagging {
 			}
 		}		
 		  FileManager.getInstance().writeStringHashmapToFile(idsLabels,
-				  root_path + experimentId + "/" + "AgreedIDs.txt");
+				  DoubleVerifyBagging.getOutputFolderPerRun() + "/" + "AgreedIDs.txt");
 
 		System.out.println("=== ENSEMBLE CLASSIFICATION ===");
 		System.out.println("== AGREED ==");
@@ -860,7 +974,7 @@ public class DoubleVerifyBagging {
 				FileManager.getInstance().writePlainDataToFile("Number of disagreed items " + (instaSize - counter)	+ "(fake " + counterFakeDis + ",real " + counterRealDis, DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 				FileManager.getInstance().writePlainDataToFile("Percentage of disagreed items "+ (double) (instaSize - counter) / instaSize * 100, DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 		}
-		FileManager.getInstance().writePlainDataToFile("AGREED:\t" + (double) counterRightPred / counter * 100, DoubleVerifyBagging.getOutputFolder() + "AverageResults.txt");
+		//FileManager.getInstance().writePlainDataToFile(getExpNo() + "\t" + "Agreed" + "\t" + (double) counterRightPred / counter * 100, DoubleVerifyBagging.getOutputFolder() + "AverageResults.txt");
 
 		return listEla;
 	}
@@ -935,12 +1049,13 @@ public class DoubleVerifyBagging {
 
 		System.out.println("Training size(agreed items) " + training.size());
 
-		 FileManager.getInstance().writeListToFile(ids_agreed,
-				  root_path + experimentId + "/" + getExpNo() + "/" + "AgreedIDs.txt");
+		if (getVerbose()){
+			FileManager.getInstance().writeListToFile(ids_agreed,
+					DoubleVerifyBagging.getOutputFolderPerRun() + "/" + getExpNo() + "/" + "AgreedIDs.txt");
 		 
-		 FileManager.getInstance().writeListToFile(ids_disagreed,
-				  root_path + experimentId + "/" + getExpNo() + "/" + "DisAgreedIDs.txt");
-		
+			FileManager.getInstance().writeListToFile(ids_disagreed,
+				 DoubleVerifyBagging.getOutputFolderPerRun() + "/" + getExpNo() + "/" + "DisAgreedIDs.txt");
+		}
 		returnedAgreedDisagreed[0] = training;
 		returnedAgreedDisagreed[1] = testing;
 		
@@ -955,7 +1070,7 @@ public class DoubleVerifyBagging {
 		/** classify disagreed building model on the agreed **/
 		FilteredClassifier fc = new FilteredClassifier();
 
-		Classifier tree = getCurrentClassifier();
+		Classifier tree = getCurrentClassifier(getClassifier());
 		Remove rm = new Remove();
 		rm.setAttributeIndices("1");
 
@@ -1054,7 +1169,6 @@ public class DoubleVerifyBagging {
 			FileManager.getInstance().writePlainDataToFile("Fake items predicted right " + counterFake , DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 			FileManager.getInstance().writePlainDataToFile("Real items predicted right  " + counterReal  , DoubleVerifyBagging.getOutputFolderPerRun() + "Results.txt");
 		}
-		FileManager.getInstance().writePlainDataToFile("simple testing - BASED ON THE AGREED:\t" +(double) counter2 / testing.size() * 100, DoubleVerifyBagging.getOutputFolder() + "AverageResults.txt");
 
 		if (getVerbose()){
 			FileManager.getInstance().writeDoubleDataToFile((double) counter2 / testing.size() * 100 ,  DoubleVerifyBagging.getOutputFolder() +  "Agreed_without_baggingAccuracy.txt");			
@@ -1081,7 +1195,7 @@ public class DoubleVerifyBagging {
 	
 		// Classifier and Filter settings
 		FilteredClassifier fc = new FilteredClassifier();
-		Classifier tree = getCurrentClassifier();
+		Classifier tree = getCurrentClassifier(getClassifier());
 		Remove rm = new Remove();
 		rm.setAttributeIndices("1");
 	
@@ -1231,7 +1345,7 @@ public class DoubleVerifyBagging {
 
 		// Classifier and Filter settings
 		FilteredClassifier fc = new FilteredClassifier();
-		Classifier tree = getCurrentClassifier();
+		Classifier tree = getCurrentClassifier(getClassifier());
 		Remove rm = new Remove();
 		rm.setAttributeIndices("1");
 		MultiFilter mf = new MultiFilter();
@@ -1397,24 +1511,19 @@ public class DoubleVerifyBagging {
 		if (getVerbose()){
 			FileManager.getInstance().writeDoubleDataToFile((double) counter2 / testing.size() * 100 ,  getOutputFolder() + "Agreed_on_updated_model_without_baggingAccuracy.txt");
 		}
-		FileManager.getInstance().writePlainDataToFile("BASED ON THE UPDATED EXISTING MODEL INSTANCE:\t" + (double) counter2 / testing.size() * 100,  DoubleVerifyBagging.getOutputFolder() + "AverageResults.txt");
 	}
 	
 	
-	public static void startVerification(String method,
+	public static void startVerification(
 			String fileNameUser, 
 			String fileNameTweet, 
 			String trainPosts, 
 			String testPosts,
-			String outputFolder,
-			boolean verbose) throws Exception{
+			String outputFolder) throws Exception{
 		
 		DoubleVerifyBagging dvb = new DoubleVerifyBagging();
-		experimentId = "Test";
-		setExperimentId(experimentId);
 		LOGGER.setLevel(Level.OFF);
-		LOGGER.info("RUN " + experimentId);
-		
+				
 		setVerbose(verbose);
 		
 		/**
@@ -1484,10 +1593,7 @@ public class DoubleVerifyBagging {
 			});		   
 		} catch (IOException e) {
 			e.printStackTrace();		        
-		}
-		
-		
-	
+		}	
 		
 		LOGGER.info("Read User-based Features from JSON file " + fileNameUser);
 		List<UserFeatures> userFeatsTrainList = new ArrayList<UserFeatures>();
@@ -1515,7 +1621,8 @@ public class DoubleVerifyBagging {
 			e.printStackTrace();		        
 		}
 		
-		
+		int numberOfTestingTweets = testAnnotationList.size();
+				
 		LOGGER.info("LOAD FEATURES");
 		Instances trainingUser = loadUserFeature(userFeatsTrainList, trainAnnotationList);
 		Instances trainingTweet = loadTweetFeature(tweetFeatsTrainList, trainAnnotationList);
@@ -1530,12 +1637,22 @@ public class DoubleVerifyBagging {
 		dvb.setTestDatasets(testDatasets);
 		setOutputFolder(outputFolder + "/");
 		
+		Instances trainConcat = null, testConcat = null;
+		if (getRunConcatenated()){
+			 trainConcat = loadConcatFeature(tweetFeatsTrainList, userFeatsTrainList, trainAnnotationList );
+			 testConcat = loadConcatFeature(tweetFeatsTestList, userFeatsTestList, testAnnotationList );
+			
+			if (getVerbose()){
+				FileManager.getInstance().writeDataToFile(getOutputFolder() + "testingConcat.txt", testConcat);
+				FileManager.getInstance().writeDataToFile(getOutputFolder() + "trainingConcat.txt", trainConcat);
+			}
+		}
+		
 		if (getVerbose()){
-				System.out.println("Output folder " + getOutputFolder());
-				FileManager.getInstance().writeDataToFile(getOutputFolder() + "trainingUser.txt", trainingUser);
-				FileManager.getInstance().writeDataToFile(getOutputFolder() + "trainingTweet.txt", trainingTweet);
-				FileManager.getInstance().writeDataToFile(getOutputFolder() + "testingUser.txt", testingUser);
-				FileManager.getInstance().writeDataToFile(getOutputFolder() + "testingTweet.txt", testingTweet);
+				FileManager.getInstance().writeDataToFile(getOutputFolder() + "trainingUB.txt", trainingUser);
+				FileManager.getInstance().writeDataToFile(getOutputFolder() + "trainingTB.txt", trainingTweet);
+				FileManager.getInstance().writeDataToFile(getOutputFolder() + "testingUB.txt", testingUser);
+				FileManager.getInstance().writeDataToFile(getOutputFolder() + "testingTB.txt", testingTweet);			
 		}
 		
 		/**
@@ -1563,32 +1680,20 @@ public class DoubleVerifyBagging {
 		/**
 		 *  Iterate through the list of random values to retrieve the results among the different trials
 		 *  This is done do to the bagging technique
-		 */
+		 */	
 	
-	
-		FileManager.getInstance().writePlainDataToFile("Method:\t" + "Accuracy" +
-				"\tFake_items_classified_correctly" +  "\tReal_items_classified_correctly" ,  getOutputFolder() + "AverageResults.txt");
-		
-		
-		
-	
-		
+		FileManager.getInstance().writePlainDataToFile("RUN" + "\t" + "CL1" + "\t" + "CL2" + "\t" + "CL_ag" + "\t" + "CL_tot",  getOutputFolder() + "AverageResultsPerRun.txt");	
+		FileManager.getInstance().writePlainDataToFile("CL" + "\t" + "CL_ag" + "\t" + "CL_tot",  getOutputFolder() + "AverageResults.txt");	
 		ArrayList<int[]> randomValues = dvb.getRandomValues();
 		
+		
+		List<Double>  cl_accAvg = new ArrayList<Double>();
+		List<Double>  clAG_accAvg =new ArrayList<Double>();
+		List<Double>  clTOT_accAvg =  new ArrayList<Double>(); 
+		
 		for (int i = 0; i < randomValues.size(); i++) {
-		//for (int i = 0; i < 1; i++) {
 			setExpNo(i);
-			FileManager.getInstance().writePlainDataToFile("RUN " + String.valueOf(getExpNo()), getOutputFolder() + "AverageResults.txt");
-			/*		FileManager.getInstance().writePlainDataToFile(String.valueOf(getExpNo()) ,  getOutputFolder() + "ITEM_BaggingAccuracy.txt");			
-			FileManager.getInstance().writePlainDataToFile(String.valueOf(getExpNo()) ,  getOutputFolder() + "USER_baggingAccuracy.txt");
-			
-			FileManager.getInstance().writePlainDataToFile(String.valueOf(getExpNo()) ,  getOutputFolder() + "Agreed_without_baggingAccuracy.txt");
-			FileManager.getInstance().writePlainDataToFile(String.valueOf(getExpNo()) ,  getOutputFolder() + "OnDisagreedWithBaggingAccuracy.txt");
-			FileManager.getInstance().writePlainDataToFile(String.valueOf(getExpNo()) ,  getOutputFolder() + "OnDisagreedUpdatedModelWithBaggingAccuracy.txt");
-			FileManager.getInstance().writePlainDataToFile(String.valueOf(getExpNo()) ,  getOutputFolder() + "Agreed_on_updated_model_without_baggingAccuracy.txt");
-		*/	
-			
-						
+									
 			/**
 			 * set the number of experiment 
 			 * (how many times we perform the same experiment, though with different random value)
@@ -1603,8 +1708,8 @@ public class DoubleVerifyBagging {
 				
 				setOutputFolderPerRun(getOutputFolder() + "/" + getExpNo() + "/");
 			}
-			
-			//FileManager.getInstance().writePlainDataToFile(String.valueOf(getExpNo()), dvb.getOutputFolderPerRun() + "Results.txt");
+			FileManager.getInstance().writePlainDataToFileNonl(getExpNo() + "\t",
+					DoubleVerifyBagging.getOutputFolder() + "AverageResultsPerRun.txt");
 		
 			/**
 			 *  Assign the corresponding random values to the randomVals variable
@@ -1620,22 +1725,27 @@ public class DoubleVerifyBagging {
 			LOGGER.info("Define the size of the training items bagging will use");
 			int trainingSize = dvb.determineTrainingSize(dvb.getTrainDatasets()[0]);
 						
-			Classifier[] itemCls = bg.createClassifiersTweet(dvb.getTrainDatasets()[0], dvb.getSets()[0], trainingSize, dvb.getTweetRegressionClasses(), "ITEM");
+			Classifier[] itemCls = bg.createClassifiersTweet(dvb.getTrainDatasets()[0], dvb.getSets()[0], trainingSize, dvb.getTweetRegressionClasses(), "CL1");
 			System.out.println();
 			LOGGER.info("Initial tweet classification with Item features and bagging technique");
-			VerificationResult[] itemClsPreds = bg.classifyItems(itemCls, bg.getTestingSets(), "ITEM_Bagging");
+			VerificationResult[] itemClsPreds = null;
+			itemClsPreds = bg.classifyItems(itemCls, bg.getTestingSets(), "CL1");
 		
 			LOGGER.info(" Number of verification results " + itemClsPreds.length);
 	
 			System.out.println();
 			trainingSize = dvb.determineTrainingSize(dvb.getTrainDatasets()[1]);
 			
-			Classifier[] userCls = bg.createClassifiersUser(dvb.getTrainDatasets()[1], dvb.getSets()[1], trainingSize, dvb.getUserRegressionClasses());		
+			Classifier[] userCls = bg.createClassifiersUser(dvb.getTrainDatasets()[1], dvb.getSets()[1], trainingSize, dvb.getUserRegressionClasses(), "CL2");		
 			System.out.println();
 			LOGGER.info("Initial tweet classification with User features and bagging technique");
-			VerificationResult[] userClsPreds = bg.classifyItems(userCls, bg.getTestingSetsUser(), "USER_bagging");
+			VerificationResult[] userClsPreds = null;
+			userClsPreds = bg.classifyItems(userCls, bg.getTestingSetsUser(), "CL2");
 			
-			
+			if (getRunConcatenated()){
+				Classifier[] concatCls = bg.createClassifiersConcat(trainConcat, testConcat, trainingSize, dvb.getConcatRegressionClasses(), "CL_cat");
+				VerificationResult[] concatClsPreds = bg.classifyItems(concatCls, bg.getTestingSetsConcat(), "CL_cat");
+			}
 			
 			/**
 			 *  Check if Tweet-based and User-based classifiers agreed or not
@@ -1655,28 +1765,27 @@ public class DoubleVerifyBagging {
 			 * 
 			 * 
 			 */
-
+			VerificationResult[] agClsPreds = null;
 			if (returnedAgreedDisagreedDatasets[0].size() > 0 && returnedAgreedDisagreedDatasets[1].size()>0) {
 				
-				if (method.equals("1") || method.equals("5")){
+				if (getMethod().equals("1") || getMethod().equals("5")){
 					LOGGER.info("Classify disagreed on agreed without bagging");
 					dvb.classifyDisagreedOnAgreed(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1]);
 				}
 				
-				if (method.equals("2") || method.equals("5")){
+				if (getMethod().equals("2") || getMethod().equals("5")){
 							LOGGER.info("Classify disagreed on agreed with bagging");
 						int size = dvb.determineTrainingSize(returnedAgreedDisagreedDatasets[0]);
 						
 						if (dvb.getDatasetPointer() == 0) {
-							Classifier[] itemClassifiers = bg.createClassifiersTweet(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1], size, dvb.getTweetRegressionClasses(), "OnDisagreedWithBagging");
-							bg.classifyItems(itemClassifiers, bg.getTestingSets(), "OnDisagreedWithBagging");
+							Classifier[] itemClassifiers = bg.createClassifiersTweet(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1], size, dvb.getTweetRegressionClasses(), "CL_ag");
+							agClsPreds = bg.classifyItems(itemClassifiers, bg.getTestingSets(), "CL_ag");
 							
 						} else {	
-							Classifier[] userClassifiers = bg.createClassifiersUser(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1], size, dvb.getUserRegressionClasses());
-							bg.classifyItems(userClassifiers, bg.getTestingSetsUser(), "OnDisagreedWithBagging");
+							Classifier[] userClassifiers = bg.createClassifiersUser(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1], size, dvb.getUserRegressionClasses(), "CL_ag");
+							agClsPreds = bg.classifyItems(userClassifiers, bg.getTestingSetsUser(), "CL_ag");
 						}
-				}
-				
+				}				
 			}else {
 				System.out.println("Not enough instances to perform on-agreed-classification");
 			}
@@ -1685,245 +1794,156 @@ public class DoubleVerifyBagging {
 			
 			//classify DISAGREED ON UPDATED EXISTING MODEL
 			Instances[] updatedAgreedDisagreedDatasets = new Instances[2];
+			VerificationResult[] totClsPreds = null;
 			if (returnedAgreedDisagreedDatasets[1].size() > 0) {
-				if (method.equals("3") || method.equals("5")){
+				if (getMethod().equals("3") || getMethod().equals("5")){
 						updatedAgreedDisagreedDatasets = dvb.classifyDisagreedOnUpdatedExistingModel2(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1]);
-		
+						
 						int size2 = dvb.determineTrainingSize(updatedAgreedDisagreedDatasets[0]);
 						LOGGER.info("Classify disagreed on Updated existing model with bagging");
 						// OLGA 
 						if (dvb.getDatasetPointer() == 0) {
-		//					Classifier[] itemClassifiers = bg.createClassifiersTweet(updatedAgreedDisagreedDatasets[0], updatedAgreedDisagreedDatasets[1], size2, dvb.getTweetRegressionClasses(), dvb.getFinalTestIDs());
-							Classifier[] itemClassifiers = bg.createClassifiersTweet(updatedAgreedDisagreedDatasets[0], updatedAgreedDisagreedDatasets[1], size2, dvb.getTweetRegressionClasses(), "AgreedBasedTweet");
-							bg.classifyItems(itemClassifiers, bg.getTestingSets(), "OnDisagreedUpdatedModelWithBagging");
+							Classifier[] itemClassifiers = bg.createClassifiersTweet(updatedAgreedDisagreedDatasets[0], updatedAgreedDisagreedDatasets[1], size2, dvb.getTweetRegressionClasses(), "CL_tot");
+							totClsPreds = bg.classifyItems(itemClassifiers, bg.getTestingSets(), "CL_tot");
 						} else {
-							Classifier[] userClassifiers = bg.createClassifiersUser(updatedAgreedDisagreedDatasets[0], updatedAgreedDisagreedDatasets[1], size2, dvb.getUserRegressionClasses());
-							bg.classifyItems(userClassifiers, bg.getTestingSetsUser(), "OnDisagreedUpdatedModelWithBagging");
+							Classifier[] userClassifiers = bg.createClassifiersUser(updatedAgreedDisagreedDatasets[0], updatedAgreedDisagreedDatasets[1], size2, dvb.getUserRegressionClasses(), "CL_tot");
+							totClsPreds = bg.classifyItems(userClassifiers, bg.getTestingSetsUser(), "CL_tot");
 						}
 				}	
-				if (method.equals("4") || method.equals("5")){
+				if (getMethod().equals("4") || getMethod().equals("5")){
 					//classify DISAGREED ON UPDATED EXISTING MODEL INSTANCE
 					LOGGER.info("Classify disagreed on Updated existing model without bagging");
 	
 					dvb.classifyDisagreedOnUpdatedExistingModelInstance2(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1]);
 				}
-			}else {
-				LOGGER.info("Testing size equal to zero, cannot perform classification!");
-			}
-			
-		
-		}
-		
-	}
-	
-		public static void main(String[] args) throws Exception{
-		
-		
-		
-		/*DoubleVerifyBagging dvb = new DoubleVerifyBagging();
-		experimentId = "Test";
-		setExperimentId(experimentId);
-		
-		LOGGER.info("RUN " + experimentId);
+				
+				int cnt_agreed = 0, cnt_true_Cl = 0, cnt_true_CLag = 0, cnt_true_CLtot = 0, cnt_agreed_true =0, cnt_all_Cl = 0;
+				if (dvb.getDatasetPointer() == 0){
+				
+					for (int tw = 0; tw < itemClsPreds.length; tw ++){
+						VerificationResult verRes = itemClsPreds[tw];
+						if (verRes.getActual().equals(verRes.getPrediction())){
+							cnt_true_Cl =  cnt_true_Cl +1;
+						}
+						cnt_all_Cl = cnt_all_Cl + 1;
+					}
+										
+					//List<ElementAnnotation> listEla
+					for (int tw = 0; tw < listEla.size(); tw ++){
+						ElementAnnotation verRes = listEla.get(tw);
+						if (verRes.getAgreed()){
+							cnt_agreed = cnt_agreed + 1;
+							FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPredicted(),
+									DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions.txt");
 
-		*//**
-		 * Load features
-		 *//*
-		String fileNameUser = root_path + "userFeats.txt";
-		String fileNameTweet = root_path + "itemFeats.txt";
-		
-		LOGGER.info("Read Tweet-based Features from JSON file " + fileNameTweet);
-		List<TweetFeatures> tweetFeatsList = new ArrayList<TweetFeatures>();
-		try (Stream<String> stream = Files.lines(Paths.get(fileNameTweet), StandardCharsets.UTF_8)) {			
-			stream.forEach(line -> {
-				
-				JSONObject json = new JSONObject(line);
-				Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation()
-						.create();	
-				TweetFeatures item = gson.fromJson(json.toString(), TweetFeatures.class);
-				tweetFeatsList.add(item);	
-				
-			});		   
-		} catch (IOException e) {
-			e.printStackTrace();		        
-		}
-		LOGGER.info("Read User-based Features from JSON file " + fileNameUser);
-		List<UserFeatures> userFeatsList = new ArrayList<UserFeatures>();
-		try (Stream<String> stream = Files.lines(Paths.get(fileNameUser), StandardCharsets.UTF_8)) {			
-			stream.forEach(line -> {
-				
-				JSONObject json = new JSONObject(line);
-				Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation()
-						.create();	
-				UserFeatures item = gson.fromJson(json.toString(), UserFeatures.class);
-				userFeatsList.add(item);	
-				
-			});		   
-		} catch (IOException e) {
-			e.printStackTrace();		        
-		}
-		
-		LOGGER.info("LOAD FEATURES");
-		Instances trainingUser = loadUserFeature(userFeatsList);
-		Instances trainingTweet = loadTweetFeature(tweetFeatsList);
-		
-		Instances testingUser = loadUserFeature(userFeatsList);
-		Instances testingTweet = loadTweetFeature(tweetFeatsList);
-		
-		Instances[] trainDatasets = new Instances[] {trainingTweet, trainingUser};
-		dvb.setTrainDatasets(trainDatasets);
-		
-		Instances[] testDatasets = new Instances[] {testingTweet, testingUser};
-		dvb.setTestDatasets(testDatasets);
-		
-		*//**
-		 *  Check the testing dataset if there are both USER-based and TWEET-based features for all tweets
-		 *  There are cases, such as when the user is suspended or the tweet is no longer available, where one of the feature types is missing.
-		 *//*
-		LOGGER.info("Check if both User and Tweet - based dataset have equal number of instances");
-		dvb.findCommonSets(dvb.getTestDatasets());
-		
-		*//**
-		 *  get the tweet-based/user-based score from cross validation process
-		 *  This will be user to select the "stronger" classifier
-		 *//*
-		LOGGER.info("Apply Cross Validation to define the strongest feature type");
-		Double tweetScore = dvb.getScore(dvb.getTrainDatasets()[0], 0);
-		dvb.setItemScore(tweetScore);
-		Double userScore = dvb.getScore(dvb.getTrainDatasets()[1], 1);
-		dvb.setUserScore(userScore);
-		
-		*//**
-		 *  decide between Tweet (dataset pointer = 0) or User features (dataset pointer = 1)
-		 *//*
-		dvb.setDatasetPointer((dvb.getItemScore() > dvb.getUserScore()) ? 0 : 1);
-		LOGGER.info("Strongest Feature type " + dvb.getDatasetPointer());
-		*//**
-		 *  Iterate through the list of random values to retrieve the results among the different trials
-		 *  This is done do to the bagging technique
-		 *//*
-			
-		ArrayList<int[]> randomValues = dvb.getRandomValues();
-		
-		for (int i = 0; i < randomValues.size(); i++) {
-			
-			*//**
-			 * set the number of experiment 
-			 * (how many times we perform the same experiment, though with different random value)
-			 *//*
-			setExpNo(i);
-			LOGGER.info("Random RUN " + root_path + getExperimentId() + "/" + getExpNo());
-			File outputFolder = new File(root_path + getExperimentId() + "/" + getExpNo());
-			if (!outputFolder.exists())
-				outputFolder.mkdirs();
-			
-			
-			*//**
-			 *  Assign the corresponding random values to the randomVals variable
-			 *  of the Bagging class
-			 *//*
-			dvb.setCurrentRandomValues(randomValues.get(i));
-			Bagging bg = new Bagging(dvb.getCurrentRandomValues());
+							FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPredicted(),
+									DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions.txt");
+							if (verRes.getActual().equals(verRes.getPredicted())){
+								cnt_agreed_true =cnt_agreed_true + 1;
+							}
+						}						
+					}
 					
-			LOGGER.info("RANDOM TRAIN");
-			dvb.classifyWithRandomTrainInstance(dvb.getTrainDatasets()[0], dvb.getSets()[0], 0);
-			dvb.classifyWithRandomTrainInstance(dvb.getTrainDatasets()[1], dvb.getSets()[1], 1);
-
-			LOGGER.info("Define the size of the training items bagging will use");
-			int trainingSize = dvb.determineTrainingSize(dvb.getTrainDatasets()[0]);
-						
-			Classifier[] itemCls = bg.createClassifiersTweet(dvb.getTrainDatasets()[0], dvb.getSets()[0], trainingSize);
-			System.out.println();
-			LOGGER.info("Initial tweet classification with Item features and bagging technique");
-			VerificationResult[] itemClsPreds = bg.classifyItems(itemCls, bg.getTestingSets(), "ITEM");
-		
-			LOGGER.info(" Number of verification results " + itemClsPreds.length);
-	
-			System.out.println();
-			trainingSize = dvb.determineTrainingSize(dvb.getTrainDatasets()[1]);
-			
-			Classifier[] userCls = bg.createClassifiersUser(dvb.getTrainDatasets()[1], dvb.getSets()[1], trainingSize);		
-			System.out.println();
-			LOGGER.info("Initial tweet classification with User features and bagging technique");
-			VerificationResult[] userClsPreds = bg.classifyItems(userCls, bg.getTestingSetsUser(), "USER");
-			
-			
-			
-			*//**
-			 *  Check if Tweet-based and User-based classifiers agreed or not
-			 *//*
-			List<ElementAnnotation> listEla = dvb.classifyItems(itemClsPreds, userClsPreds);
-			
-			
-			*//**
-			 *  Separate agreed and disagreed datasets
-			 *//*
-			Instances[] returnedAgreedDisagreedDatasets = dvb.createAgreedDisagreedDatasets(listEla);
-			
-			
-			*//**
-			 * Classify disagreed on agreed. Train new classifier using only the agreed tweets with bagging.
-			 * The features are selected based on the cross validation score calculated at the beginning.
-			 * 
-			 * 
-			 *//*
-
-			if (returnedAgreedDisagreedDatasets[0].size() > 0 && returnedAgreedDisagreedDatasets[1].size()>0) {
-				
-				dvb.classifyDisagreedOnAgreed(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1]);
-				LOGGER.info("Classify disagreed on agreed with agging");
-				int size = dvb.determineTrainingSize(returnedAgreedDisagreedDatasets[0]);
-				
-				if (dvb.getDatasetPointer() == 0) {
-					Classifier[] itemClassifiers = bg.createClassifiersTweet(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1], size);
-					bg.classifyItems(itemClassifiers, bg.getTestingSets(), "OnDisagreedWithouBagging");
+					for (int tw = 0; tw < agClsPreds.length; tw ++){
+						VerificationResult verRes = agClsPreds[tw];
+						if (verRes.getActual().equals(verRes.getPrediction())){
+							cnt_true_CLag =  cnt_true_CLag +1;
+						}
+						FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
+								DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions.txt");
+					}
 					
-				} else {	
-					Classifier[] userClassifiers = bg.createClassifiersUser(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1], size);
-					bg.classifyItems(userClassifiers, bg.getTestingSetsUser(), "OnDisagreedWithouBagging");
+					for (int tw = 0; tw < totClsPreds.length; tw ++){
+						VerificationResult verRes = totClsPreds[tw];
+						FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
+								DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions.txt");
+						if (verRes.getActual().equals(verRes.getPrediction())){
+							cnt_true_CLtot =  cnt_true_CLtot +1;
+						}
+					}
+				
+					
+
+					double cl_acc = (double) (cnt_true_Cl)/ (cnt_all_Cl);
+					double clAG_acc = (double) (cnt_agreed_true + cnt_true_CLag)/ (cnt_agreed + (numberOfTestingTweets - cnt_agreed));
+					double clTOT_acc = (double) (cnt_agreed_true + cnt_true_CLtot)/ (cnt_agreed + (numberOfTestingTweets - cnt_agreed));
+					cl_accAvg.add(cl_acc);
+					clAG_accAvg.add(clAG_acc);
+					clTOT_accAvg.add(clTOT_acc);
+					FileManager.getInstance().writePlainDataToFile(clAG_acc + "\t" + clTOT_acc,
+							DoubleVerifyBagging.getOutputFolder() + "AverageResultsPerRun.txt");
+					
+
+					
+				}else{
+					for (int tw = 0; tw < userClsPreds.length; tw ++){
+						VerificationResult verRes = userClsPreds[tw];
+						if (verRes.getActual().equals(verRes.getPrediction())){
+							cnt_true_Cl =  cnt_true_Cl +1;
+						}
+						cnt_agreed = cnt_agreed + 1;
+					}
+					
+					//List<ElementAnnotation> listEla
+					for (int tw = 0; tw < listEla.size(); tw ++){
+						ElementAnnotation verRes = listEla.get(tw);
+						if (verRes.getAgreed()){
+							cnt_agreed = cnt_agreed + 1;
+							FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPredicted(),
+									DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions.txt");
+
+							FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPredicted(),
+									DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions.txt");
+							if (verRes.getActual().equals(verRes.getPredicted())){
+								cnt_agreed_true =cnt_agreed_true + 1;
+							}
+						}						
+					}
+					
+					for (int tw = 0; tw < agClsPreds.length; tw ++){
+						VerificationResult verRes = agClsPreds[tw];
+						if (verRes.getActual().equals(verRes.getPrediction())){
+							cnt_true_CLag =  cnt_true_CLag +1;
+						}
+						FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
+								DoubleVerifyBagging.getOutputFolder() + "CL_ag_predictions.txt");
+					}				
+					
+					
+					for (int tw = 0; tw < totClsPreds.length; tw ++){
+						VerificationResult verRes = totClsPreds[tw];
+						FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
+								DoubleVerifyBagging.getOutputFolder() + "CL_tot_predictions.txt");
+						if (verRes.getActual().equals(verRes.getPrediction())){
+							cnt_true_CLtot =  cnt_true_CLtot +1;
+						}
+					}
+				
+					
+
+					double cl_acc = (double) (cnt_true_Cl)/ (cnt_all_Cl);
+					double clAG_acc = (double) (cnt_agreed_true + cnt_true_CLag)/ (cnt_agreed + (numberOfTestingTweets - cnt_agreed));
+					double clTOT_acc = (double) (cnt_agreed_true + cnt_true_CLtot)/ (cnt_agreed + (numberOfTestingTweets - cnt_agreed));
+					cl_accAvg.add(cl_acc);
+					clAG_accAvg.add(clAG_acc);
+					clTOT_accAvg.add(clTOT_acc);
+					
+					FileManager.getInstance().writePlainDataToFile(clAG_acc + "\t" + clTOT_acc,
+							DoubleVerifyBagging.getOutputFolder() + "AverageResultsPerRun.txt");
 				}
 				
 			}else {
-				System.out.println("Not enough instances to perform on-agreed-classification");
-			}
-			
-			
-			
-			//classify DISAGREED ON UPDATED EXISTING MODEL
-			Instances[] updatedAgreedDisagreedDatasets = new Instances[2];
-			if (returnedAgreedDisagreedDatasets[1].size() > 0) {
-				updatedAgreedDisagreedDatasets = dvb.classifyDisagreedOnUpdatedExistingModel(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1]);
-
-				int size2 = dvb.determineTrainingSize(updatedAgreedDisagreedDatasets[0]);
-				LOGGER.info("Classify disagreed on Updated existing model with agging");
-				// OLGA 
-				if (dvb.getDatasetPointer() == 0) {
-					Classifier[] itemClassifiers = bg.createClassifiersTweet(updatedAgreedDisagreedDatasets[0], updatedAgreedDisagreedDatasets[1], size2);
-					bg.classifyItems(itemClassifiers, bg.getTestingSets(), "AgreedBased");
-					FileManager.getInstance().writePlainDataToFile("ITEM_agreedBase", 
-							DoubleVerifyBagging.root_path + DoubleVerifyBagging.getExperimentId() + "/" +  DoubleVerifyBagging.getExpNo() + "/INFO.txt");
-					
-				} else {
-					Classifier[] userClassifiers = bg.createClassifiersUser(updatedAgreedDisagreedDatasets[0], updatedAgreedDisagreedDatasets[1], size2);
-					//OLGA here you had bg.getTestingSets() instead of bg.getTestingSetsUser() - That was it! Good luck glykoula!
-					FileManager.getInstance().writePlainDataToFile("USER_agreedBase", 
-							DoubleVerifyBagging.root_path + DoubleVerifyBagging.getExperimentId() + "/" +  DoubleVerifyBagging.getExpNo() + "/INFO.txt");
-					bg.classifyItems(userClassifiers, bg.getTestingSetsUser(), "AgreedBased");
-				}
-				
-				//classify DISAGREED ON UPDATED EXISTING MODEL INSTANCE
-				LOGGER.info("Classify disagreed on Updated existing model without agging");
-
-				dvb.classifyDisagreedOnUpdatedExistingModelInstance(returnedAgreedDisagreedDatasets[0], returnedAgreedDisagreedDatasets[1]);
-				
-			}else {
 				LOGGER.info("Testing size equal to zero, cannot perform classification!");
-			}
-			
+			}			
 		
-		}*/
+		}
+		
+		FileManager.getInstance().writePlainDataToFile(cl_accAvg.stream().mapToDouble(Double::doubleValue).sum() / cl_accAvg.size() + "\t" +
+				clAG_accAvg.stream().mapToDouble(Double::doubleValue).sum() / clAG_accAvg.size() + "\t" +
+				clTOT_accAvg.stream().mapToDouble(Double::doubleValue).sum() / clTOT_accAvg.size(),
+				DoubleVerifyBagging.getOutputFolder() + "AverageResults.txt");
 		
 	}
-	
+		
 
 }

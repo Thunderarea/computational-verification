@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.functions.Logistic;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
@@ -43,6 +44,8 @@ public class Bagging {
 	
 	private Instances[] testingSets = new Instances[9];
 	private Instances[] testingSetsUser = new Instances[9];
+	private Instances[] testingSetsConcat = new Instances[9];
+
 	private int[] randomVals = new int[9];
 	
 	public Instances[] getTestingSets() {
@@ -50,6 +53,13 @@ public class Bagging {
 	}
 	public void setTestingSets(Instances[] testingSets) {
 		this.testingSets = testingSets;
+	}
+	
+	public Instances[] getTestingSetsConcat() {
+		return testingSetsConcat;
+	}
+	public void setTestingSetsConcat(Instances[] testingSetsConcat) {
+		this.testingSetsConcat = testingSetsConcat;
 	}
 
 	public Instances[] getTestingSetsUser() {
@@ -65,128 +75,17 @@ public class Bagging {
 	public void setRandomVals(int[] randomVals) {
 		this.randomVals = randomVals;
 	}
-
-	public Classifier getCurrentClassifier() {
-		return new RandomForest();
-	}
 	
-	
-		
-	
-	
-	/**
-	 * Method that creates a concrete number of classifiers by randomly selecting a number of them (trainingSize value)
-	 * @param training2 Instances that consist the training set
-	 * @param testing2 Instances that consist the testing set
-	 * @param trainingSize the number of samples that are used for building each of the classifiers 
-	 * @return array of Classifier[]
-	 * @throws Exception
-	 */
-	public Classifier[] createClassifiersTweet(Instances training2,
-						Instances testing2, 
-							int trainingSize,
-								List<String> regressionClasses) throws Exception {
-		
-		//Instances testing  = new Instances(testing2);
-		
-		int countFake=0, countReal=0;
-		Classifier[] classifiers = new Classifier[getRandomVals().length];
-		System.out.println("CREATE CLASSIFIERS: TWEET");
-		
-
-		Instances testing  = new Instances(testing2);
-		Instances[] testingNew = new Instances[9];
-		
-		for (int j=0; j<getRandomVals().length; j++) {
-			//System.out.println(" Random values into createClassifiersTweet " + getRandomVals()[j]);
-			Instances training = new Instances(training2);
-			Instances currentTrain = new Instances(training,0);
-	
-			Collections.shuffle(training, new Random(getRandomVals()[j]));
-			countFake = 0; 
-			countReal = 0;
-			
-			
-			for (int i=0; i<training.size(); i++) {
-				if (countFake <(trainingSize/2)) {
-					if (training.classAttribute().value((int) training.get(i).classValue()).equals("fake")) {
-						currentTrain.add(training.get(i));
-						countFake++;
-					}
-				}
-							
-			}
-			//FileManager.getInstance().writeDataToFile("D:/TweetVerification/Reproducibility/Example/currentTrainAddFake_" + j + ".arff", currentTrain);
-			for (int i=0; i<training.size(); i++) {
-				if ( countReal <(trainingSize/2)) {
-					if (training.classAttribute().value((int) training.get(i).classValue()).equals("real")) {
-						currentTrain.add(training.get(i));
-						countReal++;
-					}
-				}
-			}
-		
-			//case in which training set has just one instance
-			if (currentTrain.size()==0 && training.size()==1) {
-				currentTrain.add(training.get(0));
-				if (training.classAttribute().value((int) training.get(0).classValue()).equals("fake")) {
-					countFake++;
-				}
-				else countReal++;
-			}
-			
-		
-			/**
-			 * Apply Linear Regression approach to fill missing values
-			 */
-			
-			/*
-			 * OLGA MAJOR CHANGE
-			 * 
-			 */
-			
-			
-			testingNew[j]  =  new Instances(testing);
-			//FileManager.getInstance().writeDataToFile("D:/TweetVerification/Reproducibility/Example/testingNewBefore_" + j + ".arff", testingNew[j] );
-			for (int i = 0; i < regressionClasses.size(); i++){
-
-				currentTrain = DataHandler.getInstance().getTransformedTrainingTweet(currentTrain, regressionClasses.get(i));				
-				testingNew[j] = DataHandler.getInstance().getTransformedTestingTweet(testingNew[j] , regressionClasses.get(i));
-			}
-			
-			currentTrain =  DataHandler.getInstance().normalizationTweet(currentTrain);
-			testingNew[j] =  DataHandler.getInstance().normalizationTestingTweet(testingNew[j]);
-			//classifier details
-			FilteredClassifier fc = new FilteredClassifier();
-			Classifier tree = getCurrentClassifier();
-			
-			Remove rm = new Remove();
-			rm.setAttributeIndices("1");
-			//rm.setInputFormat(currentTrain);
-		
-			MultiFilter mf = new MultiFilter();
-		
-				Filter[] filters = {rm};
-				mf.setFilters(filters);		
-			
-			
-			try {
-				fc.setFilter(mf);
-				fc.setClassifier(tree);				
-				fc.buildClassifier(currentTrain);
-				classifiers[j] = fc;
-				
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+	public Classifier getCurrentClassifier(String classifierName){
+		if (classifierName.equalsIgnoreCase("RF")){
+			return new RandomForest();
+		}else if (classifierName.equalsIgnoreCase("LG")){
+			return new Logistic();
+		}else{
+			return new RandomForest();
 		}
-		
-		setTestingSets(testingNew);
-				
-		return classifiers;
 	}
-	
+
 	
 	/**
 	 * Method that creates a concrete number of classifiers by randomly selecting a number of them (trainingSize value)
@@ -261,7 +160,7 @@ public class Bagging {
 			
 			//classifier details
 			FilteredClassifier fc = new FilteredClassifier();
-			Classifier tree = getCurrentClassifier();
+			Classifier tree = getCurrentClassifier(DoubleVerifyBagging.getClassifier());
 			
 			Remove rm = new Remove();
 			rm.setAttributeIndices("1");
@@ -366,7 +265,7 @@ public class Bagging {
 			
 			//classifier details
 			FilteredClassifier fc = new FilteredClassifier();
-			Classifier tree = getCurrentClassifier();
+			Classifier tree = getCurrentClassifier(DoubleVerifyBagging.getClassifier());
 			
 			Remove rm = new Remove();
 			rm.setAttributeIndices("1");
@@ -398,7 +297,7 @@ public class Bagging {
 	public Classifier[] createClassifiersUser(Instances training2, 
 												Instances testing2,
 													int trainingSize,
-													List<String> regressionClasses) throws Exception {
+													List<String> regressionClasses, String StoreID) throws Exception {
 		
 		
 		Instances testing  = new Instances(testing2);		
@@ -450,7 +349,10 @@ public class Bagging {
 			
 			//classifier details
 			FilteredClassifier fc = new FilteredClassifier();
-			Classifier tree = getCurrentClassifier();
+			Classifier tree = getCurrentClassifier(DoubleVerifyBagging.getClassifier());
+			
+			System.out.println("Classifier Name " + DoubleVerifyBagging.getClassifier());
+			System.out.println("Classifier " + tree.toString());
 			
 			Remove rm = new Remove();
 			rm.setAttributeIndices("1");
@@ -478,88 +380,105 @@ public class Bagging {
 	}
 	
 	
-	public Classifier[] createClassifiersUser(Instances training2, 
-			Instances testing2,
-				int trainingSize,
-				List<String> regressionClasses, List<String> testIds) throws Exception {
+	/**
+	 * Method that creates a concrete number of classifiers by randomly selecting a number of them (trainingSize value)
+	 * @param training2 Instances that consist the training set
+	 * @param testing2 Instances that consist the testing set
+	 * @param trainingSize the number of samples that are used for building each of the classifiers 
+	 * @return array of Classifier[]
+	 * @throws Exception
+	 */
+	public Classifier[] createClassifiersConcat(Instances training2,
+						Instances testing2, 
+							int trainingSize,
+								List<String> regressionClasses, String StoreID) throws Exception {
+		
+		int countFake=0, countReal=0;
+		Classifier[] classifiers = new Classifier[getRandomVals().length];
+		LOGGER.info("CREATE CLASSIFIERS: Concatenated");
+		
 
-
-			Remove rm2 = new Remove();
-			rm2.setAttributeIndices("1");
-			rm2.setInputFormat(testing2);
-			testing2 = Filter.useFilter(testing2, rm2);
-			
-			Instances testing  = new Instances(testing2);		
-			int countFake=0, countReal=0;
-			Classifier[] classifiers = new Classifier[getRandomVals().length];
-			
-			System.out.println("CREATE CLASSIFIERS: USER");
-			
-			Instances[] testingNew = new Instances[9];
-			
-			for (int j=0; j<getRandomVals().length; j++) {
+		Instances testing  = new Instances(testing2);
+		Instances[] testingNew = new Instances[9];
+		
+		for (int j=0; j<getRandomVals().length; j++) {
 			
 			Instances training = new Instances(training2);
 			Instances currentTrain = new Instances(training,0);
-			Collections.shuffle(training, new Random(getRandomVals()[j]));
+	
 			
+			//FileManager.getInstance().writeDataToFile(DoubleVerifyBagging.getOutputFolderPerRun() + "CreateClassifierConcat_training.txt", training);
+			Collections.shuffle(training, new Random(getRandomVals()[j]));
 			countFake = 0; 
 			countReal = 0;
 			
-			for (int i=0; i<training.size(); i++) {
-				if (countFake<(trainingSize/2)) {
-					if (training.classAttribute().value((int) training.get(i).classValue()).equals("fake")) {
-						countFake++;
-						currentTrain.add(training.get(i));
-					}
-				}			
-			}
 			
 			for (int i=0; i<training.size(); i++) {
-				if ( countReal < (trainingSize/2) ) {
+				if (countFake <(trainingSize/2)) {
+					if (training.classAttribute().value((int) training.get(i).classValue()).equals("fake")) {
+						currentTrain.add(training.get(i));
+						countFake++;
+					}
+				}
+							
+			}
+			for (int i=0; i<training.size(); i++) {
+				if ( countReal <(trainingSize/2)) {
 					if (training.classAttribute().value((int) training.get(i).classValue()).equals("real")) {
 						currentTrain.add(training.get(i));
 						countReal++;
 					}
 				}
 			}
+			//case in which training set has just one instance
+			if (currentTrain.size()==0 && training.size()==1) {
+				currentTrain.add(training.get(0));
+				if (training.classAttribute().value((int) training.get(0).classValue()).equals("fake")) {
+					countFake++;
+				}
+				else countReal++;
+			}	
 			
-			//Linear Regression approach
-			testingNew[j] = new Instances(testing);
+			//FileManager.getInstance().writeDataToFile(DoubleVerifyBagging.getOutputFolderPerRun() + j + "_CreateClassifierConcat_currentTrain.txt", currentTrain);
+
+		
+			/**
+			 * Apply Linear Regression approach to fill missing values
+			 */
+			testingNew[j]  =  new Instances(testing);
+			//FileManager.getInstance().writeDataToFile("D:/TweetVerification/Reproducibility/Example/testingNewBefore_" + j + ".arff", testingNew[j] );
 			for (int i = 0; i < regressionClasses.size(); i++){
-			currentTrain = DataHandler.getInstance().getTransformedTrainingUser(currentTrain, regressionClasses.get(i));
-			testingNew[j] = DataHandler.getInstance().getTransformedTestingUser(testingNew[j], regressionClasses.get(i));
+
+				currentTrain = DataHandler.getInstance().getTransformedTrainingTweet(currentTrain, regressionClasses.get(i));				
+				testingNew[j] = DataHandler.getInstance().getTransformedTestingTweet(testingNew[j] , regressionClasses.get(i));
 			}
 			
-			currentTrain =  DataHandler.getInstance().normalizationUser(currentTrain);
-			testingNew[j] =  DataHandler.getInstance().normalizationTestingUser(testingNew[j]);
+			currentTrain =  DataHandler.getInstance().normalizationTweet(currentTrain);
+			testingNew[j] =  DataHandler.getInstance().normalizationTestingTweet(testingNew[j]);
 			
+			//FileManager.getInstance().writeDataToFile(DoubleVerifyBagging.getOutputFolderPerRun() + j + "_CreateClassifierConcat_currentTrainAfterReg.txt", currentTrain);
+			//FileManager.getInstance().writeDataToFile(DoubleVerifyBagging.getOutputFolderPerRun() + j + "_CreateClassifierConcat_testingAfterReg.txt", testingNew[j]);
 			//classifier details
 			FilteredClassifier fc = new FilteredClassifier();
-			Classifier tree = getCurrentClassifier();
+			Classifier tree = getCurrentClassifier(DoubleVerifyBagging.getClassifier());
 			
 			Remove rm = new Remove();
 			rm.setAttributeIndices("1");
-			
-			MultiFilter mf = new MultiFilter();
-			Filter[] filters = {rm};
-			mf.setFilters(filters);
-			
-			
+		
+			MultiFilter mf = new MultiFilter();		
+				Filter[] filters = {rm};
+				mf.setFilters(filters);					
 			try {
-			fc.setClassifier(tree);
-			fc.setFilter(mf);				
-			fc.buildClassifier(currentTrain);
-			classifiers[j] = fc;
-			
+				fc.setFilter(mf);
+				fc.setClassifier(tree);				
+				fc.buildClassifier(currentTrain);
+				classifiers[j] = fc;				
 			} catch (Exception e) {
-			e.printStackTrace();
+				e.printStackTrace();
 			}
-			}
-			
-			setTestingSetsUser(testingNew);
-			
-			return classifiers;
+		}
+		setTestingSetsConcat(testingNew);				
+		return classifiers;
 	}
 	
 	
@@ -698,7 +617,7 @@ public VerificationResult[] classifyItems(Classifier[] classifiers,Instances[] t
 			VerificationResult predict = getMajorityPred(predicted, StoreID);
 			predict.setId(id);
 			idsLabels.put(id, predict.getPrediction());
-	
+			predict.setActual(actual);
 			finalPredictions[j] = predict;
 			
 			if (predict.getPrediction().equals(actual)) {
@@ -760,8 +679,11 @@ public VerificationResult[] classifyItems(Classifier[] classifiers,Instances[] t
 			FileManager.getInstance().writeDoubleDataToFile((double)count/testingSets[0].size() * 100 ,  DoubleVerifyBagging.getOutputFolder() + StoreID + "Accuracy.txt");			
 
 		}
-		FileManager.getInstance().writePlainDataToFile(StoreID + " Bagging:\t" + (double)count/testingSets[0].size() * 100 +
-				"\t" + ((double) countFake / fake)* 100 + "\t" + ((double) countReal / real)* 100,  DoubleVerifyBagging.getOutputFolder() + "AverageResults.txt");
+		
+		if (StoreID.equalsIgnoreCase("CL1") || StoreID.equalsIgnoreCase("CL2")){
+			FileManager.getInstance().writePlainDataToFileNonl((double)count/testingSets[0].size() * 100 + "\t",
+				DoubleVerifyBagging.getOutputFolder() + "AverageResultsPerRun.txt");
+		}
 		
 
 		

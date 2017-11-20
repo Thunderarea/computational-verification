@@ -7,6 +7,7 @@ public class VerificationResult {
 	private double prob;
 	private String id;
 	private boolean decided;
+	private String actual;
 	
 	public String getPrediction() {
 		return prediction;
@@ -32,4 +33,12 @@ public class VerificationResult {
 	public void setDecided(boolean decided) {
 		this.decided = decided;
 	}
+	public String getActual() {
+		return actual;
+	}
+	public void setActual(String actual) {
+		this.actual = actual;
+	}
+	
+	
 }

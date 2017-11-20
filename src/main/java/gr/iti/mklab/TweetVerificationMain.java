@@ -19,8 +19,6 @@ public class TweetVerificationMain {
 	public static String tweetsFeatureFile;
 	public static String userFeatureFile;
 	public static String method;
-	public static boolean verbose;
-	public static String trainMethod;
 	public static String outputFolder;
 	public static String trainLabels;
 	public static String testLabels;
@@ -28,7 +26,7 @@ public class TweetVerificationMain {
 	public static List<String> acceptedMethodValues = new ArrayList<String>(Arrays.asList("1","2","3","4","5"));
 	
 	
-	public static void main(String[] args) throws Exception{
+public static void main(String[] args) throws Exception{
 		
 		
 		/**
@@ -57,52 +55,24 @@ public class TweetVerificationMain {
        		 
        		method = "train";
        		
-       		if (args[1].equals("-v")){
-       			System.out.println("Print all results");
-       			verbose = true;
-       			if (args.length == 5){
+       			if (args.length == 3){
            			
-           			trainMethod = args[2];
-           			trainLabels = args[3];
-           			testLabels = args[4];
+           			trainLabels = args[1];
+           			testLabels = args[2];
            			featureFolder =  workingDir + "/Features/";
            			outputFolder = workingDir + "/Run/";
            			
-           		}else if (args.length == 7){
-           			trainMethod = args[2];
-           			trainLabels = args[3];
-           			testLabels = args[4];
-           	    	featureFolder =  args[5];
-           			outputFolder = args[6];
+           		}else if (args.length == 5){
+           	
+           			trainLabels = args[1];
+           			testLabels = args[2];
+           	    	featureFolder =  args[3];
+           			outputFolder = args[4];
            			
            		}else{
            			System.out.println("Wrong number of arguments -train");
            			return;
-           		}
-       		}else{
-       			verbose = false;
-       			if (args.length == 4){
-           			
-           			trainMethod = args[1];
-           			trainLabels = args[2];
-           			testLabels = args[3];
-           			featureFolder =  workingDir + "/Features/";
-           			outputFolder = workingDir + "/Run/";
-           			
-           		}else if (args.length == 6){
-           			trainMethod = args[1];
-           			trainLabels = args[2];
-           			testLabels = args[3];
-           	    	featureFolder =  args[4];
-           			outputFolder = args[5];
-           			
-           		}else{
-           			System.out.println("Wrong number of arguments -train");
-           			return;
-           		}
-       		}
-       		
-       		
+           		}  		
        	 
        	 }else{
        		 System.out.println("Wrong method. Available values:\n");
@@ -198,12 +168,8 @@ public class TweetVerificationMain {
 	        		return;
 	        	}	
 	        	
-	        	if (!acceptedMethodValues.contains(trainMethod)){
-	        		LOGGER.info("Wrong trainMethod value. Print -help to check available values" );
-	        		return;
-	    		}
 	        	long start_time = System.currentTimeMillis();
-	        	DoubleVerifyBagging.startVerification(trainMethod, userFeatureFile, tweetsFeatureFile, trainLabels, testLabels, outputFolder, verbose);
+	        	DoubleVerifyBagging.startVerification(userFeatureFile, tweetsFeatureFile, trainLabels, testLabels, outputFolder);
 	        	LOGGER.info("END TRAINING AND EVALUATION EXECUTION IN " + (System.currentTimeMillis() - start_time));
 	        	
 	        }         	
