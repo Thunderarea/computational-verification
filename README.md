@@ -131,8 +131,8 @@ Main class *TweetVerificationMain* in *gr.iti.mklab* package. Provide command li
 		
 ## Contact for further details
 ------------------
-	Olga Papadopoulou (<olgapapa@iti.gr>
-	Symeon Papadopoulos (<papadop@iti.gr>)
+Olga Papadopoulou (<olgapapa@iti.gr>) <br />
+Symeon Papadopoulos (<papadop@iti.gr>)
 
 	
 
