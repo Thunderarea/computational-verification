@@ -90,7 +90,7 @@ public class DoubleVerifyBagging {
 		/**
 		 * Value true for detailed results
 		 */
-		setVerbose(true);
+		setVerbose(false);
 		setRunConcatenated(false);
 		if (getRunConcatenated()){
 			setConcatRegressionClasses(concatRegressionClasses());
