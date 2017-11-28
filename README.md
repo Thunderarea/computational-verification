@@ -128,6 +128,18 @@ Main class *TweetVerificationMain* in *gr.iti.mklab* package. Provide command li
 		2. CL_ag_predictions.txt: tweet ID and fake/real label using CL_ag agreement-based retraining model.
 		3. CL_tot_predictions.txt: tweet ID and fake/real label using CL_tot agreement-based retraining model.
 		
+## Citations
+
+Please cite the following paper in your publications if you use the implementation:
+
+	@inproceedings{boididou2017learning,
+		title={Learning to Detect Misleading Content on Twitter},
+		author={Boididou, Christina and Papadopoulos, Symeon and Apostolidis, Lazaros and Kompatsiaris, Yiannis},
+		booktitle={Proceedings of the 2017 ACM on International Conference on Multimedia Retrieval},
+		pages={278--286},
+		year={2017},
+		organization={ACM}
+	}
 		
 ## Contact for further details
 ------------------
