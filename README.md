@@ -130,7 +130,7 @@ Main class *TweetVerificationMain* in *gr.iti.mklab* package. Provide command li
 		
 ## Citations
 
-Please cite the following paper in your publications if you use the implementation:
+Please cite the following papers in your publications if you use the implementation:
 
 	@inproceedings{boididou2017learning,
 		title={Learning to Detect Misleading Content on Twitter},
@@ -140,6 +140,18 @@ Please cite the following paper in your publications if you use the implementati
 		year={2017},
 		organization={ACM}
 	}
+	
+	@article{boididou2018detection,
+      author = {Detection and visualization of misleading content on Twitter},
+      title = {Boididou, Christina and Papadopoulos, Symeon and Zampoglou, Markos and Apostolidis, Lazaros and Papadopoulou, Olga and Kompatsiaris, Yiannis},
+      journal = {International Journal of Multimedia Information Retrieval},
+      volume={7},
+      number={1},
+      pages={71--86},
+      year={2018},
+      doi = "10.1007/s13735-017-0143-x",     
+      publisher={Springer}
+    }
 		
 ## Contact for further details
 ------------------
