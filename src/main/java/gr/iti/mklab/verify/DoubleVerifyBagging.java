@@ -738,47 +738,33 @@ public class DoubleVerifyBagging {
 		return trainingSize;
 	}
 
-	public ElementAnnotation getElemAnnotation(Instance inst1, String predicted1, String predicted2, boolean decided) {
-
-		ElementAnnotation ela = new ElementAnnotation();
-		// set id of the element
-		ela.setId(inst1.stringValue(0));
-		// set its actual value
-		String actual = getSets()[0].classAttribute().value((int) inst1.classValue());
-		ela.setActual(actual);
-		// set its predicted value (only for the agreed elements)
-		// set the agreed value of the element
-		if (predicted1.equals(predicted2)) {
-			ela.setPredicted(predicted1);
-			ela.setAgreed(true);
-		} else {
-			ela.setAgreed(false);
-		}
-		return ela;
-	}
-
 	public List<ElementAnnotation> classifyItems(VerificationResult[] itemClsPreds, VerificationResult[] userClsPreds)
 			throws Exception {
 
 		List<ElementAnnotation> listEla = new ArrayList<ElementAnnotation>();
 
+		String id;
+		String actual;
+		boolean agreed;
+		String predicted;
 		int instaSize = getSets()[0].size();
-
 		for (int i = 0; i < itemClsPreds.length; i++) {
-
 			for (int j = 0; j < userClsPreds.length; j++) {
-
 				if (itemClsPreds[i].getId().equals(userClsPreds[j].getId())) {
-
 					Instance inst1 = getSets()[0].get(i);
 
 					String predicted1 = itemClsPreds[i].getPrediction();
 					String predicted2 = userClsPreds[i].getPrediction();
 
-					boolean decided = itemClsPreds[i].isDecided() && userClsPreds[i].isDecided();
-
 					// find the details of the ElementAnnotation object
-					ElementAnnotation ela = getElemAnnotation(inst1, predicted1, predicted2, decided);
+					id = inst1.stringValue(0);
+					actual = getSets()[0].classAttribute().value((int) inst1.classValue());
+					agreed = predicted1.equals(predicted2);
+					predicted = null;
+					if (agreed)
+						predicted = predicted1;
+
+					ElementAnnotation ela = new ElementAnnotation(id, actual, predicted, agreed);
 
 					// add the element to the list
 					listEla.add(ela);
@@ -1730,7 +1716,8 @@ public class DoubleVerifyBagging {
 				Map<String, Double> result;
 				boolean datasetPointerIsZero = (dvb.getDatasetPointer() == 0);
 				VerificationResult[] clsPreds = (datasetPointerIsZero) ? itemClsPreds : userClsPreds;
-				result = calculateMetrics(clsPreds, listEla, agClsPreds, totClsPreds, numberOfTestingTweets, datasetPointerIsZero);
+				result = calculateMetrics(clsPreds, listEla, agClsPreds, totClsPreds, numberOfTestingTweets,
+						datasetPointerIsZero);
 
 				cl_accAvg.add(result.get("cl_acc"));
 				clAG_accAvg.add(result.get("clAG_acc"));
