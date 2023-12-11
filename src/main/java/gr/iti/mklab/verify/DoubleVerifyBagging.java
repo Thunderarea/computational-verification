@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-// import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -1750,7 +1749,7 @@ public class DoubleVerifyBagging {
 
 		for (int tw = 0; tw < clsPred.length; tw++) {
 			VerificationResult verRes = clsPred[tw];
-			if (verRes.getActual().equals(verRes.getPrediction())) {
+			if (verRes.isPredictionEqualsActual()) {
 				cnt_true_Cl = cnt_true_Cl + 1;
 			}
 			if (datasetPointerIsZero)
@@ -1779,19 +1778,16 @@ public class DoubleVerifyBagging {
 
 		for (int tw = 0; tw < agClsPreds.length; tw++) {
 			VerificationResult verRes = agClsPreds[tw];
-			if (verRes.getActual().equals(verRes.getPrediction())) {
+			if (verRes.isPredictionEqualsActual()) {
 				cnt_true_CLag = cnt_true_CLag + 1;
 			}
-			FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" +
-					verRes.getPrediction(),
-					getOutputFolder() + "CL_ag_predictions_" + getExpNo() + ".txt");
+			verRes.writeToFile(getOutputFolder() + "CL_ag_predictions_" + getExpNo() + ".txt");
 		}
 
 		for (int tw = 0; tw < totClsPreds.length; tw++) {
 			VerificationResult verRes = totClsPreds[tw];
-			FileManager.getInstance().writePlainDataToFile(verRes.getId() + "\t" + verRes.getPrediction(),
-					getOutputFolder() + "CL_tot_predictions_" + getExpNo() + ".txt");
-			if (verRes.getActual().equals(verRes.getPrediction())) {
+			verRes.writeToFile(getOutputFolder() + "CL_tot_predictions_" + getExpNo() + ".txt");
+			if (verRes.isPredictionEqualsActual()) {
 				cnt_true_CLtot = cnt_true_CLtot + 1;
 			}
 		}
