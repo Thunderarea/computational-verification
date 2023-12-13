@@ -872,25 +872,36 @@ public class DoubleVerifyBagging {
 		return listEla;
 	}
 
+	private Instances agreedPredictionUpdater(Instances training, List<ElementAnnotation> listEla) {
+		int counter3 = 0;
+		for (int i = 0; i < training.size(); i++) {
+			for (int j = 0; j < listEla.size(); j++) {
+				if (training.get(i).stringValue(0).equals(listEla.get(j).getId())) {
+					String classBefore = training.classAttribute().value((int) training.instance(i).classValue());
+					training.get(i).setClassValue(listEla.get(j).getPredicted());
+					String classAfter = training.classAttribute().value((int) training.instance(i).classValue());
+					if (!classBefore.equals(classAfter)) {
+						counter3++;
+					}
+				}
+			}
+		}
+		System.out.println("class changed in " + counter3 + " items.");
+		System.out.println("Training size(agreed items) " + training.size());
+		return training;
+	}
+
 	public Instances[] createAgreedDisagreedDatasets(List<ElementAnnotation> listEla)
 			throws Exception {
-
-		Instances[] returnedAgreedDisagreed = new Instances[2];
-
 		List<String> ids_agreed = new ArrayList<String>();
 		List<String> ids_disagreed = new ArrayList<String>();
 
-		HashMap<String, String> results = new HashMap<String, String>();
-
-		// iterate through listEla and separate tweet ids according to their
-		// agreed value
+		// iterate through listEla and separate tweet ids according to their agreed value
 
 		for (int i = 0; i < listEla.size(); i++) {
 
 			if (listEla.get(i).getAgreed()) {
 				ids_agreed.add(listEla.get(i).getId());
-				results.put(listEla.get(i).getId(), listEla.get(i)
-						.getPredicted());
 			} else {
 				ids_disagreed.add(listEla.get(i).getId());
 			}
@@ -919,36 +930,12 @@ public class DoubleVerifyBagging {
 
 		// change the class value of the agreed instances. Set the agreed
 		// predicted value of the class, not the actual one.
-		int counter3 = 0;
-		for (int i = 0; i < training.size(); i++) {
+		training = agreedPredictionUpdater(training, listEla);
 
-			for (int j = 0; j < listEla.size(); j++) {
+		System.out.println("Agreed disagreed datasets [training]: " + training.size()
+				+ ", [testing]: " + testing.size());
 
-				if (training.get(i).stringValue(0).equals(listEla.get(j).getId())) {
-
-					String classBefore = training.classAttribute().value((int) training.instance(i).classValue());
-					training.get(i).setClassValue(listEla.get(j).getPredicted());
-					String classAfter = training.classAttribute().value((int) training.instance(i).classValue());
-
-					if (!classBefore.equals(classAfter)) {
-						counter3++;
-					}
-				}
-
-			}
-		}
-		System.out.println("class changed in " + counter3 + " items.");
-
-		System.out.println("Training size(agreed items) " + training.size());
-
-		returnedAgreedDisagreed[0] = training;
-		returnedAgreedDisagreed[1] = testing;
-
-		System.out.println("Agreed disagreed datasets [training]: " + returnedAgreedDisagreed[0].size()
-				+ ", [testing]: " + returnedAgreedDisagreed[1].size());
-
-		return returnedAgreedDisagreed;
-
+		return new Instances[]{training, testing};
 	}
 
 	public void classifyDisagreedOnAgreed(Instances training, Instances testing) throws Exception {
