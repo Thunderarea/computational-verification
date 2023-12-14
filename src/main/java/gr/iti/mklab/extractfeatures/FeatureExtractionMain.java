@@ -22,7 +22,7 @@ public class FeatureExtractionMain {
 	public static String fileName_temp;
 	
 	
-	public void extractTweetFeatures(String tweetsFile, String userFeatFile, String tweetFeatFile) throws Exception{
+	public void extractTweetFeatures(String tweetsFile, String userFeatFile, String tweetFeatFile, String resourcesPath) throws Exception{
 		long start_time = System.currentTimeMillis();
 
 	
@@ -44,13 +44,13 @@ public class FeatureExtractionMain {
 		JsonElement element;
 		for (int i =0; i < tweet_posts.size(); i ++){
 			TweetFeatures tempItem = new TweetFeatures();
-			tempItem = TweetFeaturesExtractor.extractFeatures(tweet_posts.get(i));
+			tempItem = TweetFeaturesExtractor.extractFeatures(tweet_posts.get(i), resourcesPath);
 			element = gson.fromJson(tempItem.toJSONString(), JsonElement.class);
 			JsonObject item_features = element.getAsJsonObject();	
 			FileManager.getInstance().writePlainDataToFile(item_features.toString(), tweetFeatFile);
 	
 			UserFeatures tempUser = new UserFeatures();
-			tempUser = UserFeaturesExtractorJSON.extractFeatures(tweet_posts.get(i));
+			tempUser = UserFeaturesExtractorJSON.extractFeatures(tweet_posts.get(i), resourcesPath);
 			//
 			element = gson.fromJson(tempUser.toJSONString(), JsonElement.class);
 			JsonObject user_features = element.getAsJsonObject();	

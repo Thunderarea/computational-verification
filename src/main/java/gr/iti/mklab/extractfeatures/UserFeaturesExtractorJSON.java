@@ -24,7 +24,6 @@ import org.jsoup.select.Elements;
 
 import eu.socialsensor.geo.Countrycoder;
 import gr.iti.mklab.util.AlexaRankingManager;
-import gr.iti.mklab.util.Configuration;
 import gr.iti.mklab.util.URLProcessing;
 import gr.iti.mklab.util.WebOfTrustManager;
 import gr.iti.mklab.util.TextProcessing;
@@ -35,7 +34,7 @@ public class UserFeaturesExtractorJSON {
 	
 	private static final Logger LOGGER = Logger.getLogger( UserFeaturesExtractorJSON.class.getName() );
 	
-	public static UserFeatures extractFeatures(JSONObject json)
+	public static UserFeatures extractFeatures(JSONObject json, String resourcesPath)
 			throws Exception, JSONException, IOException {
 		LOGGER.setLevel(Level.OFF);
 		String currentTweetId = json.getString("id_str");
@@ -134,9 +133,9 @@ public class UserFeaturesExtractorJSON {
 				//preprocess
 				jsonUrl = URLProcessing.getInstance().processUrlForRunnable(jsonUrl);
 
-				feats.setIndegree(organizeRunRank("indegree-" + currentTweetId, jsonUrl, Configuration.RESOURCES_PATH + "/centralities/hostgraph-indegree_split_1/hostgraph-indegree"));
+				feats.setIndegree(organizeRunRank("indegree-" + currentTweetId, jsonUrl, resourcesPath + "/centralities/hostgraph-indegree_split_1/hostgraph-indegree"));
 				if (feats.getIndegree() != null)
-					feats.setHarmonic(organizeRunRank("harmonic-" + currentTweetId, jsonUrl, Configuration.RESOURCES_PATH + "/centralities/hostgraph-h_split_2/hostgraph-h"));
+					feats.setHarmonic(organizeRunRank("harmonic-" + currentTweetId, jsonUrl, resourcesPath + "/centralities/hostgraph-h_split_2/hostgraph-h"));
 
 				LOGGER.info("In-degree centrality value: " + feats.getIndegree());
 				LOGGER.info("Harmonic centrality value: " + feats.getHarmonic());
@@ -162,7 +161,7 @@ public class UserFeaturesExtractorJSON {
 		} else {
 			
 			try {
-				feats.setHasExistingLocation(hasExistingLocation(location));
+				feats.setHasExistingLocation(hasExistingLocation(location, resourcesPath));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -481,10 +480,10 @@ public class UserFeaturesExtractorJSON {
 			return result;
 		}
 		
-		public static boolean hasExistingLocation(String locationName) {
+		public static boolean hasExistingLocation(String locationName, String resourcesPath) {
 
-			Countrycoder countrycodingService = new Countrycoder(Configuration.RESOURCES_PATH + "/location/cities1000_mod.txt",
-					Configuration.RESOURCES_PATH + "/location/countryInfo.txt", Configuration.RESOURCES_PATH + "/location/admin1CodesASCII_mod.txt");
+			Countrycoder countrycodingService = new Countrycoder(resourcesPath + "/location/cities1000_mod.txt",
+					resourcesPath + "/location/countryInfo.txt", resourcesPath + "/location/admin1CodesASCII_mod.txt");
 			String[] locParts = null;
 			boolean hasExistingLocation = false;
 			locParts = locationName.split(",");

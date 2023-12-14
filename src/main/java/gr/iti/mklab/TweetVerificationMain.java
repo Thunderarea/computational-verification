@@ -5,9 +5,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.log4j.Logger;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import org.apache.commons.configuration.ConfigurationException;
 
 import gr.iti.mklab.extractfeatures.FeatureExtractionMain;
-import gr.iti.mklab.util.Configuration;
 import gr.iti.mklab.verify.DoubleVerifyBagging;
 
 public class TweetVerificationMain {
@@ -26,8 +31,7 @@ public class TweetVerificationMain {
 	public static List<String> acceptedMethodValues = new ArrayList<String>(Arrays.asList("1","2","3","4","5"));
 	
 	
-public static void main(String[] args) throws Exception{
-		
+public static void main(String[] args) throws Exception {
 		
 		/**
 		 * Input parameters
@@ -87,13 +91,7 @@ public static void main(String[] args) throws Exception{
         	return;
         }
         
-        
-        
-        /**
-         * 
-         */
-      
-        Configuration.load(TweetVerificationMain.class.getResource("/local.properties").getFile() );
+		
         
         File featureFolderF = new File(featureFolder);
         /**
@@ -121,7 +119,7 @@ public static void main(String[] args) throws Exception{
 
 	        	long start_time = System.currentTimeMillis();
 	        	FeatureExtractionMain featEx = new FeatureExtractionMain();
-	        	featEx.extractTweetFeatures(tweetsFile, userFeatureFile, tweetsFeatureFile);
+	        	featEx.extractTweetFeatures(tweetsFile, userFeatureFile, tweetsFeatureFile, getResourcesPath());
 		        LOGGER.info("END FEATURE EXTRACTION EXECUTION IN " + (System.currentTimeMillis() - start_time));
 	        }else{
 	        	LOGGER.info("Tweets file does not exist. Please provide a text file containg the tweets in JSON format - one tweet per line");
@@ -178,6 +176,14 @@ public static void main(String[] args) throws Exception{
         }
 		
 	   	
+	}
+
+	private static String getResourcesPath() throws ConfigurationException, IOException {
+		Properties prop = new Properties();
+    	InputStream input = new FileInputStream(TweetVerificationMain.class.getResource("/local.properties").getFile());
+		// load a properties file
+		prop.load(input);    	
+        return prop.getProperty("resources");
 	}
 	
 	

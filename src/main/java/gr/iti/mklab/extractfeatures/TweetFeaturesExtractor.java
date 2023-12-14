@@ -36,7 +36,6 @@ import gr.iti.mklab.util.URLProcessing;
 import gr.iti.mklab.util.WebOfTrustManager;
 import gr.iti.mklab.readability.Readability;
 import gr.iti.mklab.util.AlexaRankingManager;
-import gr.iti.mklab.util.Configuration;
 import gr.iti.mklab.util.RunnableRank;
 import gr.iti.mklab.util.TextProcessing;
 import weka.core.Instances;
@@ -63,7 +62,7 @@ public class TweetFeaturesExtractor {
 	
 	
 	
-	public static TweetFeatures extractFeatures(JSONObject json)
+	public static TweetFeatures extractFeatures(JSONObject json, String resourcesPath)
 			throws Exception {
 
 		LOGGER.setLevel(Level.OFF);
@@ -115,11 +114,11 @@ public class TweetFeaturesExtractor {
 		LOGGER.info("Number of question marks: "
 				+ feat.getNumQuestionMark());
 	
-		feat.setContainsHappyEmo(containsEmo(Configuration.RESOURCES_PATH + "/emoticons/happy-emoticons.txt"));
+		feat.setContainsHappyEmo(containsEmo(resourcesPath + "/emoticons/happy-emoticons.txt"));
 		LOGGER.info("Contains happy emoticon: "
 				+ feat.getContainsHappyEmo());
 		
-		feat.setContainsSadEmo(containsEmo(Configuration.RESOURCES_PATH + "/emoticons/sad-emoticons.txt"));	
+		feat.setContainsSadEmo(containsEmo(resourcesPath + "/emoticons/sad-emoticons.txt"));	
 		LOGGER.info("Contains sad emoticon: " + feat.getContainsSadEmo());
 		
 		feat.setNumUppercaseChars(getNumUppercaseChars());
@@ -184,14 +183,14 @@ public class TweetFeaturesExtractor {
 					.processUrlForRunnable(extLink);
 
 			Float indegree = organizeRunRank("indegree-" + currentTweetId,
-					extLink, Configuration.RESOURCES_PATH + "/centralities/hostgraph-indegree_split_1/hostgraph-indegree");
+					extLink, resourcesPath + "/centralities/hostgraph-indegree_split_1/hostgraph-indegree");
 
 			Float harmonic = null;
 
 			if (indegree != null) // if only there is indegree value, search for
 									// harmonic
 				harmonic = organizeRunRank("harmonic-" + currentTweetId,
-						extLink, Configuration.RESOURCES_PATH + "/centralities/hostgraph-h_split_2/hostgraph-h");
+						extLink, resourcesPath + "/centralities/hostgraph-h_split_2/hostgraph-h");
 
 			feat.setUrlIndegree(indegree);
 			feat.setUrlHarmonic(harmonic);
@@ -223,32 +222,32 @@ public class TweetFeaturesExtractor {
 		// english
 		if (lang.equals("en")) {
 			// num of positive sentiment words
-			feat.setNumPosSentiWords(getNumSentiWords(Configuration.RESOURCES_PATH + "/senti_words/positive-words.txt"));
+			feat.setNumPosSentiWords(getNumSentiWords(resourcesPath + "/senti_words/positive-words.txt"));
 			LOGGER.info("Number of positive sentiment words: "
 					+ feat.getNumPosSentiWords());
 			// num of negative sentiment words
-			LOGGER.info("Number of negative words: " + Configuration.RESOURCES_PATH + "/senti_words/negative-words.txt");
-			feat.setNumNegSentiWords(getNumSentiWords(Configuration.RESOURCES_PATH + "/senti_words/negative-words.txt"));
+			LOGGER.info("Number of negative words: " + resourcesPath + "/senti_words/negative-words.txt");
+			feat.setNumNegSentiWords(getNumSentiWords(resourcesPath + "/senti_words/negative-words.txt"));
 			LOGGER.info("Number of negative words: "
 					+ feat.getNumNegSentiWords());
 
 			// contains first,second and third order pronoun
-			feat.setContainsFirstOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/first-order-prons.txt"));
+			feat.setContainsFirstOrderPron(containsPronoun(resourcesPath + "/pronouns/first-order-prons.txt"));
 			LOGGER.info("Contains 1st person pronoun: "
 					+ feat.getContainsFirstOrderPron());
-			feat.setContainsSecondOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/second-order-prons.txt"));
+			feat.setContainsSecondOrderPron(containsPronoun(resourcesPath + "/pronouns/second-order-prons.txt"));
 			LOGGER.info("Contains 2nd person pronoun: "
 					+ feat.getContainsSecondOrderPron());
-			feat.setContainsThirdOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/third-order-prons.txt"));
+			feat.setContainsThirdOrderPron(containsPronoun(resourcesPath + "/pronouns/third-order-prons.txt"));
 			LOGGER.info("Contains 3rd person pronoun: "
 					+ feat.getContainsThirdOrderPron());
 
 			// Features only available in english
 			// num of slang words
-			feat.setNumSlangs(getNumSlangs(Configuration.RESOURCES_PATH + "/slang_words/slangwords-english.txt", "en"));
+			feat.setNumSlangs(getNumSlangs(resourcesPath + "/slang_words/slangwords-english.txt", "en"));
 			LOGGER.info("Number of slang words: " + feat.getNumSlangs());
 			// number of nouns
-			feat.setNumNouns(getNumNouns(Configuration.RESOURCES_PATH + "/stanford-labels.txt"));
+			feat.setNumNouns(getNumNouns(resourcesPath + "/stanford-labels.txt"));
 			LOGGER.info("Number of nouns: " + feat.getNumNouns());
 
 			// redability score
@@ -260,45 +259,45 @@ public class TweetFeaturesExtractor {
 
 			// spanish
 		} else if (lang.equals("es")) {
-			feat.setNumPosSentiWords(getNumSentiWords(Configuration.RESOURCES_PATH + "/senti_words/positive-words-spanish.txt"));
+			feat.setNumPosSentiWords(getNumSentiWords(resourcesPath + "/senti_words/positive-words-spanish.txt"));
 			LOGGER.info("Number of positive sentiment words: "
 					+ feat.getNumPosSentiWords());
-			feat.setNumNegSentiWords(getNumSentiWords(Configuration.RESOURCES_PATH + "/senti_words/negative-words-spanish.txt"));
+			feat.setNumNegSentiWords(getNumSentiWords(resourcesPath + "/senti_words/negative-words-spanish.txt"));
 			LOGGER.info("Number of negative words: "
 					+ feat.getNumNegSentiWords());
 
-			feat.setContainsFirstOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/first-order-prons-spanish.txt"));
+			feat.setContainsFirstOrderPron(containsPronoun(resourcesPath + "/pronouns/first-order-prons-spanish.txt"));
 			LOGGER.info("Contains 1st person pronoun: "
 					+ feat.getContainsFirstOrderPron());
 
-			feat.setContainsSecondOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/second-order-prons-spanish.txt"));
+			feat.setContainsSecondOrderPron(containsPronoun(resourcesPath + "/pronouns/second-order-prons-spanish.txt"));
 			LOGGER.info("Contains 2nd person pronoun: "
 					+ feat.getContainsSecondOrderPron());
 
-			feat.setContainsThirdOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/third-order-prons-spanish.txt"));
+			feat.setContainsThirdOrderPron(containsPronoun(resourcesPath + "/pronouns/third-order-prons-spanish.txt"));
 			LOGGER.info("Contains 3rd person pronoun: "
 					+ feat.getContainsThirdOrderPron());
 
-			feat.setNumSlangs(getNumSlangs(Configuration.RESOURCES_PATH + "/slang_words/slangwords-spanish.txt", "es"));
+			feat.setNumSlangs(getNumSlangs(resourcesPath + "/slang_words/slangwords-spanish.txt", "es"));
 			LOGGER.info("Number of slang words: " + feat.getNumSlangs());
 
 			// german
 		} else if (lang.equals("de")) {
-			feat.setNumPosSentiWords(getNumSentiWords(Configuration.RESOURCES_PATH + "/senti_words/positive-words-german.txt"));
+			feat.setNumPosSentiWords(getNumSentiWords(resourcesPath + "/senti_words/positive-words-german.txt"));
 			LOGGER.info("Number of positive sentiment words: "
 					+ feat.getNumPosSentiWords());
 
-			feat.setNumNegSentiWords(getNumSentiWords(Configuration.RESOURCES_PATH + "/senti_words/negative-words-german.txt"));
+			feat.setNumNegSentiWords(getNumSentiWords(resourcesPath + "/senti_words/negative-words-german.txt"));
 			LOGGER.info("Number of negative words: "
 					+ feat.getNumNegSentiWords());
 
-			feat.setContainsFirstOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/first-order-prons-german.txt"));
+			feat.setContainsFirstOrderPron(containsPronoun(resourcesPath + "/pronouns/first-order-prons-german.txt"));
 			LOGGER.info("Contains 1st person pronoun: "
 					+ feat.getContainsFirstOrderPron());
-			feat.setContainsSecondOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/second-order-prons-german.txt"));
+			feat.setContainsSecondOrderPron(containsPronoun(resourcesPath + "/pronouns/second-order-prons-german.txt"));
 			LOGGER.info("Contains 2nd person pronoun: "
 					+ feat.getContainsSecondOrderPron());
-			feat.setContainsThirdOrderPron(containsPronoun(Configuration.RESOURCES_PATH + "/pronouns/third-order-prons-german.txt"));
+			feat.setContainsThirdOrderPron(containsPronoun(resourcesPath + "/pronouns/third-order-prons-german.txt"));
 			LOGGER.info("Contains 3rd person pronoun: "
 					+ feat.getContainsThirdOrderPron());
 
